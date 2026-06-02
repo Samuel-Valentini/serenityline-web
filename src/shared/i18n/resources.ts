@@ -8,6 +8,36 @@ export const resources = {
             homeIntro:
                 "SerenityLine ti aiuta a visualizzare la tua liquidità futura e a prendere decisioni con più chiarezza.",
         },
+        publicShell: {
+            navigationLabel: "Navigazione pubblica",
+            home: "Home",
+            howItWorks: "Come funziona",
+            security: "Sicurezza",
+            login: "Accedi",
+            register: "Crea account",
+            footerClaim: "Pianifica, prevedi, vivi sereno.",
+        },
+        home: {
+            heroEyebrow: "Pianifica, prevedi, vivi sereno.",
+            heroTitle: "La tua serenità non ha prezzo.",
+            heroSubtitle:
+                "SerenityLine ti aiuta a leggere il futuro della tua liquidità, anticipare i momenti critici e decidere con più lucidità.",
+            primaryCta: "Crea il tuo account",
+            secondaryCta: "Scopri come funziona",
+            previewLabel: "Anteprima MVP",
+            previewTitle: "La tua proiezione finanziaria",
+            previewText:
+                "Una linea temporale chiara per capire dove stai andando, non solo quanto hai oggi.",
+            featureOneTitle: "Visione futura",
+            featureOneText:
+                "Non solo saldo attuale: SerenityLine mette in evidenza la traiettoria dei prossimi mesi.",
+            featureTwoTitle: "Decisioni simulate",
+            featureTwoText:
+                "Prima di una scelta importante, confronti scenari e conseguenze sulla liquidità futura.",
+            featureThreeTitle: "Scadenze sotto controllo",
+            featureThreeText:
+                "Ricorrenze, uscite, entrate e promemoria vengono integrati in una vista unica.",
+        },
         auth: {
             loginTitle: "Accedi a SerenityLine",
             loginSubtitle: "Entra nel tuo spazio finanziario personale.",
@@ -20,6 +50,9 @@ export const resources = {
             loginSubmit: "Accedi",
             loginSubmitting: "Accesso in corso...",
             loginErrorTitle: "Accesso non riuscito",
+            forgotPasswordLink: "Password dimenticata?",
+            registerLink: "Crea un account",
+            backHome: "Torna alla home",
             twoFactorTitle: "Verifica in due passaggi",
             twoFactorSubtitle:
                 "Inserisci il codice che hai ricevuto per completare l'accesso.",
@@ -28,9 +61,6 @@ export const resources = {
             twoFactorSubmit: "Verifica codice",
             twoFactorSubmitting: "Verifica in corso...",
             backToLogin: "Torna al login",
-            forgotPasswordLink: "Password dimenticata?",
-            registerLink: "Crea un account",
-            backHome: "Torna alla home",
         },
         appShell: {
             navigationLabel: "Navigazione principale",
@@ -163,6 +193,7 @@ export const resources = {
                 subtitle:
                     "Qui potrai accettare un invito a entrare in un gruppo SerenityLine.",
             },
+            backHome: "Torna alla home",
         },
         notFound: {
             title: "Pagina non trovata",
@@ -180,6 +211,36 @@ export const resources = {
             homeIntro:
                 "SerenityLine helps you visualize your future liquidity and make clearer decisions.",
         },
+        publicShell: {
+            navigationLabel: "Public navigation",
+            home: "Home",
+            howItWorks: "How it works",
+            security: "Security",
+            login: "Sign in",
+            register: "Create account",
+            footerClaim: "Plan, forecast, live with peace of mind.",
+        },
+        home: {
+            heroEyebrow: "Plan, forecast, live with peace of mind.",
+            heroTitle: "Your peace of mind is priceless.",
+            heroSubtitle:
+                "SerenityLine helps you read the future of your liquidity, anticipate critical moments and make clearer decisions.",
+            primaryCta: "Create your account",
+            secondaryCta: "See how it works",
+            previewLabel: "MVP preview",
+            previewTitle: "Your financial projection",
+            previewText:
+                "A clear timeline to understand where you are going, not just how much you have today.",
+            featureOneTitle: "Future view",
+            featureOneText:
+                "Not just today's balance: SerenityLine highlights the trajectory of the months ahead.",
+            featureTwoTitle: "Decision simulation",
+            featureTwoText:
+                "Before an important choice, you compare scenarios and their effect on future liquidity.",
+            featureThreeTitle: "Deadlines under control",
+            featureThreeText:
+                "Recurring events, income, expenses and reminders are integrated into one view.",
+        },
         auth: {
             loginTitle: "Sign in to SerenityLine",
             loginSubtitle: "Enter your personal financial space.",
@@ -192,6 +253,9 @@ export const resources = {
             loginSubmit: "Sign in",
             loginSubmitting: "Signing in...",
             loginErrorTitle: "Sign in failed",
+            forgotPasswordLink: "Forgot password?",
+            registerLink: "Create an account",
+            backHome: "Back to home",
             twoFactorTitle: "Two-step verification",
             twoFactorSubtitle:
                 "Enter the code you received to complete your sign in.",
@@ -200,9 +264,6 @@ export const resources = {
             twoFactorSubmit: "Verify code",
             twoFactorSubmitting: "Verifying...",
             backToLogin: "Back to login",
-            forgotPasswordLink: "Forgot password?",
-            registerLink: "Create an account",
-            backHome: "Back to home",
         },
         appShell: {
             navigationLabel: "Main navigation",
@@ -333,6 +394,7 @@ export const resources = {
                 subtitle:
                     "Here you will accept an invitation to join a SerenityLine group.",
             },
+            backHome: "Back to home",
         },
         notFound: {
             title: "Page not found",

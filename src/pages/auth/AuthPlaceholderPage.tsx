@@ -24,7 +24,10 @@ export function AuthPlaceholderPage({ pageKey }: AuthPlaceholderPageProps) {
                 <h1>{t(`${pageKey}.title`)}</h1>
                 <p className="text-muted mb-4">{t(`${pageKey}.subtitle`)}</p>
 
-                <Link to={ROUTES.auth.login}>{t("backToLogin")}</Link>
+                <div className="d-flex flex-wrap gap-3">
+                    <Link to={ROUTES.public.home}>{t("backHome")}</Link>
+                    <Link to={ROUTES.auth.login}>{t("backToLogin")}</Link>
+                </div>
             </section>
         </main>
     );

@@ -283,3 +283,218 @@ h6 {
     margin-bottom: 0;
     color: var(--sl-color-text-muted);
 }
+
+.sl-public-topbar {
+    position: sticky;
+    z-index: 20;
+    top: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.25rem;
+    min-height: 4.5rem;
+    padding: 0.85rem 1.5rem;
+    border-bottom: 1px solid var(--sl-color-border);
+    background: rgba(251, 250, 246, 0.92);
+    backdrop-filter: blur(16px);
+}
+
+.sl-public-brand {
+    color: var(--sl-color-green-900);
+    font-weight: 850;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+}
+
+.sl-public-nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.sl-public-nav-link {
+    padding: 0.5rem 0.75rem;
+    border-radius: 999px;
+    color: var(--sl-color-text-muted);
+    font-size: 0.92rem;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.sl-public-nav-link:hover {
+    color: var(--sl-color-green-900);
+    background: rgba(216, 195, 155, 0.16);
+}
+
+.sl-public-nav-link.active {
+    color: var(--sl-color-green-900);
+    background: var(--sl-color-cream);
+}
+
+.sl-public-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sl-public-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--sl-color-border);
+    color: var(--sl-color-text-muted);
+    font-size: 0.9rem;
+}
+
+.sl-home {
+    padding: 3.5rem 1.5rem 4rem;
+}
+
+.sl-home-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
+    gap: 2rem;
+    width: min(100%, 76rem);
+    margin: 0 auto;
+    align-items: center;
+}
+
+.sl-home-hero-copy h1 {
+    max-width: 12ch;
+    margin-bottom: 1rem;
+    font-size: clamp(3rem, 8vw, 5.8rem);
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+}
+
+.sl-home-hero-copy .lead {
+    max-width: 42rem;
+    color: var(--sl-color-text-muted);
+}
+
+.sl-home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+}
+
+.sl-home-preview {
+    padding: 1.5rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1.5rem;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 253, 248, 0.98),
+            rgba(245, 241, 232, 0.78)
+        ),
+        var(--sl-color-card);
+    box-shadow: 0 1.75rem 5rem rgba(5, 46, 34, 0.09);
+}
+
+.sl-home-preview h2 {
+    margin-bottom: 0.65rem;
+    font-size: 1.35rem;
+}
+
+.sl-home-preview p:not(.sl-eyebrow) {
+    color: var(--sl-color-text-muted);
+}
+
+.sl-home-chart-card {
+    position: relative;
+    min-height: 17rem;
+    margin-top: 1.5rem;
+    overflow: hidden;
+    border: 1px solid rgba(231, 223, 208, 0.85);
+    border-radius: 1.25rem;
+    background:
+        linear-gradient(rgba(231, 223, 208, 0.42) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(231, 223, 208, 0.42) 1px, transparent 1px),
+        rgba(251, 250, 246, 0.72);
+    background-size:
+        100% 4rem,
+        4rem 100%;
+}
+
+.sl-home-chart-line {
+    position: absolute;
+    right: -6%;
+    bottom: 22%;
+    left: -4%;
+    height: 45%;
+    border-top: 4px solid var(--sl-color-green-700);
+    border-radius: 50%;
+    transform: rotate(-4deg);
+}
+
+.sl-home-chart-point {
+    position: absolute;
+    width: 0.85rem;
+    height: 0.85rem;
+    border: 3px solid var(--sl-color-card);
+    border-radius: 999px;
+    background: var(--sl-color-gold);
+    box-shadow: 0 0 0 4px rgba(167, 123, 45, 0.18);
+}
+
+.sl-home-chart-point-a {
+    bottom: 39%;
+    left: 23%;
+}
+
+.sl-home-chart-point-b {
+    right: 42%;
+    bottom: 49%;
+}
+
+.sl-home-chart-point-c {
+    right: 15%;
+    bottom: 58%;
+}
+
+.sl-home-features {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    width: min(100%, 76rem);
+    margin: 2rem auto 0;
+}
+
+@media (max-width: 991.98px) {
+    .sl-public-topbar {
+        position: static;
+        grid-template-columns: 1fr;
+    }
+
+    .sl-public-nav {
+        justify-content: flex-start;
+        overflow-x: auto;
+    }
+
+    .sl-public-actions {
+        flex-wrap: wrap;
+    }
+
+    .sl-public-footer {
+        flex-direction: column;
+    }
+
+    .sl-home {
+        padding-top: 2rem;
+    }
+
+    .sl-home-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .sl-home-hero-copy h1 {
+        max-width: 14ch;
+    }
+
+    .sl-home-features {
+        grid-template-columns: 1fr;
+    }
+}
