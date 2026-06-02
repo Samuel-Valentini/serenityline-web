@@ -110,8 +110,12 @@ export function restoreSession(): AppThunk<Promise<boolean>> {
 
 export function logoutUser(): AppThunk<Promise<void>> {
     return async (dispatch) => {
-        await logout();
-
-        dispatch(authLoggedOut());
+        try {
+            await logout();
+        } catch {
+            clearAccessToken();
+        } finally {
+            dispatch(authLoggedOut());
+        }
     };
 }

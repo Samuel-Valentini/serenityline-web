@@ -5,6 +5,7 @@ import { ProtectedRoute } from "../../features/auth/components/ProtectedRoute";
 import { AppLayout } from "../../layouts/AppLayout";
 import { AuthLayout } from "../../layouts/AuthLayout";
 import { PublicLayout } from "../../layouts/PublicLayout";
+import { AppPlaceholderPage } from "../../pages/app/AppPlaceholderPage";
 import { DashboardPage } from "../../pages/app/DashboardPage";
 import { Login2faPage } from "../../pages/auth/Login2faPage";
 import { LoginPage } from "../../pages/auth/LoginPage";
@@ -41,6 +42,64 @@ export function AppRouter() {
                             }
                         />
                         <Route path="dashboard" element={<DashboardPage />} />
+                        <Route
+                            path="serenityline"
+                            element={
+                                <AppPlaceholderPage pageKey="serenityline" />
+                            }
+                        />
+                        <Route
+                            path="calendario"
+                            element={<AppPlaceholderPage pageKey="calendar" />}
+                        />
+                        <Route
+                            path="transazioni"
+                            element={
+                                <AppPlaceholderPage pageKey="transactions" />
+                            }
+                        />
+                        <Route
+                            path="ricorrenti"
+                            element={
+                                <AppPlaceholderPage pageKey="recurringTransactions" />
+                            }
+                        />
+                        <Route
+                            path="simulazioni"
+                            element={
+                                <AppPlaceholderPage pageKey="simulations" />
+                            }
+                        />
+                        <Route
+                            path="portafogli"
+                            element={
+                                <AppPlaceholderPage pageKey="portfolios" />
+                            }
+                        />
+                        <Route
+                            path="conti"
+                            element={<AppPlaceholderPage pageKey="accounts" />}
+                        />
+                        <Route
+                            path="saldi"
+                            element={<AppPlaceholderPage pageKey="balances" />}
+                        />
+                        <Route
+                            path="categorie"
+                            element={
+                                <AppPlaceholderPage pageKey="categories" />
+                            }
+                        />
+                        <Route
+                            path="impostazioni"
+                            element={<AppPlaceholderPage pageKey="settings" />}
+                        />
+                        <Route
+                            path="amministrazione"
+                            element={
+                                <AppPlaceholderPage pageKey="administration" />
+                            }
+                        />
                     </Route>
                 </Route>
             </Routes>

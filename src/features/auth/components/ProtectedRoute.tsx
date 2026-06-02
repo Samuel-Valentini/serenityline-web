@@ -31,3 +31,10 @@ export function ProtectedRoute() {
 
     return <Outlet />;
 }
+
+// todo: delete this commit
+// import { Outlet } from "react-router";
+
+// export function ProtectedRoute() {
+//     return <Outlet />;
+// }
