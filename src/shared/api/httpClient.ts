@@ -1,6 +1,7 @@
 import { env } from "../config/env";
 import { getAccessToken } from "./accessTokenStore";
 import { ApiError } from "./apiError";
+import { refreshSessionOnce } from "./sessionRefresh";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -13,6 +14,7 @@ type ApiRequestOptions = {
     headers?: HeadersInit;
     requiresAuth?: boolean;
     includeCredentials?: boolean;
+    skipAuthRefresh?: boolean;
     signal?: AbortSignal;
 };
 
@@ -79,11 +81,11 @@ async function parseResponseBody(response: Response): Promise<unknown> {
     return text.length > 0 ? text : null;
 }
 
-export async function apiRequest<TResponse>(
+async function executeRequest(
     path: string,
-    options: ApiRequestOptions = {},
-): Promise<TResponse> {
-    const response = await fetch(buildUrl(path, options.query), {
+    options: ApiRequestOptions,
+): Promise<Response> {
+    return fetch(buildUrl(path, options.query), {
         method: options.method ?? "GET",
         headers: buildHeaders(options),
         body:
@@ -93,12 +95,33 @@ export async function apiRequest<TResponse>(
         credentials: options.includeCredentials ? "include" : "same-origin",
         signal: options.signal,
     });
+}
 
+export async function apiRequest<TResponse>(
+    path: string,
+    options: ApiRequestOptions = {},
+): Promise<TResponse> {
+    const response = await executeRequest(path, options);
     const responseBody = await parseResponseBody(response);
 
-    if (!response.ok) {
-        throw new ApiError(response.status, responseBody);
+    if (response.ok) {
+        return responseBody as TResponse;
     }
 
-    return responseBody as TResponse;
+    if (
+        response.status === 401 &&
+        options.requiresAuth &&
+        !options.skipAuthRefresh
+    ) {
+        const refreshed = await refreshSessionOnce();
+
+        if (refreshed) {
+            return apiRequest<TResponse>(path, {
+                ...options,
+                skipAuthRefresh: true,
+            });
+        }
+    }
+
+    throw new ApiError(response.status, responseBody);
 }

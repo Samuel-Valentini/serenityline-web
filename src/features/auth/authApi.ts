@@ -1,4 +1,10 @@
-import { apiRequest, clearAccessToken, setAccessToken } from "../../shared/api";
+import {
+    ApiError,
+    apiRequest,
+    clearAccessToken,
+    setAccessToken,
+} from "../../shared/api";
+import { setSessionRefreshHandler } from "../../shared/api/sessionRefresh";
 import type {
     AuthenticatedResponseDto,
     CsrfTokenResponseDto,
@@ -37,18 +43,32 @@ async function csrf(): Promise<CsrfTokenResponseDto> {
     });
 }
 
-async function authenticatedRequestWithCsrf<TResponse>(
+async function postWithCsrf<TResponse>(
     path: string,
+    retryOnCsrfFailure = true,
 ): Promise<TResponse> {
     const csrfToken = await csrf();
 
-    return apiRequest<TResponse>(path, {
-        method: "POST",
-        includeCredentials: true,
-        headers: {
-            [csrfToken.headerName]: csrfToken.token,
-        },
-    });
+    try {
+        return await apiRequest<TResponse>(path, {
+            method: "POST",
+            includeCredentials: true,
+            skipAuthRefresh: true,
+            headers: {
+                [csrfToken.headerName]: csrfToken.token,
+            },
+        });
+    } catch (error) {
+        if (
+            retryOnCsrfFailure &&
+            error instanceof ApiError &&
+            error.status === 403
+        ) {
+            return postWithCsrf<TResponse>(path, false);
+        }
+
+        throw error;
+    }
 }
 
 function storeAuthenticatedResponse(
@@ -102,9 +122,7 @@ export async function verifyLogin2fa(
 
 export async function refreshSession(): Promise<AuthenticatedResponseDto> {
     const response =
-        await authenticatedRequestWithCsrf<AuthenticatedResponseDto>(
-            "/api/auth/refresh",
-        );
+        await postWithCsrf<AuthenticatedResponseDto>("/api/auth/refresh");
 
     return storeAuthenticatedResponse(response);
 }
@@ -125,3 +143,15 @@ export async function getCurrentUser(): Promise<CurrentUserResponseDto> {
         requiresAuth: true,
     });
 }
+
+setSessionRefreshHandler(async () => {
+    try {
+        await refreshSession();
+
+        return true;
+    } catch {
+        clearAccessToken();
+
+        return false;
+    }
+});
