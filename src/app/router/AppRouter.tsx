@@ -5,11 +5,14 @@ import { ProtectedRoute } from "../../features/auth/components/ProtectedRoute";
 import { AppLayout } from "../../layouts/AppLayout";
 import { AuthLayout } from "../../layouts/AuthLayout";
 import { PublicLayout } from "../../layouts/PublicLayout";
+import { NotFoundPage } from "../../pages/NotFoundPage";
 import { AppPlaceholderPage } from "../../pages/app/AppPlaceholderPage";
 import { DashboardPage } from "../../pages/app/DashboardPage";
+import { AuthPlaceholderPage } from "../../pages/auth/AuthPlaceholderPage";
 import { Login2faPage } from "../../pages/auth/Login2faPage";
 import { LoginPage } from "../../pages/auth/LoginPage";
 import { HomePage } from "../../pages/public/HomePage";
+import { PublicInfoPage } from "../../pages/public/PublicInfoPage";
 import { ROUTES } from "../../shared/constants/routes";
 
 export function AppRouter() {
@@ -18,6 +21,22 @@ export function AppRouter() {
             <Routes>
                 <Route element={<PublicLayout />}>
                     <Route index element={<HomePage />} />
+                    <Route
+                        path={ROUTES.public.howItWorks}
+                        element={<PublicInfoPage pageKey="howItWorks" />}
+                    />
+                    <Route
+                        path={ROUTES.public.security}
+                        element={<PublicInfoPage pageKey="security" />}
+                    />
+                    <Route
+                        path={ROUTES.public.privacy}
+                        element={<PublicInfoPage pageKey="privacy" />}
+                    />
+                    <Route
+                        path={ROUTES.public.terms}
+                        element={<PublicInfoPage pageKey="terms" />}
+                    />
                 </Route>
 
                 <Route element={<GuestRoute />}>
@@ -29,6 +48,34 @@ export function AppRouter() {
                         <Route
                             path={ROUTES.auth.login2fa}
                             element={<Login2faPage />}
+                        />
+                        <Route
+                            path={ROUTES.auth.register}
+                            element={<AuthPlaceholderPage pageKey="register" />}
+                        />
+                        <Route
+                            path={ROUTES.auth.verifyEmail}
+                            element={
+                                <AuthPlaceholderPage pageKey="verifyEmail" />
+                            }
+                        />
+                        <Route
+                            path={ROUTES.auth.forgotPassword}
+                            element={
+                                <AuthPlaceholderPage pageKey="forgotPassword" />
+                            }
+                        />
+                        <Route
+                            path={ROUTES.auth.resetPassword}
+                            element={
+                                <AuthPlaceholderPage pageKey="resetPassword" />
+                            }
+                        />
+                        <Route
+                            path={ROUTES.auth.acceptInvitation}
+                            element={
+                                <AuthPlaceholderPage pageKey="acceptInvitation" />
+                            }
                         />
                     </Route>
                 </Route>
@@ -102,6 +149,8 @@ export function AppRouter() {
                         />
                     </Route>
                 </Route>
+
+                <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </BrowserRouter>
     );

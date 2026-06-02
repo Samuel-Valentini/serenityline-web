@@ -127,8 +127,14 @@ export function LoginPage() {
                     </button>
                 </form>
 
-                <div className="mt-4">
-                    <Link to={ROUTES.public.home}>{t("backToLogin")}</Link>
+                <div className="d-flex flex-wrap gap-3 mt-4">
+                    <Link to={ROUTES.auth.forgotPassword}>
+                        {t("forgotPasswordLink")}
+                    </Link>
+
+                    <Link to={ROUTES.auth.register}>{t("registerLink")}</Link>
+
+                    <Link to={ROUTES.public.home}>{t("backHome")}</Link>
                 </div>
             </section>
         </main>

@@ -269,3 +269,17 @@ h6 {
         padding: 1.25rem;
     }
 }
+
+.sl-public-panel {
+    max-width: 48rem;
+    padding: 1.35rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1.125rem;
+    background: var(--sl-color-card);
+    box-shadow: 0 1rem 2.8rem rgba(5, 46, 34, 0.055);
+}
+
+.sl-public-panel p {
+    margin-bottom: 0;
+    color: var(--sl-color-text-muted);
+}

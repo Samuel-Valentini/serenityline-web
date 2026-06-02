@@ -28,6 +28,9 @@ export const resources = {
             twoFactorSubmit: "Verifica codice",
             twoFactorSubmitting: "Verifica in corso...",
             backToLogin: "Torna al login",
+            forgotPasswordLink: "Password dimenticata?",
+            registerLink: "Crea un account",
+            backHome: "Torna alla home",
         },
         appShell: {
             navigationLabel: "Navigazione principale",
@@ -112,6 +115,61 @@ export const resources = {
                 subtitle: "Chi può fare cosa?",
             },
         },
+        publicPages: {
+            howItWorks: {
+                title: "Come funziona",
+                subtitle: "Una visione semplice del tuo futuro finanziario.",
+                body: "SerenityLine parte dai tuoi conti, dalle tue transazioni e dagli eventi ricorrenti per costruire una proiezione leggibile della liquidità futura.",
+            },
+            security: {
+                title: "Sicurezza",
+                subtitle: "Protezione, chiarezza e controllo dei dati.",
+                body: "L'accesso è protetto da token temporanei, refresh token HttpOnly e flussi pensati per ridurre l'esposizione dei dati sensibili.",
+            },
+            privacy: {
+                title: "Privacy",
+                subtitle: "I tuoi dati finanziari meritano rispetto.",
+                body: "Questa pagina ospiterà l'informativa privacy completa prima del lancio pubblico del servizio.",
+            },
+            terms: {
+                title: "Termini",
+                subtitle: "Le condizioni di utilizzo di SerenityLine.",
+                body: "Questa pagina ospiterà i termini di servizio completi prima del lancio pubblico del servizio.",
+            },
+        },
+        authFlows: {
+            backToLogin: "Torna al login",
+            register: {
+                title: "Crea il tuo account",
+                subtitle:
+                    "Il flusso di registrazione verrà collegato al backend nel prossimo blocco auth.",
+            },
+            verifyEmail: {
+                title: "Verifica email",
+                subtitle:
+                    "Qui confermerai l'indirizzo email usando il link ricevuto.",
+            },
+            forgotPassword: {
+                title: "Password dimenticata",
+                subtitle: "Qui potrai richiedere il reset della password.",
+            },
+            resetPassword: {
+                title: "Reimposta password",
+                subtitle:
+                    "Qui potrai scegliere una nuova password usando il token ricevuto.",
+            },
+            acceptInvitation: {
+                title: "Accetta invito",
+                subtitle:
+                    "Qui potrai accettare un invito a entrare in un gruppo SerenityLine.",
+            },
+        },
+        notFound: {
+            title: "Pagina non trovata",
+            subtitle:
+                "La pagina che stai cercando non esiste o è stata spostata.",
+            backHome: "Torna alla home",
+        },
     },
     en: {
         common: {
@@ -142,6 +200,9 @@ export const resources = {
             twoFactorSubmit: "Verify code",
             twoFactorSubmitting: "Verifying...",
             backToLogin: "Back to login",
+            forgotPasswordLink: "Forgot password?",
+            registerLink: "Create an account",
+            backHome: "Back to home",
         },
         appShell: {
             navigationLabel: "Main navigation",
@@ -223,6 +284,61 @@ export const resources = {
                 title: "Administration",
                 subtitle: "Who can do what?",
             },
+        },
+        publicPages: {
+            howItWorks: {
+                title: "How it works",
+                subtitle: "A simple view of your financial future.",
+                body: "SerenityLine starts from your accounts, transactions and recurring events to build a readable projection of your future liquidity.",
+            },
+            security: {
+                title: "Security",
+                subtitle: "Protection, clarity and control over your data.",
+                body: "Access is protected by short-lived tokens, HttpOnly refresh tokens and flows designed to reduce exposure of sensitive data.",
+            },
+            privacy: {
+                title: "Privacy",
+                subtitle: "Your financial data deserves respect.",
+                body: "This page will host the full privacy policy before the public launch of the service.",
+            },
+            terms: {
+                title: "Terms",
+                subtitle: "The terms of use of SerenityLine.",
+                body: "This page will host the full terms of service before the public launch of the service.",
+            },
+        },
+        authFlows: {
+            backToLogin: "Back to login",
+            register: {
+                title: "Create your account",
+                subtitle:
+                    "The registration flow will be connected to the backend in the next auth block.",
+            },
+            verifyEmail: {
+                title: "Verify email",
+                subtitle:
+                    "Here you will confirm your email address using the link you received.",
+            },
+            forgotPassword: {
+                title: "Forgot password",
+                subtitle: "Here you will be able to request a password reset.",
+            },
+            resetPassword: {
+                title: "Reset password",
+                subtitle:
+                    "Here you will choose a new password using the token you received.",
+            },
+            acceptInvitation: {
+                title: "Accept invitation",
+                subtitle:
+                    "Here you will accept an invitation to join a SerenityLine group.",
+            },
+        },
+        notFound: {
+            title: "Page not found",
+            subtitle:
+                "The page you are looking for does not exist or has been moved.",
+            backHome: "Back to home",
         },
     },
 } as const;
