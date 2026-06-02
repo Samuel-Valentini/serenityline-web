@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router";
 
+import { getTokenFromHash } from "../../shared/routing/hashToken";
 import { acceptUserInvitation } from "../../features/auth/authApi";
 import { ApiError } from "../../shared/api";
 import { ROUTES } from "../../shared/constants/routes";
@@ -10,13 +11,6 @@ type AcceptInvitationError = {
     code: string;
     message: string;
 };
-
-function getTokenFromHash(hash: string): string {
-    const normalizedHash = hash.startsWith("#") ? hash.slice(1) : hash;
-    const params = new URLSearchParams(normalizedHash);
-
-    return params.get("token")?.trim() ?? "";
-}
 
 function getAcceptInvitationError(
     error: unknown,
