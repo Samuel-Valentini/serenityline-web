@@ -61,6 +61,17 @@ export const resources = {
             twoFactorSubmit: "Verifica codice",
             twoFactorSubmitting: "Verifica in corso...",
             backToLogin: "Torna al login",
+            emailVerificationRequiredTitle: "Email da verificare",
+            emailVerificationRequiredText:
+                "Prima di accedere devi verificare il tuo indirizzo email. Controlla la tua casella oppure richiedi un nuovo link.",
+            emailVerificationEmailLabel: "Email",
+            emailVerificationResendSubmit: "Reinvia link di verifica",
+            emailVerificationResendSubmitting: "Invio in corso...",
+            emailVerificationResendSuccess:
+                "Abbiamo inviato un nuovo link di verifica. Controlla la tua email.",
+            emailVerificationResendErrorTitle: "Reinvio non riuscito",
+            emailVerificationResendErrorFallback:
+                "Non siamo riusciti a inviare un nuovo link. Riprova tra qualche istante.",
         },
         appShell: {
             navigationLabel: "Navigazione principale",
@@ -379,6 +390,17 @@ export const resources = {
             twoFactorSubmit: "Verify code",
             twoFactorSubmitting: "Verifying...",
             backToLogin: "Back to login",
+            emailVerificationRequiredTitle: "Email verification required",
+            emailVerificationRequiredText:
+                "Before signing in, you need to verify your email address. Check your inbox or request a new verification link.",
+            emailVerificationEmailLabel: "Email",
+            emailVerificationResendSubmit: "Resend verification link",
+            emailVerificationResendSubmitting: "Sending...",
+            emailVerificationResendSuccess:
+                "We sent a new verification link. Please check your email.",
+            emailVerificationResendErrorTitle: "Resend failed",
+            emailVerificationResendErrorFallback:
+                "We could not send a new verification link. Please try again in a moment.",
         },
         appShell: {
             navigationLabel: "Main navigation",

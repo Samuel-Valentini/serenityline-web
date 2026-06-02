@@ -1,8 +1,10 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
+import { resendEmailVerification } from "../../features/auth/authApi";
+import type { EmailVerificationRequiredResponseDto } from "../../features/auth/authApiTypes";
 import {
     selectAuthError,
     selectIsAuthenticated,
@@ -10,6 +12,7 @@ import {
     selectIsTwoFactorRequired,
 } from "../../features/auth/authSelectors";
 import { loginUser } from "../../features/auth/authThunks";
+import { ApiError } from "../../shared/api";
 import { ROUTES } from "../../shared/constants/routes";
 
 type RouteLocationState = {
@@ -17,6 +20,32 @@ type RouteLocationState = {
         pathname?: string;
     };
 };
+
+function getLoginApiErrorMessage(
+    error: unknown,
+    fallbackMessage: string,
+): string {
+    if (error instanceof ApiError) {
+        const body = error.body;
+
+        if (
+            typeof body === "object" &&
+            body !== null &&
+            "message" in body &&
+            typeof body.message === "string"
+        ) {
+            return body.message;
+        }
+
+        return error.message;
+    }
+
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    return fallbackMessage;
+}
 
 export function LoginPage() {
     const { t } = useTranslation("auth");
@@ -31,6 +60,23 @@ export function LoginPage() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [
+        emailVerificationRequiredOverride,
+        setEmailVerificationRequiredOverride,
+    ] = useState<EmailVerificationRequiredResponseDto | null>(null);
+    const [isResendingVerificationEmail, setIsResendingVerificationEmail] =
+        useState(false);
+    const [resendSuccessMessage, setResendSuccessMessage] = useState<
+        string | null
+    >(null);
+    const [resendErrorMessage, setResendErrorMessage] = useState<string | null>(
+        null,
+    );
+
+    const emailVerificationRequired =
+        emailVerificationRequiredOverride ??
+        authError?.emailVerificationRequired ??
+        null;
 
     const locationState = location.state as RouteLocationState | null;
     const redirectTo = locationState?.from?.pathname ?? ROUTES.app.dashboard;
@@ -50,8 +96,10 @@ export function LoginPage() {
         }
     }, [isTwoFactorRequired, location.state, navigate]);
 
-    function handleSubmit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+    function submitLogin() {
+        setEmailVerificationRequiredOverride(null);
+        setResendSuccessMessage(null);
+        setResendErrorMessage(null);
 
         void dispatch(
             loginUser({
@@ -60,6 +108,38 @@ export function LoginPage() {
             }),
         );
     }
+
+    async function submitResendVerificationEmail() {
+        if (!emailVerificationRequired) {
+            return;
+        }
+
+        setIsResendingVerificationEmail(true);
+        setResendSuccessMessage(null);
+        setResendErrorMessage(null);
+
+        try {
+            const response = await resendEmailVerification({
+                emailVerificationResendToken:
+                    emailVerificationRequired.emailVerificationResendToken,
+            });
+
+            setEmailVerificationRequiredOverride(response);
+            setResendSuccessMessage(t("emailVerificationResendSuccess"));
+        } catch (error) {
+            setResendErrorMessage(
+                getLoginApiErrorMessage(
+                    error,
+                    t("emailVerificationResendErrorFallback"),
+                ),
+            );
+        } finally {
+            setIsResendingVerificationEmail(false);
+        }
+    }
+
+    const shouldShowGenericAuthError =
+        authError !== null && !authError.emailVerificationRequired;
 
     return (
         <main className="sl-auth-page">
@@ -70,7 +150,53 @@ export function LoginPage() {
 
                 <p className="text-muted mb-4">{t("loginSubtitle")}</p>
 
-                {authError ? (
+                {emailVerificationRequired ? (
+                    <div className="alert alert-warning" role="alert">
+                        <strong>{t("emailVerificationRequiredTitle")}</strong>
+                        <p className="mb-3 mt-2">
+                            {t("emailVerificationRequiredText")}
+                        </p>
+
+                        <div className="sl-auth-summary mb-3">
+                            <span>{t("emailVerificationEmailLabel")}</span>
+                            <strong>{emailVerificationRequired.email}</strong>
+                        </div>
+
+                        {resendSuccessMessage ? (
+                            <div
+                                className="alert alert-success mb-3"
+                                role="status">
+                                {resendSuccessMessage}
+                            </div>
+                        ) : null}
+
+                        {resendErrorMessage ? (
+                            <div
+                                className="alert alert-danger mb-3"
+                                role="alert">
+                                <strong>
+                                    {t("emailVerificationResendErrorTitle")}
+                                </strong>
+                                <br />
+                                {resendErrorMessage}
+                            </div>
+                        ) : null}
+
+                        <button
+                            className="btn btn-outline-primary"
+                            disabled={isResendingVerificationEmail}
+                            onClick={() => {
+                                void submitResendVerificationEmail();
+                            }}
+                            type="button">
+                            {isResendingVerificationEmail
+                                ? t("emailVerificationResendSubmitting")
+                                : t("emailVerificationResendSubmit")}
+                        </button>
+                    </div>
+                ) : null}
+
+                {shouldShowGenericAuthError ? (
                     <div className="alert alert-danger" role="alert">
                         <strong>{t("loginErrorTitle")}</strong>
                         <br />
@@ -78,7 +204,12 @@ export function LoginPage() {
                     </div>
                 ) : null}
 
-                <form className="d-grid gap-3" onSubmit={handleSubmit}>
+                <form
+                    className="d-grid gap-3"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        submitLogin();
+                    }}>
                     <div>
                         <label className="form-label" htmlFor="email">
                             {t("emailLabel")}

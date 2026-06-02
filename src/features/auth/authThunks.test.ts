@@ -21,7 +21,11 @@ import {
     restoreSession,
     verifyLogin2faCode,
 } from "./authThunks";
-import type { AuthenticatedResponseDto, LoginResult } from "./authApiTypes";
+import type {
+    AuthenticatedResponseDto,
+    EmailVerificationRequiredResponseDto,
+    LoginResult,
+} from "./authApiTypes";
 import type { AuthUser } from "./authTypes";
 
 vi.mock("./authApi", () => ({
@@ -190,5 +194,36 @@ describe("authThunks", () => {
 
         expect(logoutApi).toHaveBeenCalledOnce();
         expect(actions).toEqual([authLoggedOut()]);
+    });
+
+    it("dispatches email verification required state after login conflict", async () => {
+        const emailVerificationRequired: EmailVerificationRequiredResponseDto =
+            {
+                userId: "user-id",
+                email: "samuel@example.com",
+                emailVerificationResendToken: "resend-token",
+                emailVerificationResendTokenExpiresAt: "2026-06-02T20:30:00Z",
+                emailVerificationResendAvailableAt: "2026-06-02T20:05:00Z",
+            };
+
+        vi.mocked(loginApi).mockRejectedValue(
+            new ApiError(409, emailVerificationRequired),
+        );
+
+        const { dispatch, actions } = createDispatch();
+
+        await loginUser({
+            email: "samuel@example.com",
+            password: "password",
+        })(dispatch, vi.fn());
+
+        expect(actions[0]).toEqual(authCheckingStarted());
+        expect(actions[1]).toMatchObject({
+            type: authFailed.type,
+            payload: {
+                code: "auth.emailVerification.required",
+                emailVerificationRequired,
+            },
+        });
     });
 });

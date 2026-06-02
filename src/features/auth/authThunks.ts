@@ -8,7 +8,11 @@ import {
     authTwoFactorRequired,
 } from "./authSlice";
 import { login, logout, refreshSession, verifyLogin2fa } from "./authApi";
-import type { LoginRequestDto, VerifyLogin2faRequestDto } from "./authApiTypes";
+import type {
+    EmailVerificationRequiredResponseDto,
+    LoginRequestDto,
+    VerifyLogin2faRequestDto,
+} from "./authApiTypes";
 import type { AuthError } from "./authTypes";
 
 function isErrorBody(
@@ -17,8 +21,31 @@ function isErrorBody(
     return typeof value === "object" && value !== null;
 }
 
+function isEmailVerificationRequiredResponse(
+    value: unknown,
+): value is EmailVerificationRequiredResponseDto {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        "emailVerificationResendToken" in value &&
+        typeof value.emailVerificationResendToken === "string" &&
+        "email" in value &&
+        typeof value.email === "string"
+    );
+}
+
 function toAuthError(error: unknown): AuthError {
     if (error instanceof ApiError) {
+        if (
+            error.status === 409 &&
+            isEmailVerificationRequiredResponse(error.body)
+        ) {
+            return {
+                code: "auth.emailVerification.required",
+                message: error.message,
+                emailVerificationRequired: error.body,
+            };
+        }
         const code =
             isErrorBody(error.body) && typeof error.body.code === "string"
                 ? error.body.code

@@ -1,3 +1,5 @@
+import type { EmailVerificationRequiredResponseDto } from "./authApiTypes";
+
 export type AuthStatus =
     | "anonymous"
     | "checking"
@@ -27,6 +29,7 @@ export type AuthTwoFactorChallenge = {
 export type AuthError = {
     code: string;
     message?: string;
+    emailVerificationRequired?: EmailVerificationRequiredResponseDto;
 };
 
 export type AuthState = {
