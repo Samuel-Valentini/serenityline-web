@@ -16,6 +16,11 @@ import {
     updateAccount,
     updateBucket,
     updateCategory,
+    createTransaction,
+    deleteTransaction,
+    getTransaction,
+    listTransactions,
+    updateTransaction,
 } from "./financeApi";
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
@@ -322,6 +327,135 @@ describe("financeApi", () => {
             "/api/finance/buckets/bucket-id/reopen",
         );
         expect(init?.method).toBe("POST");
+        expect(init?.body).toBeUndefined();
+    });
+
+    it("adds the expected transaction search query parameters", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse([]));
+
+        await listTransactions({
+            from: "2026-06-01",
+            to: "2026-06-30",
+            accountId: "account-id",
+            simulationGroupId: "simulation-group-id",
+        });
+
+        expect(getLastRequestPath()).toBe("/api/finance/transactions");
+        expect(getLastRequestSearch()).toBe(
+            "?from=2026-06-01&to=2026-06-30&accountId=account-id&simulationGroupId=simulation-group-id",
+        );
+    });
+
+    it("gets a transaction by id", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await getTransaction("transaction-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/transactions/transaction-id",
+        );
+        expect(init?.method).toBe("GET");
+    });
+
+    it("sends the expected create transaction body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await createTransaction({
+            transactionDescription: "Stipendio",
+            transactionAmount: 2500,
+            transactionAffectsAccountBalance: true,
+            transactionAffectsSerenityline: true,
+            categoryId: "category-id",
+            transactionChargeDate: "2026-06-05",
+            transactionIsConfirmed: true,
+            accountId: "account-id",
+            creditCardId: null,
+            bucketId: null,
+            transactionIsSimulated: false,
+            simulationGroupId: null,
+            transactionReminderEnabled: true,
+            transactionReminderDaysBefore: 3,
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/transactions");
+        expect(init?.method).toBe("POST");
+        expect(getLastRequestBody()).toEqual({
+            transactionDescription: "Stipendio",
+            transactionAmount: 2500,
+            transactionAffectsAccountBalance: true,
+            transactionAffectsSerenityline: true,
+            categoryId: "category-id",
+            transactionChargeDate: "2026-06-05",
+            transactionIsConfirmed: true,
+            accountId: "account-id",
+            creditCardId: null,
+            bucketId: null,
+            transactionIsSimulated: false,
+            simulationGroupId: null,
+            transactionReminderEnabled: true,
+            transactionReminderDaysBefore: 3,
+        });
+    });
+
+    it("sends the expected update transaction body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await updateTransaction("transaction-id", {
+            transactionDescription: "Affitto",
+            transactionAmount: -850,
+            transactionAffectsAccountBalance: true,
+            transactionAffectsSerenityline: true,
+            categoryId: "category-id",
+            transactionChargeDate: "2026-06-10",
+            transactionIsConfirmed: false,
+            accountId: "account-id",
+            creditCardId: null,
+            bucketId: "bucket-id",
+            transactionIsSimulated: false,
+            simulationGroupId: null,
+            transactionReminderEnabled: true,
+            transactionReminderDaysBefore: 5,
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/transactions/transaction-id",
+        );
+        expect(init?.method).toBe("PUT");
+        expect(getLastRequestBody()).toEqual({
+            transactionDescription: "Affitto",
+            transactionAmount: -850,
+            transactionAffectsAccountBalance: true,
+            transactionAffectsSerenityline: true,
+            categoryId: "category-id",
+            transactionChargeDate: "2026-06-10",
+            transactionIsConfirmed: false,
+            accountId: "account-id",
+            creditCardId: null,
+            bucketId: "bucket-id",
+            transactionIsSimulated: false,
+            simulationGroupId: null,
+            transactionReminderEnabled: true,
+            transactionReminderDaysBefore: 5,
+        });
+    });
+
+    it("deletes a transaction without a request body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(noContentResponse());
+
+        await deleteTransaction("transaction-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/transactions/transaction-id",
+        );
+        expect(init?.method).toBe("DELETE");
         expect(init?.body).toBeUndefined();
     });
 });

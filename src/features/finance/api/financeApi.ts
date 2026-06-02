@@ -11,6 +11,10 @@ import type {
     UpdateBucketRequestDto,
     CategoryUpdateRequestDto,
     Uuid,
+    FindTransactionsRequestDto,
+    TransactionCreateRequestDto,
+    TransactionResponseDto,
+    TransactionUpdateRequestDto,
 } from "./financeApiTypes";
 
 function encodePathSegment(value: string): string {
@@ -27,6 +31,30 @@ function buildBucketQuery(request?: FindBucketsRequestDto): string {
     });
 
     return `?${params.toString()}`;
+}
+
+function buildTransactionQuery(request?: FindTransactionsRequestDto): string {
+    const params = new URLSearchParams();
+
+    if (request?.from) {
+        params.set("from", request.from);
+    }
+
+    if (request?.to) {
+        params.set("to", request.to);
+    }
+
+    if (request?.accountId) {
+        params.set("accountId", request.accountId);
+    }
+
+    if (request?.simulationGroupId) {
+        params.set("simulationGroupId", request.simulationGroupId);
+    }
+
+    const query = params.toString();
+
+    return query ? `?${query}` : "";
 }
 
 export async function getAccounts(): Promise<AccountResponseDto[]> {
@@ -215,6 +243,53 @@ export async function reopenBucket(bucketId: Uuid): Promise<BucketResponseDto> {
         `/api/finance/buckets/${encodePathSegment(bucketId)}/reopen`,
         {
             method: "POST",
+        },
+    );
+}
+
+export async function listTransactions(
+    request?: FindTransactionsRequestDto,
+): Promise<TransactionResponseDto[]> {
+    return apiRequest<TransactionResponseDto[]>(
+        `/api/finance/transactions${buildTransactionQuery(request)}`,
+    );
+}
+
+export async function getTransaction(
+    transactionId: Uuid,
+): Promise<TransactionResponseDto> {
+    return apiRequest<TransactionResponseDto>(
+        `/api/finance/transactions/${encodePathSegment(transactionId)}`,
+    );
+}
+
+export async function createTransaction(
+    request: TransactionCreateRequestDto,
+): Promise<TransactionResponseDto> {
+    return apiRequest<TransactionResponseDto>("/api/finance/transactions", {
+        method: "POST",
+        body: request,
+    });
+}
+
+export async function updateTransaction(
+    transactionId: Uuid,
+    request: TransactionUpdateRequestDto,
+): Promise<TransactionResponseDto> {
+    return apiRequest<TransactionResponseDto>(
+        `/api/finance/transactions/${encodePathSegment(transactionId)}`,
+        {
+            method: "PUT",
+            body: request,
+        },
+    );
+}
+
+export async function deleteTransaction(transactionId: Uuid): Promise<void> {
+    return apiRequest<void>(
+        `/api/finance/transactions/${encodePathSegment(transactionId)}`,
+        {
+            method: "DELETE",
         },
     );
 }
