@@ -17,6 +17,7 @@ import { ROUTES } from "../../shared/constants/routes";
 import { RegisterPage } from "../../pages/auth/RegisterPage";
 import { VerifyEmailPage } from "../../pages/auth/VerifyEmailPage";
 import { ForgotPasswordPage } from "../../pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "../../pages/auth/ResetPasswordPage";
 
 export function AppRouter() {
     return (
@@ -66,9 +67,7 @@ export function AppRouter() {
                         />
                         <Route
                             path={ROUTES.auth.resetPassword}
-                            element={
-                                <AuthPlaceholderPage pageKey="resetPassword" />
-                            }
+                            element={<ResetPasswordPage />}
                         />
                         <Route
                             path={ROUTES.auth.acceptInvitation}

@@ -87,3 +87,8 @@ export type VerifyEmailResponseDto = {
 export type ForgotPasswordRequestDto = {
     email: string;
 };
+
+export type ResetPasswordRequestDto = {
+    resetToken: string;
+    newPassword: string;
+};

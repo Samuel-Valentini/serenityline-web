@@ -18,6 +18,7 @@ import type {
     VerifyEmailRequestDto,
     VerifyEmailResponseDto,
     ForgotPasswordRequestDto,
+    ResetPasswordRequestDto,
 } from "./authApiTypes";
 
 function isAuthenticatedResponse(
@@ -173,6 +174,16 @@ export async function forgotPassword(
     request: ForgotPasswordRequestDto,
 ): Promise<void> {
     return apiRequest<void>("/api/auth/forgot-password", {
+        method: "POST",
+        body: request,
+        includeCredentials: true,
+    });
+}
+
+export async function resetPassword(
+    request: ResetPasswordRequestDto,
+): Promise<void> {
+    return apiRequest<void>("/api/auth/reset-password", {
         method: "POST",
         body: request,
         includeCredentials: true,

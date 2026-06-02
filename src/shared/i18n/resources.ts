@@ -270,6 +270,29 @@ export const resources = {
             backToLogin: "Torna al login",
             backHome: "Torna alla home",
         },
+        authResetPassword: {
+            title: "Reimposta password",
+            subtitle:
+                "Scegli una nuova password per il tuo account SerenityLine.",
+            tokenLabel: "Token di reset",
+            tokenPlaceholder: "Incolla il token ricevuto via email",
+            passwordLabel: "Nuova password",
+            passwordPlaceholder: "Almeno 10 caratteri",
+            confirmPasswordLabel: "Conferma nuova password",
+            confirmPasswordPlaceholder: "Ripeti la nuova password",
+            submit: "Reimposta password",
+            submitting: "Reimpostazione in corso...",
+            successTitle: "Password reimpostata",
+            successText:
+                "La password è stata aggiornata correttamente. Ora puoi accedere con le nuove credenziali.",
+            errorTitle: "Reimpostazione non riuscita",
+            errorFallback:
+                "Non siamo riusciti a reimpostare la password. Il link potrebbe essere scaduto o già utilizzato.",
+            passwordMismatch: "Le password non coincidono.",
+            passwordTooShort: "La password deve contenere almeno 10 caratteri.",
+            goToLogin: "Vai al login",
+            backHome: "Torna alla home",
+        },
     },
     en: {
         common: {
@@ -536,6 +559,28 @@ export const resources = {
             errorFallback:
                 "We could not complete the request. Please try again in a moment.",
             backToLogin: "Back to login",
+            backHome: "Back to home",
+        },
+        authResetPassword: {
+            title: "Reset password",
+            subtitle: "Choose a new password for your SerenityLine account.",
+            tokenLabel: "Reset token",
+            tokenPlaceholder: "Paste the token you received by email",
+            passwordLabel: "New password",
+            passwordPlaceholder: "At least 10 characters",
+            confirmPasswordLabel: "Confirm new password",
+            confirmPasswordPlaceholder: "Repeat the new password",
+            submit: "Reset password",
+            submitting: "Resetting...",
+            successTitle: "Password reset",
+            successText:
+                "Your password has been updated successfully. You can now sign in with your new credentials.",
+            errorTitle: "Reset failed",
+            errorFallback:
+                "We could not reset your password. The link may have expired or already been used.",
+            passwordMismatch: "Passwords do not match.",
+            passwordTooShort: "Password must be at least 10 characters long.",
+            goToLogin: "Go to login",
             backHome: "Back to home",
         },
     },
