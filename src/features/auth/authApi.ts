@@ -20,6 +20,8 @@ import type {
     ForgotPasswordRequestDto,
     ResetPasswordRequestDto,
     AcceptUserInvitationRequestDto,
+    EmailVerificationRequiredResponseDto,
+    ResendEmailVerificationRequestDto,
 } from "./authApiTypes";
 
 function isAuthenticatedResponse(
@@ -192,13 +194,26 @@ export async function resetPassword(
 }
 
 export async function acceptUserInvitation(
-  request: AcceptUserInvitationRequestDto,
+    request: AcceptUserInvitationRequestDto,
 ): Promise<void> {
-  return apiRequest<void>("/api/auth/user-invitations/accept", {
-    method: "POST",
-    body: request,
-    includeCredentials: true,
-  });
+    return apiRequest<void>("/api/auth/user-invitations/accept", {
+        method: "POST",
+        body: request,
+        includeCredentials: true,
+    });
+}
+
+export async function resendEmailVerification(
+  request: ResendEmailVerificationRequestDto,
+): Promise<EmailVerificationRequiredResponseDto> {
+  return apiRequest<EmailVerificationRequiredResponseDto>(
+    "/api/auth/resend-email-verification",
+    {
+      method: "POST",
+      body: request,
+      includeCredentials: true,
+    },
+  );
 }
 
 setSessionRefreshHandler(async () => {

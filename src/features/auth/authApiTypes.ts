@@ -97,3 +97,15 @@ export type AcceptUserInvitationRequestDto = {
   token: string;
   password: string;
 };
+
+export type ResendEmailVerificationRequestDto = {
+  emailVerificationResendToken: string;
+};
+
+export type EmailVerificationRequiredResponseDto = {
+  userId: string;
+  email: string;
+  emailVerificationResendToken: string;
+  emailVerificationResendTokenExpiresAt: string;
+  emailVerificationResendAvailableAt: string;
+};

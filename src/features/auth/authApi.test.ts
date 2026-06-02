@@ -6,6 +6,7 @@ import {
     register,
     resetPassword,
     verifyEmail,
+    resendEmailVerification,
 } from "./authApi";
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
@@ -198,4 +199,29 @@ describe("authApi", () => {
             password: "Password1234",
         });
     });
+
+    it("sends the expected resend email verification body", async () => {
+  vi.mocked(fetch).mockResolvedValueOnce(
+    jsonResponse({
+      userId: "user-id",
+      email: "mario@example.com",
+      emailVerificationResendToken: "next-resend-token",
+      emailVerificationResendTokenExpiresAt: "2026-06-02T20:30:00Z",
+      emailVerificationResendAvailableAt: "2026-06-02T20:05:00Z",
+    }),
+  );
+
+  await resendEmailVerification({
+    emailVerificationResendToken: "resend-token",
+  });
+
+  const [, init] = getLastFetchCall();
+
+  expect(getLastRequestPath()).toBe("/api/auth/resend-email-verification");
+  expect(init?.method).toBe("POST");
+  expect(init?.credentials).toBe("include");
+  expect(getLastRequestBody()).toEqual({
+    emailVerificationResendToken: "resend-token",
+  });
+});
 });
