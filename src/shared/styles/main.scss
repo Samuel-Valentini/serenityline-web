@@ -70,3 +70,37 @@ h6 {
     color: var(--sl-color-text-muted);
     font-weight: 600;
 }
+
+.sl-auth-page {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    padding: 2rem 1rem;
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(216, 195, 155, 0.22),
+            transparent 32rem
+        ),
+        var(--sl-color-ivory);
+}
+
+.sl-auth-card {
+    width: min(100%, 28rem);
+    padding: 2rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1.25rem;
+    background: var(--sl-color-card);
+    box-shadow: 0 1.5rem 4rem rgba(5, 46, 34, 0.08);
+}
+
+.sl-auth-card .form-control {
+    min-height: 3rem;
+}
+
+.sl-auth-card .btn-primary {
+    --bs-btn-bg: var(--sl-color-green-900);
+    --bs-btn-border-color: var(--sl-color-green-900);
+    --bs-btn-hover-bg: var(--sl-color-green-800);
+    --bs-btn-hover-border-color: var(--sl-color-green-800);
+}

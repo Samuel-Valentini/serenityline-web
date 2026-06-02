@@ -5,11 +5,11 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 import {
     selectAuthError,
+    selectAuthTwoFactorChallenge,
     selectIsAuthenticated,
     selectIsCheckingAuth,
-    selectIsTwoFactorRequired,
 } from "../../features/auth/authSelectors";
-import { loginUser } from "../../features/auth/authThunks";
+import { verifyLogin2faCode } from "../../features/auth/authThunks";
 import { ROUTES } from "../../shared/constants/routes";
 
 type RouteLocationState = {
@@ -18,19 +18,18 @@ type RouteLocationState = {
     };
 };
 
-export function LoginPage() {
+export function Login2faPage() {
     const { t } = useTranslation("auth");
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const location = useLocation();
 
+    const challenge = useAppSelector(selectAuthTwoFactorChallenge);
     const isCheckingAuth = useAppSelector(selectIsCheckingAuth);
     const isAuthenticated = useAppSelector(selectIsAuthenticated);
-    const isTwoFactorRequired = useAppSelector(selectIsTwoFactorRequired);
     const authError = useAppSelector(selectAuthError);
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [code, setCode] = useState("");
 
     const locationState = location.state as RouteLocationState | null;
     const redirectTo = locationState?.from?.pathname ?? ROUTES.app.dashboard;
@@ -42,33 +41,36 @@ export function LoginPage() {
     }, [isAuthenticated, navigate, redirectTo]);
 
     useEffect(() => {
-        if (isTwoFactorRequired) {
-            navigate(ROUTES.auth.login2fa, {
-                replace: true,
-                state: location.state,
-            });
+        if (!challenge && !isCheckingAuth && !isAuthenticated) {
+            navigate(ROUTES.auth.login, { replace: true });
         }
-    }, [isTwoFactorRequired, location.state, navigate]);
+    }, [challenge, isAuthenticated, isCheckingAuth, navigate]);
 
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
+        if (!challenge) {
+            return;
+        }
+
         void dispatch(
-            loginUser({
-                email: email.trim(),
-                password,
+            verifyLogin2faCode({
+                challengeId: challenge.challengeId,
+                code: code.trim(),
             }),
         );
     }
 
     return (
         <main className="sl-auth-page">
-            <section className="sl-auth-card" aria-labelledby="login-title">
+            <section
+                className="sl-auth-card"
+                aria-labelledby="two-factor-title">
                 <p className="sl-eyebrow">SerenityLine</p>
 
-                <h1 id="login-title">{t("loginTitle")}</h1>
+                <h1 id="two-factor-title">{t("twoFactorTitle")}</h1>
 
-                <p className="text-muted mb-4">{t("loginSubtitle")}</p>
+                <p className="text-muted mb-4">{t("twoFactorSubtitle")}</p>
 
                 {authError ? (
                     <div className="alert alert-danger" role="alert">
@@ -80,55 +82,36 @@ export function LoginPage() {
 
                 <form className="d-grid gap-3" onSubmit={handleSubmit}>
                     <div>
-                        <label className="form-label" htmlFor="email">
-                            {t("emailLabel")}
+                        <label className="form-label" htmlFor="twoFactorCode">
+                            {t("twoFactorCodeLabel")}
                         </label>
                         <input
-                            autoComplete="email"
+                            autoComplete="one-time-code"
                             className="form-control"
                             disabled={isCheckingAuth}
-                            id="email"
-                            name="email"
-                            onChange={(event) => setEmail(event.target.value)}
-                            placeholder={t("emailPlaceholder")}
+                            id="twoFactorCode"
+                            inputMode="numeric"
+                            maxLength={8}
+                            name="twoFactorCode"
+                            onChange={(event) => setCode(event.target.value)}
+                            placeholder={t("twoFactorCodePlaceholder")}
                             required
-                            type="email"
-                            value={email}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="form-label" htmlFor="password">
-                            {t("passwordLabel")}
-                        </label>
-                        <input
-                            autoComplete="current-password"
-                            className="form-control"
-                            disabled={isCheckingAuth}
-                            id="password"
-                            name="password"
-                            onChange={(event) =>
-                                setPassword(event.target.value)
-                            }
-                            placeholder={t("passwordPlaceholder")}
-                            required
-                            type="password"
-                            value={password}
+                            value={code}
                         />
                     </div>
 
                     <button
                         className="btn btn-primary btn-lg"
-                        disabled={isCheckingAuth}
+                        disabled={isCheckingAuth || !challenge}
                         type="submit">
                         {isCheckingAuth
-                            ? t("loginSubmitting")
-                            : t("loginSubmit")}
+                            ? t("twoFactorSubmitting")
+                            : t("twoFactorSubmit")}
                     </button>
                 </form>
 
                 <div className="mt-4">
-                    <Link to={ROUTES.public.home}>{t("backToLogin")}</Link>
+                    <Link to={ROUTES.auth.login}>{t("backToLogin")}</Link>
                 </div>
             </section>
         </main>

@@ -6,6 +6,7 @@ import { AppLayout } from "../../layouts/AppLayout";
 import { AuthLayout } from "../../layouts/AuthLayout";
 import { PublicLayout } from "../../layouts/PublicLayout";
 import { DashboardPage } from "../../pages/app/DashboardPage";
+import { Login2faPage } from "../../pages/auth/Login2faPage";
 import { LoginPage } from "../../pages/auth/LoginPage";
 import { HomePage } from "../../pages/public/HomePage";
 import { ROUTES } from "../../shared/constants/routes";
@@ -23,6 +24,10 @@ export function AppRouter() {
                         <Route
                             path={ROUTES.auth.login}
                             element={<LoginPage />}
+                        />
+                        <Route
+                            path={ROUTES.auth.login2fa}
+                            element={<Login2faPage />}
                         />
                     </Route>
                 </Route>
