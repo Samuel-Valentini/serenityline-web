@@ -62,3 +62,11 @@ h6 {
 .sl-app-layout {
     min-height: 100vh;
 }
+
+.sl-full-page-loading {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    color: var(--sl-color-text-muted);
+    font-weight: 600;
+}

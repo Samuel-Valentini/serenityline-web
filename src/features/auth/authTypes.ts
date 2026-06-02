@@ -34,4 +34,5 @@ export type AuthState = {
     user: AuthUser | null;
     twoFactorChallenge: AuthTwoFactorChallenge | null;
     error: AuthError | null;
+    hasCheckedSession: boolean;
 };

@@ -25,13 +25,14 @@ describe("authSlice", () => {
         wantsInvoice: false,
     };
 
-    it("starts as anonymous", () => {
+    it("starts as anonymous and not checked", () => {
         const state = authReducer(undefined, { type: "unknown" });
 
         expect(state.status).toBe("anonymous");
         expect(state.user).toBeNull();
         expect(state.twoFactorChallenge).toBeNull();
         expect(state.error).toBeNull();
+        expect(state.hasCheckedSession).toBe(false);
     });
 
     it("sets checking status", () => {
@@ -39,6 +40,7 @@ describe("authSlice", () => {
 
         expect(state.status).toBe("checking");
         expect(state.error).toBeNull();
+        expect(state.hasCheckedSession).toBe(false);
     });
 
     it("sets authenticated user", () => {
@@ -48,6 +50,7 @@ describe("authSlice", () => {
         expect(state.user).toEqual(user);
         expect(state.twoFactorChallenge).toBeNull();
         expect(state.error).toBeNull();
+        expect(state.hasCheckedSession).toBe(true);
     });
 
     it("sets two factor required status", () => {
@@ -66,6 +69,7 @@ describe("authSlice", () => {
             codeExpiresAt: "2026-06-02T15:00:00Z",
         });
         expect(state.error).toBeNull();
+        expect(state.hasCheckedSession).toBe(true);
     });
 
     it("stores auth failure", () => {
@@ -84,6 +88,7 @@ describe("authSlice", () => {
             code: "auth.invalidCredentials",
             message: "Credenziali non valide.",
         });
+        expect(state.hasCheckedSession).toBe(true);
     });
 
     it("clears auth error", () => {
@@ -95,11 +100,13 @@ describe("authSlice", () => {
                 code: "auth.invalidCredentials",
                 message: "Credenziali non valide.",
             },
+            hasCheckedSession: true,
         };
 
         const state = authReducer(failedState, authErrorCleared());
 
         expect(state.error).toBeNull();
+        expect(state.hasCheckedSession).toBe(true);
     });
 
     it("logs out user", () => {
@@ -108,6 +115,7 @@ describe("authSlice", () => {
             user,
             twoFactorChallenge: null,
             error: null,
+            hasCheckedSession: true,
         };
 
         const state = authReducer(authenticatedState, authLoggedOut());
@@ -116,5 +124,6 @@ describe("authSlice", () => {
         expect(state.user).toBeNull();
         expect(state.twoFactorChallenge).toBeNull();
         expect(state.error).toBeNull();
+        expect(state.hasCheckedSession).toBe(true);
     });
 });

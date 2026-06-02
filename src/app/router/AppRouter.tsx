@@ -1,5 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 
+import { GuestRoute } from "../../features/auth/components/GuestRoute";
+import { ProtectedRoute } from "../../features/auth/components/ProtectedRoute";
 import { AppLayout } from "../../layouts/AppLayout";
 import { AuthLayout } from "../../layouts/AuthLayout";
 import { PublicLayout } from "../../layouts/PublicLayout";
@@ -16,16 +18,25 @@ export function AppRouter() {
                     <Route index element={<HomePage />} />
                 </Route>
 
-                <Route element={<AuthLayout />}>
-                    <Route path={ROUTES.auth.login} element={<LoginPage />} />
+                <Route element={<GuestRoute />}>
+                    <Route element={<AuthLayout />}>
+                        <Route
+                            path={ROUTES.auth.login}
+                            element={<LoginPage />}
+                        />
+                    </Route>
                 </Route>
 
-                <Route path={ROUTES.app.root} element={<AppLayout />}>
-                    <Route
-                        index
-                        element={<Navigate to={ROUTES.app.dashboard} replace />}
-                    />
-                    <Route path="dashboard" element={<DashboardPage />} />
+                <Route path={ROUTES.app.root} element={<ProtectedRoute />}>
+                    <Route element={<AppLayout />}>
+                        <Route
+                            index
+                            element={
+                                <Navigate to={ROUTES.app.dashboard} replace />
+                            }
+                        />
+                        <Route path="dashboard" element={<DashboardPage />} />
+                    </Route>
                 </Route>
             </Routes>
         </BrowserRouter>
