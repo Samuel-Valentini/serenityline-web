@@ -12,6 +12,8 @@ import type {
     Login2faRequiredResponseDto,
     LoginRequestDto,
     LoginResult,
+    RegisterRequestDto,
+    RegisterResponseDto,
     VerifyLogin2faRequestDto,
 } from "./authApiTypes";
 
@@ -118,6 +120,16 @@ export async function verifyLogin2fa(
     );
 
     return storeAuthenticatedResponse(response);
+}
+
+export async function register(
+    request: RegisterRequestDto,
+): Promise<RegisterResponseDto> {
+    return apiRequest<RegisterResponseDto>("/api/auth/register", {
+        method: "POST",
+        body: request,
+        includeCredentials: true,
+    });
 }
 
 export async function refreshSession(): Promise<AuthenticatedResponseDto> {

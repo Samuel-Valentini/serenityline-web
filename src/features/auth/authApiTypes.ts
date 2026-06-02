@@ -55,3 +55,23 @@ export type LoginResult =
           challengeId: string;
           codeExpiresAt: string;
       };
+
+export type RegisterRequestDto = {
+    userName: string;
+    email: string;
+    password: string;
+    preferredLocale?: "it-IT" | "en-US";
+    paymentEmailRemindersEnabled?: boolean;
+};
+
+export type RegisterResponseDto = {
+    userId: string;
+    userName: string;
+    email: string;
+    userGroupId: string;
+    userGroupName: string;
+    userRole: string;
+    preferredLocale: string;
+    wantsInvoice: boolean;
+    emailVerificationRequired: boolean;
+};

@@ -14,6 +14,7 @@ import { LoginPage } from "../../pages/auth/LoginPage";
 import { HomePage } from "../../pages/public/HomePage";
 import { PublicInfoPage } from "../../pages/public/PublicInfoPage";
 import { ROUTES } from "../../shared/constants/routes";
+import { RegisterPage } from "../../pages/auth/RegisterPage";
 
 export function AppRouter() {
     return (
@@ -51,7 +52,7 @@ export function AppRouter() {
                         />
                         <Route
                             path={ROUTES.auth.register}
-                            element={<AuthPlaceholderPage pageKey="register" />}
+                            element={<RegisterPage />}
                         />
                         <Route
                             path={ROUTES.auth.verifyEmail}

@@ -195,6 +195,35 @@ export const resources = {
             },
             backHome: "Torna alla home",
         },
+        authRegister: {
+            title: "Crea il tuo account",
+            subtitle:
+                "Inizia configurando il tuo spazio SerenityLine personale. Dopo la registrazione ti chiederemo di verificare l'email.",
+            userNameLabel: "Nome",
+            userNamePlaceholder: "Mario Rossi",
+            emailLabel: "Email",
+            emailPlaceholder: "nome@email.it",
+            passwordLabel: "Password",
+            passwordPlaceholder: "Almeno 10 caratteri",
+            confirmPasswordLabel: "Conferma password",
+            confirmPasswordPlaceholder: "Ripeti la password",
+            preferredLocaleLabel: "Lingua preferita",
+            preferredLocaleIt: "Italiano",
+            preferredLocaleEn: "Inglese",
+            paymentRemindersLabel:
+                "Mandami un'email di promemoria quando una spesa o un'entrata che ho registrato sta per scadere",
+            submit: "Crea account",
+            submitting: "Creazione account...",
+            errorTitle: "Registrazione non riuscita",
+            passwordMismatch: "Le password non coincidono.",
+            passwordTooShort: "La password deve contenere almeno 10 caratteri.",
+            successTitle: "Account creato",
+            successText:
+                "Abbiamo creato il tuo account. Controlla la tua email per completare la verifica.",
+            successEmailLabel: "Email registrata",
+            goToLogin: "Vai al login",
+            backHome: "Torna alla home",
+        },
         notFound: {
             title: "Pagina non trovata",
             subtitle:
@@ -394,6 +423,35 @@ export const resources = {
                 subtitle:
                     "Here you will accept an invitation to join a SerenityLine group.",
             },
+            backHome: "Back to home",
+        },
+        authRegister: {
+            title: "Create your account",
+            subtitle:
+                "Start by setting up your personal SerenityLine space. After registration, you will be asked to verify your email.",
+            userNameLabel: "Name",
+            userNamePlaceholder: "Jane Smith",
+            emailLabel: "Email",
+            emailPlaceholder: "name@email.com",
+            passwordLabel: "Password",
+            passwordPlaceholder: "At least 10 characters",
+            confirmPasswordLabel: "Confirm password",
+            confirmPasswordPlaceholder: "Repeat your password",
+            preferredLocaleLabel: "Preferred language",
+            preferredLocaleIt: "Italian",
+            preferredLocaleEn: "English",
+            paymentRemindersLabel:
+                "Send me an email reminder when a registered expense or income is coming due",
+            submit: "Create account",
+            submitting: "Creating account...",
+            errorTitle: "Registration failed",
+            passwordMismatch: "Passwords do not match.",
+            passwordTooShort: "Password must be at least 10 characters long.",
+            successTitle: "Account created",
+            successText:
+                "We created your account. Check your email to complete verification.",
+            successEmailLabel: "Registered email",
+            goToLogin: "Go to login",
             backHome: "Back to home",
         },
         notFound: {

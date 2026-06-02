@@ -498,3 +498,22 @@ h6 {
         grid-template-columns: 1fr;
     }
 }
+
+.sl-auth-summary {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1rem;
+    background: var(--sl-color-cream);
+}
+
+.sl-auth-summary span {
+    color: var(--sl-color-text-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.sl-auth-summary strong {
+    color: var(--sl-color-green-900);
+}
