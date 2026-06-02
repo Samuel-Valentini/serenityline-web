@@ -1,0 +1,33 @@
+export const ROUTES = {
+    public: {
+        home: "/",
+        howItWorks: "/come-funziona",
+        security: "/sicurezza",
+        privacy: "/privacy",
+        terms: "/termini",
+    },
+    auth: {
+        login: "/login",
+        register: "/registrazione",
+        verifyEmail: "/verifica-email",
+        forgotPassword: "/password-dimenticata",
+        resetPassword: "/reset-password",
+        login2fa: "/login/2fa",
+        acceptInvitation: "/invito/accetta",
+    },
+    app: {
+        root: "/app",
+        dashboard: "/app/dashboard",
+        serenityline: "/app/serenityline",
+        calendar: "/app/calendario",
+        transactions: "/app/transazioni",
+        recurringTransactions: "/app/ricorrenti",
+        simulations: "/app/simulazioni",
+        portfolios: "/app/portafogli",
+        accounts: "/app/conti",
+        balances: "/app/saldi",
+        categories: "/app/categorie",
+        settings: "/app/impostazioni",
+        administration: "/app/amministrazione",
+    },
+} as const;
