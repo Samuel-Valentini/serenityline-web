@@ -17,6 +17,7 @@ import type {
     VerifyLogin2faRequestDto,
     VerifyEmailRequestDto,
     VerifyEmailResponseDto,
+    ForgotPasswordRequestDto,
 } from "./authApiTypes";
 
 function isAuthenticatedResponse(
@@ -162,6 +163,16 @@ export async function verifyEmail(
     request: VerifyEmailRequestDto,
 ): Promise<VerifyEmailResponseDto> {
     return apiRequest<VerifyEmailResponseDto>("/api/auth/verify-email", {
+        method: "POST",
+        body: request,
+        includeCredentials: true,
+    });
+}
+
+export async function forgotPassword(
+    request: ForgotPasswordRequestDto,
+): Promise<void> {
+    return apiRequest<void>("/api/auth/forgot-password", {
         method: "POST",
         body: request,
         includeCredentials: true,

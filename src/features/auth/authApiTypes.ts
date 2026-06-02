@@ -77,9 +77,13 @@ export type RegisterResponseDto = {
 };
 
 export type VerifyEmailRequestDto = {
-  token: string;
+    token: string;
 };
 
 export type VerifyEmailResponseDto = {
-  emailVerified: boolean;
+    emailVerified: boolean;
+};
+
+export type ForgotPasswordRequestDto = {
+    email: string;
 };

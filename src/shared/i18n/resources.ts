@@ -253,6 +253,23 @@ export const resources = {
             goToLogin: "Vai al login",
             backHome: "Torna alla home",
         },
+        authForgotPassword: {
+            title: "Password dimenticata",
+            subtitle:
+                "Inserisci l'email associata al tuo account. Se l'indirizzo è presente, riceverai le istruzioni per reimpostare la password.",
+            emailLabel: "Email",
+            emailPlaceholder: "nome@email.it",
+            submit: "Invia istruzioni",
+            submitting: "Invio in corso...",
+            successTitle: "Controlla la tua email",
+            successText:
+                "Se l'indirizzo è associato a un account SerenityLine, riceverai un link per reimpostare la password.",
+            errorTitle: "Richiesta non riuscita",
+            errorFallback:
+                "Non siamo riusciti a completare la richiesta. Riprova tra qualche istante.",
+            backToLogin: "Torna al login",
+            backHome: "Torna alla home",
+        },
     },
     en: {
         common: {
@@ -502,6 +519,23 @@ export const resources = {
             errorFallback:
                 "We could not verify your email. The link may have expired or already been used.",
             goToLogin: "Go to login",
+            backHome: "Back to home",
+        },
+        authForgotPassword: {
+            title: "Forgot password",
+            subtitle:
+                "Enter the email associated with your account. If the address exists, you will receive instructions to reset your password.",
+            emailLabel: "Email",
+            emailPlaceholder: "name@email.com",
+            submit: "Send instructions",
+            submitting: "Sending...",
+            successTitle: "Check your email",
+            successText:
+                "If the address is associated with a SerenityLine account, you will receive a link to reset your password.",
+            errorTitle: "Request failed",
+            errorFallback:
+                "We could not complete the request. Please try again in a moment.",
+            backToLogin: "Back to login",
             backHome: "Back to home",
         },
     },
