@@ -15,6 +15,13 @@ import type {
     TransactionCreateRequestDto,
     TransactionResponseDto,
     TransactionUpdateRequestDto,
+    FindRecurringTransactionsRequestDto,
+    RecurringTransactionCreateRequestDto,
+    RecurringTransactionDeleteRequestDto,
+    RecurringTransactionHistoryResponseDto,
+    RecurringTransactionOccurrenceConfirmRequestDto,
+    RecurringTransactionPatchRequestDto,
+    RecurringTransactionResponseDto,
 } from "./financeApiTypes";
 
 function encodePathSegment(value: string): string {
@@ -51,6 +58,24 @@ function buildTransactionQuery(request?: FindTransactionsRequestDto): string {
     if (request?.simulationGroupId) {
         params.set("simulationGroupId", request.simulationGroupId);
     }
+
+    const query = params.toString();
+
+    return query ? `?${query}` : "";
+}
+
+function buildRecurringTransactionQuery(
+    request?: FindRecurringTransactionsRequestDto,
+): string {
+    const params = new URLSearchParams();
+
+    if (request?.accountId) {
+        params.set("accountId", request.accountId);
+    }
+
+    request?.simulationGroupIds?.forEach((simulationGroupId) => {
+        params.append("simulationGroupIds", simulationGroupId);
+    });
 
     const query = params.toString();
 
@@ -290,6 +315,93 @@ export async function deleteTransaction(transactionId: Uuid): Promise<void> {
         `/api/finance/transactions/${encodePathSegment(transactionId)}`,
         {
             method: "DELETE",
+        },
+    );
+}
+
+export async function listRecurringTransactions(
+    request?: FindRecurringTransactionsRequestDto,
+): Promise<RecurringTransactionResponseDto[]> {
+    return apiRequest<RecurringTransactionResponseDto[]>(
+        `/api/finance/recurring-transactions${buildRecurringTransactionQuery(
+            request,
+        )}`,
+    );
+}
+
+export async function getRecurringTransaction(
+    recurringTransactionId: Uuid,
+): Promise<RecurringTransactionResponseDto> {
+    return apiRequest<RecurringTransactionResponseDto>(
+        `/api/finance/recurring-transactions/${encodePathSegment(
+            recurringTransactionId,
+        )}`,
+    );
+}
+
+export async function createRecurringTransaction(
+    request: RecurringTransactionCreateRequestDto,
+): Promise<RecurringTransactionResponseDto> {
+    return apiRequest<RecurringTransactionResponseDto>(
+        "/api/finance/recurring-transactions",
+        {
+            method: "POST",
+            body: request,
+        },
+    );
+}
+
+export async function patchRecurringTransaction(
+    recurringTransactionId: Uuid,
+    request: RecurringTransactionPatchRequestDto,
+): Promise<RecurringTransactionResponseDto> {
+    return apiRequest<RecurringTransactionResponseDto>(
+        `/api/finance/recurring-transactions/${encodePathSegment(
+            recurringTransactionId,
+        )}`,
+        {
+            method: "PATCH",
+            body: request,
+        },
+    );
+}
+
+export async function deleteRecurringTransaction(
+    recurringTransactionId: Uuid,
+    request?: RecurringTransactionDeleteRequestDto,
+): Promise<void> {
+    return apiRequest<void>(
+        `/api/finance/recurring-transactions/${encodePathSegment(
+            recurringTransactionId,
+        )}`,
+        {
+            method: "DELETE",
+            body: request,
+        },
+    );
+}
+
+export async function getRecurringTransactionHistory(
+    recurringTransactionId: Uuid,
+): Promise<RecurringTransactionHistoryResponseDto> {
+    return apiRequest<RecurringTransactionHistoryResponseDto>(
+        `/api/finance/recurring-transactions/${encodePathSegment(
+            recurringTransactionId,
+        )}/history`,
+    );
+}
+
+export async function confirmRecurringTransactionOccurrence(
+    recurringTransactionId: Uuid,
+    request: RecurringTransactionOccurrenceConfirmRequestDto,
+): Promise<TransactionResponseDto> {
+    return apiRequest<TransactionResponseDto>(
+        `/api/finance/recurring-transactions/${encodePathSegment(
+            recurringTransactionId,
+        )}/occurrences/confirm`,
+        {
+            method: "POST",
+            body: request,
         },
     );
 }

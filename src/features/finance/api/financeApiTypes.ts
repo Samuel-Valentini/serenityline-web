@@ -142,3 +142,153 @@ export type FindTransactionsRequestDto = {
     accountId?: Uuid;
     simulationGroupId?: Uuid;
 };
+
+export type RecurrenceUnit = "DAY" | "WEEK" | "MONTH" | "YEAR";
+
+export type PaymentDateAdjustmentPolicy =
+    | "NONE"
+    | "PREVIOUS_BUSINESS_DAY"
+    | "NEXT_BUSINESS_DAY";
+
+export type RecurringTransactionResponseDto = {
+    recurringTransactionId: Uuid;
+
+    recurringTransactionAmountIsAdjustable: boolean;
+    recurringTransactionFirstPaymentDate: IsoDate;
+    recurringTransactionIsSimulated: boolean;
+    simulationGroupId: Uuid | null;
+    recurringTransactionReminderEnabled: boolean;
+    recurringTransactionReminderDaysBefore: number;
+    recurringTransactionCreatedAt: IsoDateTime;
+    recurringTransactionUpdatedAt: IsoDateTime;
+
+    recurringTransactionHistoryId: Uuid;
+    effectiveFrom: IsoDate;
+    effectiveTo: IsoDate | null;
+    dayOfUnit: number;
+    recurrenceInterval: number;
+    recurrenceUnit: RecurrenceUnit;
+    paymentDateAdjustmentPolicy: PaymentDateAdjustmentPolicy;
+    paymentAmount: MoneyAmount;
+    recurringTransactionEndDate: IsoDate | null;
+    finalPaymentAmount: MoneyAmount | null;
+
+    recurringTransactionDetailsHistoryId: Uuid;
+    recurringTransactionDescription: string;
+    categoryId: Uuid;
+    financialPriorityId: Uuid;
+    linkedAccountId: Uuid;
+    linkedCreditCardId: Uuid | null;
+    linkedBucketId: Uuid | null;
+    recurringTransactionAffectsAccountBalance: boolean;
+    recurringtransactionAffectsSerenityline: boolean;
+    recurringTransactionDetailsEffectiveFrom: IsoDate;
+};
+
+export type RecurringTransactionCreateRequestDto = {
+    recurringTransactionDescription: string;
+    paymentAmount: MoneyAmount;
+    recurringTransactionAmountIsAdjustable?: boolean | null;
+    recurringTransactionFirstPaymentDate: IsoDate;
+    recurrenceInterval: number;
+    recurrenceUnit: RecurrenceUnit;
+    paymentDateAdjustmentPolicy?: PaymentDateAdjustmentPolicy | null;
+    recurringTransactionEndDate?: IsoDate | null;
+    finalPaymentAmount?: MoneyAmount | null;
+    categoryId: Uuid;
+    financialPriorityId: Uuid;
+    linkedAccountId: Uuid;
+    linkedCreditCardId?: Uuid | null;
+    linkedBucketId?: Uuid | null;
+    recurringTransactionAffectsAccountBalance?: boolean | null;
+    recurringtransactionAffectsSerenityline?: boolean | null;
+    recurringTransactionIsSimulated?: boolean | null;
+    simulationGroupId?: Uuid | null;
+    recurringTransactionReminderEnabled?: boolean | null;
+    recurringTransactionReminderDaysBefore?: number | null;
+};
+
+export type RecurringTransactionRulePatchRequestDto = {
+    effectiveFrom?: IsoDate;
+    effectiveTo?: IsoDate | null;
+    dayOfUnit?: number;
+    paymentAmount?: MoneyAmount;
+    recurrenceInterval?: number;
+    recurrenceUnit?: RecurrenceUnit;
+    paymentDateAdjustmentPolicy?: PaymentDateAdjustmentPolicy;
+    recurringTransactionEndDate?: IsoDate | null;
+    finalPaymentAmount?: MoneyAmount | null;
+};
+
+export type RecurringTransactionDetailsPatchRequestDto = {
+    effectiveFrom?: IsoDate;
+    recurringTransactionDescription?: string;
+    categoryId?: Uuid;
+    financialPriorityId?: Uuid;
+    linkedAccountId?: Uuid;
+    linkedCreditCardId?: Uuid | null;
+    linkedBucketId?: Uuid | null;
+    recurringTransactionAffectsAccountBalance?: boolean;
+    recurringtransactionAffectsSerenityline?: boolean;
+};
+
+export type RecurringTransactionPatchRequestDto = {
+    recurringTransactionFirstPaymentDate?: IsoDate;
+    recurringTransactionAmountIsAdjustable?: boolean;
+    recurringTransactionIsSimulated?: boolean;
+    simulationGroupId?: Uuid | null;
+    recurringTransactionReminderEnabled?: boolean;
+    recurringTransactionReminderDaysBefore?: number;
+    rule?: RecurringTransactionRulePatchRequestDto;
+    details?: RecurringTransactionDetailsPatchRequestDto;
+};
+
+export type RecurringTransactionDeleteRequestDto = {
+    endDate?: IsoDate;
+    finalPaymentAmount?: MoneyAmount | null;
+};
+
+export type RecurringTransactionOccurrenceConfirmRequestDto = {
+    logicalDate?: IsoDate | null;
+    transactionAmount?: MoneyAmount | null;
+    transactionChargeDate?: IsoDate | null;
+};
+
+export type FindRecurringTransactionsRequestDto = {
+    accountId?: Uuid;
+    simulationGroupIds?: Uuid[];
+};
+
+export type RecurringTransactionRuleHistoryItemResponseDto = {
+    recurringTransactionHistoryId: Uuid;
+    effectiveFrom: IsoDate;
+    effectiveTo: IsoDate | null;
+    dayOfUnit: number;
+    recurrenceInterval: number;
+    recurrenceUnit: RecurrenceUnit;
+    paymentDateAdjustmentPolicy: PaymentDateAdjustmentPolicy;
+    paymentAmount: MoneyAmount;
+    recurringTransactionEndDate: IsoDate | null;
+    finalPaymentAmount: MoneyAmount | null;
+    createdAt: IsoDateTime;
+};
+
+export type RecurringTransactionDetailsHistoryItemResponseDto = {
+    recurringTransactionDetailsHistoryId: Uuid;
+    effectiveFrom: IsoDate;
+    recurringTransactionDescription: string;
+    categoryId: Uuid;
+    financialPriorityId: Uuid;
+    linkedAccountId: Uuid;
+    linkedCreditCardId: Uuid | null;
+    linkedBucketId: Uuid | null;
+    recurringTransactionAffectsAccountBalance: boolean;
+    recurringtransactionAffectsSerenityline: boolean;
+    createdAt: IsoDateTime;
+};
+
+export type RecurringTransactionHistoryResponseDto = {
+    recurringTransactionId: Uuid;
+    ruleHistory: RecurringTransactionRuleHistoryItemResponseDto[];
+    detailsHistory: RecurringTransactionDetailsHistoryItemResponseDto[];
+};

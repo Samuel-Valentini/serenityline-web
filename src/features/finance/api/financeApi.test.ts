@@ -21,6 +21,13 @@ import {
     getTransaction,
     listTransactions,
     updateTransaction,
+    confirmRecurringTransactionOccurrence,
+    createRecurringTransaction,
+    deleteRecurringTransaction,
+    getRecurringTransaction,
+    getRecurringTransactionHistory,
+    listRecurringTransactions,
+    patchRecurringTransaction,
 } from "./financeApi";
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
@@ -457,5 +464,240 @@ describe("financeApi", () => {
         );
         expect(init?.method).toBe("DELETE");
         expect(init?.body).toBeUndefined();
+    });
+
+    it("adds the expected recurring transaction query parameters", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse([]));
+
+        await listRecurringTransactions({
+            accountId: "account-id",
+            simulationGroupIds: ["simulation-group-1", "simulation-group-2"],
+        });
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/recurring-transactions",
+        );
+        expect(getLastRequestSearch()).toBe(
+            "?accountId=account-id&simulationGroupIds=simulation-group-1&simulationGroupIds=simulation-group-2",
+        );
+    });
+
+    it("gets a recurring transaction by id", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await getRecurringTransaction("recurring-transaction-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/recurring-transactions/recurring-transaction-id",
+        );
+        expect(init?.method).toBe("GET");
+    });
+
+    it("sends the expected create recurring transaction body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await createRecurringTransaction({
+            recurringTransactionDescription: "Affitto mensile",
+            paymentAmount: -850,
+            recurringTransactionAmountIsAdjustable: false,
+            recurringTransactionFirstPaymentDate: "2026-06-05",
+            recurrenceInterval: 1,
+            recurrenceUnit: "MONTH",
+            paymentDateAdjustmentPolicy: "NEXT_BUSINESS_DAY",
+            recurringTransactionEndDate: null,
+            finalPaymentAmount: null,
+            categoryId: "category-id",
+            financialPriorityId: "financial-priority-id",
+            linkedAccountId: "account-id",
+            linkedCreditCardId: null,
+            linkedBucketId: "bucket-id",
+            recurringTransactionAffectsAccountBalance: true,
+            recurringtransactionAffectsSerenityline: true,
+            recurringTransactionIsSimulated: false,
+            simulationGroupId: null,
+            recurringTransactionReminderEnabled: true,
+            recurringTransactionReminderDaysBefore: 5,
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/recurring-transactions",
+        );
+        expect(init?.method).toBe("POST");
+        expect(getLastRequestBody()).toEqual({
+            recurringTransactionDescription: "Affitto mensile",
+            paymentAmount: -850,
+            recurringTransactionAmountIsAdjustable: false,
+            recurringTransactionFirstPaymentDate: "2026-06-05",
+            recurrenceInterval: 1,
+            recurrenceUnit: "MONTH",
+            paymentDateAdjustmentPolicy: "NEXT_BUSINESS_DAY",
+            recurringTransactionEndDate: null,
+            finalPaymentAmount: null,
+            categoryId: "category-id",
+            financialPriorityId: "financial-priority-id",
+            linkedAccountId: "account-id",
+            linkedCreditCardId: null,
+            linkedBucketId: "bucket-id",
+            recurringTransactionAffectsAccountBalance: true,
+            recurringtransactionAffectsSerenityline: true,
+            recurringTransactionIsSimulated: false,
+            simulationGroupId: null,
+            recurringTransactionReminderEnabled: true,
+            recurringTransactionReminderDaysBefore: 5,
+        });
+    });
+
+    it("sends the expected patch recurring transaction body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await patchRecurringTransaction("recurring-transaction-id", {
+            recurringTransactionFirstPaymentDate: "2026-06-10",
+            recurringTransactionAmountIsAdjustable: true,
+            recurringTransactionIsSimulated: true,
+            simulationGroupId: "simulation-group-id",
+            recurringTransactionReminderEnabled: true,
+            recurringTransactionReminderDaysBefore: 3,
+            rule: {
+                effectiveFrom: "2026-06-10",
+                effectiveTo: null,
+                dayOfUnit: 10,
+                paymentAmount: -900,
+                recurrenceInterval: 1,
+                recurrenceUnit: "MONTH",
+                paymentDateAdjustmentPolicy: "PREVIOUS_BUSINESS_DAY",
+                recurringTransactionEndDate: null,
+                finalPaymentAmount: null,
+            },
+            details: {
+                effectiveFrom: "2026-06-10",
+                recurringTransactionDescription: "Affitto aggiornato",
+                categoryId: "category-id",
+                financialPriorityId: "financial-priority-id",
+                linkedAccountId: "account-id",
+                linkedCreditCardId: null,
+                linkedBucketId: "bucket-id",
+                recurringTransactionAffectsAccountBalance: true,
+                recurringtransactionAffectsSerenityline: true,
+            },
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/recurring-transactions/recurring-transaction-id",
+        );
+        expect(init?.method).toBe("PATCH");
+        expect(getLastRequestBody()).toEqual({
+            recurringTransactionFirstPaymentDate: "2026-06-10",
+            recurringTransactionAmountIsAdjustable: true,
+            recurringTransactionIsSimulated: true,
+            simulationGroupId: "simulation-group-id",
+            recurringTransactionReminderEnabled: true,
+            recurringTransactionReminderDaysBefore: 3,
+            rule: {
+                effectiveFrom: "2026-06-10",
+                effectiveTo: null,
+                dayOfUnit: 10,
+                paymentAmount: -900,
+                recurrenceInterval: 1,
+                recurrenceUnit: "MONTH",
+                paymentDateAdjustmentPolicy: "PREVIOUS_BUSINESS_DAY",
+                recurringTransactionEndDate: null,
+                finalPaymentAmount: null,
+            },
+            details: {
+                effectiveFrom: "2026-06-10",
+                recurringTransactionDescription: "Affitto aggiornato",
+                categoryId: "category-id",
+                financialPriorityId: "financial-priority-id",
+                linkedAccountId: "account-id",
+                linkedCreditCardId: null,
+                linkedBucketId: "bucket-id",
+                recurringTransactionAffectsAccountBalance: true,
+                recurringtransactionAffectsSerenityline: true,
+            },
+        });
+    });
+
+    it("deletes a recurring transaction without a request body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(noContentResponse());
+
+        await deleteRecurringTransaction("recurring-transaction-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/recurring-transactions/recurring-transaction-id",
+        );
+        expect(init?.method).toBe("DELETE");
+        expect(init?.body).toBeUndefined();
+    });
+
+    it("deletes a recurring transaction with final rule body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(noContentResponse());
+
+        await deleteRecurringTransaction("recurring-transaction-id", {
+            endDate: "2026-12-31",
+            finalPaymentAmount: -425,
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/recurring-transactions/recurring-transaction-id",
+        );
+        expect(init?.method).toBe("DELETE");
+        expect(getLastRequestBody()).toEqual({
+            endDate: "2026-12-31",
+            finalPaymentAmount: -425,
+        });
+    });
+
+    it("gets recurring transaction history", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(
+            jsonResponse({
+                recurringTransactionId: "recurring-transaction-id",
+                ruleHistory: [],
+                detailsHistory: [],
+            }),
+        );
+
+        await getRecurringTransactionHistory("recurring-transaction-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/recurring-transactions/recurring-transaction-id/history",
+        );
+        expect(init?.method).toBe("GET");
+    });
+
+    it("confirms a recurring transaction occurrence", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await confirmRecurringTransactionOccurrence(
+            "recurring-transaction-id",
+            {
+                logicalDate: "2026-06-05",
+                transactionAmount: -850,
+                transactionChargeDate: "2026-06-05",
+            },
+        );
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/recurring-transactions/recurring-transaction-id/occurrences/confirm",
+        );
+        expect(init?.method).toBe("POST");
+        expect(getLastRequestBody()).toEqual({
+            logicalDate: "2026-06-05",
+            transactionAmount: -850,
+            transactionChargeDate: "2026-06-05",
+        });
     });
 });
