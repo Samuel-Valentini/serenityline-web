@@ -15,6 +15,8 @@ import type {
     RegisterRequestDto,
     RegisterResponseDto,
     VerifyLogin2faRequestDto,
+    VerifyEmailRequestDto,
+    VerifyEmailResponseDto,
 } from "./authApiTypes";
 
 function isAuthenticatedResponse(
@@ -153,6 +155,16 @@ export async function logout(): Promise<void> {
 export async function getCurrentUser(): Promise<CurrentUserResponseDto> {
     return apiRequest<CurrentUserResponseDto>("/api/me", {
         requiresAuth: true,
+    });
+}
+
+export async function verifyEmail(
+    request: VerifyEmailRequestDto,
+): Promise<VerifyEmailResponseDto> {
+    return apiRequest<VerifyEmailResponseDto>("/api/auth/verify-email", {
+        method: "POST",
+        body: request,
+        includeCredentials: true,
     });
 }
 

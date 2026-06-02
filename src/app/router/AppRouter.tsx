@@ -15,6 +15,7 @@ import { HomePage } from "../../pages/public/HomePage";
 import { PublicInfoPage } from "../../pages/public/PublicInfoPage";
 import { ROUTES } from "../../shared/constants/routes";
 import { RegisterPage } from "../../pages/auth/RegisterPage";
+import { VerifyEmailPage } from "../../pages/auth/VerifyEmailPage";
 
 export function AppRouter() {
     return (
@@ -56,9 +57,7 @@ export function AppRouter() {
                         />
                         <Route
                             path={ROUTES.auth.verifyEmail}
-                            element={
-                                <AuthPlaceholderPage pageKey="verifyEmail" />
-                            }
+                            element={<VerifyEmailPage />}
                         />
                         <Route
                             path={ROUTES.auth.forgotPassword}

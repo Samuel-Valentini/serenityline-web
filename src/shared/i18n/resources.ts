@@ -230,6 +230,29 @@ export const resources = {
                 "La pagina che stai cercando non esiste o è stata spostata.",
             backHome: "Torna alla home",
         },
+        authVerifyEmail: {
+            title: "Verifica email",
+            subtitle:
+                "Verifica il tuo indirizzo email per completare l'attivazione.",
+            manualTitle: "Inserisci il token di verifica",
+            manualText:
+                "Se il link non si è aperto correttamente, incolla qui il token ricevuto via email.",
+            tokenLabel: "Token di verifica",
+            tokenPlaceholder: "Incolla il token ricevuto via email",
+            submit: "Verifica email",
+            submitting: "Verifica in corso...",
+            verifyingTitle: "Verifica in corso",
+            verifyingText:
+                "Attendi qualche istante mentre completiamo la verifica.",
+            successTitle: "Email verificata",
+            successText:
+                "Il tuo indirizzo email è stato verificato correttamente. Ora puoi accedere a SerenityLine.",
+            errorTitle: "Verifica non riuscita",
+            errorFallback:
+                "Non siamo riusciti a verificare l'email. Il link potrebbe essere scaduto o già utilizzato.",
+            goToLogin: "Vai al login",
+            backHome: "Torna alla home",
+        },
     },
     en: {
         common: {
@@ -458,6 +481,27 @@ export const resources = {
             title: "Page not found",
             subtitle:
                 "The page you are looking for does not exist or has been moved.",
+            backHome: "Back to home",
+        },
+        authVerifyEmail: {
+            title: "Verify email",
+            subtitle: "Verify your email address to complete activation.",
+            manualTitle: "Enter the verification token",
+            manualText:
+                "If the link did not open correctly, paste the token you received by email here.",
+            tokenLabel: "Verification token",
+            tokenPlaceholder: "Paste the token you received by email",
+            submit: "Verify email",
+            submitting: "Verifying...",
+            verifyingTitle: "Verification in progress",
+            verifyingText: "Please wait while we complete the verification.",
+            successTitle: "Email verified",
+            successText:
+                "Your email address has been verified successfully. You can now sign in to SerenityLine.",
+            errorTitle: "Verification failed",
+            errorFallback:
+                "We could not verify your email. The link may have expired or already been used.",
+            goToLogin: "Go to login",
             backHome: "Back to home",
         },
     },

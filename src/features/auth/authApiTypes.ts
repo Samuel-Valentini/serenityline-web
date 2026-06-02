@@ -75,3 +75,11 @@ export type RegisterResponseDto = {
     wantsInvoice: boolean;
     emailVerificationRequired: boolean;
 };
+
+export type VerifyEmailRequestDto = {
+  token: string;
+};
+
+export type VerifyEmailResponseDto = {
+  emailVerified: boolean;
+};
