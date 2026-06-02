@@ -1,12 +1,13 @@
+import { useTranslation } from "react-i18next";
+
 export function HomePage() {
+    const { t } = useTranslation("common");
+
     return (
         <main className="container py-5">
-            <p className="sl-eyebrow">Pianifica, prevedi, vivi sereno.</p>
-            <h1>La tua serenità non ha prezzo.</h1>
-            <p className="lead">
-                SerenityLine ti aiuta a visualizzare la tua liquidità futura e a
-                prendere decisioni con più chiarezza.
-            </p>
+            <p className="sl-eyebrow">{t("eyebrow")}</p>
+            <h1>{t("claim")}</h1>
+            <p className="lead">{t("homeIntro")}</p>
         </main>
     );
 }

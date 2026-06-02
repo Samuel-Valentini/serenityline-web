@@ -1,8 +1,12 @@
+import { useTranslation } from "react-i18next";
+
 export function LoginPage() {
+    const { t } = useTranslation("auth");
+
     return (
         <main className="container py-5">
-            <h1>Accedi a SerenityLine</h1>
-            <p>Il flusso di login verrà implementato nella fase auth.</p>
+            <h1>{t("loginTitle")}</h1>
+            <p>{t("loginPlaceholder")}</p>
         </main>
     );
 }
