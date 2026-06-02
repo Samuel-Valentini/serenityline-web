@@ -5,11 +5,23 @@ export type AuthStatus =
     | "twoFactorRequired";
 
 export type AuthUser = {
-    id: string;
+    userId: string;
+    userName: string;
     email: string;
-    displayName?: string | null;
-    emailVerified: boolean;
-    twoFactorEnabled: boolean;
+    userGroupId: string;
+    userGroupName: string;
+    userRole: string;
+    userPlatformRole: string;
+    preferredLocale: string;
+    preferredTheme: string;
+    wantsInvoice: boolean;
+    emailTwoFactorEnabled?: boolean;
+    paymentEmailRemindersEnabled?: boolean;
+};
+
+export type AuthTwoFactorChallenge = {
+    challengeId: string;
+    codeExpiresAt: string;
 };
 
 export type AuthError = {
@@ -20,5 +32,6 @@ export type AuthError = {
 export type AuthState = {
     status: AuthStatus;
     user: AuthUser | null;
+    twoFactorChallenge: AuthTwoFactorChallenge | null;
     error: AuthError | null;
 };

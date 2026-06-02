@@ -13,11 +13,16 @@ import type { AuthState, AuthUser } from "./authTypes";
 
 describe("authSlice", () => {
     const user: AuthUser = {
-        id: "user-id",
+        userId: "user-id",
+        userName: "Samuel",
         email: "samuel@example.com",
-        displayName: "Samuel",
-        emailVerified: true,
-        twoFactorEnabled: false,
+        userGroupId: "group-id",
+        userGroupName: "Famiglia Valentini",
+        userRole: "OWNER",
+        userPlatformRole: "USER",
+        preferredLocale: "it-IT",
+        preferredTheme: "SYSTEM",
+        wantsInvoice: false,
     };
 
     it("starts as anonymous", () => {
@@ -25,6 +30,7 @@ describe("authSlice", () => {
 
         expect(state.status).toBe("anonymous");
         expect(state.user).toBeNull();
+        expect(state.twoFactorChallenge).toBeNull();
         expect(state.error).toBeNull();
     });
 
@@ -40,14 +46,25 @@ describe("authSlice", () => {
 
         expect(state.status).toBe("authenticated");
         expect(state.user).toEqual(user);
+        expect(state.twoFactorChallenge).toBeNull();
         expect(state.error).toBeNull();
     });
 
     it("sets two factor required status", () => {
-        const state = authReducer(undefined, authTwoFactorRequired());
+        const state = authReducer(
+            undefined,
+            authTwoFactorRequired({
+                challengeId: "challenge-id",
+                codeExpiresAt: "2026-06-02T15:00:00Z",
+            }),
+        );
 
         expect(state.status).toBe("twoFactorRequired");
         expect(state.user).toBeNull();
+        expect(state.twoFactorChallenge).toEqual({
+            challengeId: "challenge-id",
+            codeExpiresAt: "2026-06-02T15:00:00Z",
+        });
         expect(state.error).toBeNull();
     });
 
@@ -62,6 +79,7 @@ describe("authSlice", () => {
 
         expect(state.status).toBe("anonymous");
         expect(state.user).toBeNull();
+        expect(state.twoFactorChallenge).toBeNull();
         expect(state.error).toEqual({
             code: "auth.invalidCredentials",
             message: "Credenziali non valide.",
@@ -72,6 +90,7 @@ describe("authSlice", () => {
         const failedState: AuthState = {
             status: "anonymous",
             user: null,
+            twoFactorChallenge: null,
             error: {
                 code: "auth.invalidCredentials",
                 message: "Credenziali non valide.",
@@ -87,6 +106,7 @@ describe("authSlice", () => {
         const authenticatedState: AuthState = {
             status: "authenticated",
             user,
+            twoFactorChallenge: null,
             error: null,
         };
 
@@ -94,6 +114,7 @@ describe("authSlice", () => {
 
         expect(state.status).toBe("anonymous");
         expect(state.user).toBeNull();
+        expect(state.twoFactorChallenge).toBeNull();
         expect(state.error).toBeNull();
     });
 });
