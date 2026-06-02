@@ -92,3 +92,8 @@ export type ResetPasswordRequestDto = {
     resetToken: string;
     newPassword: string;
 };
+
+export type AcceptUserInvitationRequestDto = {
+  token: string;
+  password: string;
+};

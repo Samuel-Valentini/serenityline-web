@@ -8,7 +8,6 @@ import { PublicLayout } from "../../layouts/PublicLayout";
 import { NotFoundPage } from "../../pages/NotFoundPage";
 import { AppPlaceholderPage } from "../../pages/app/AppPlaceholderPage";
 import { DashboardPage } from "../../pages/app/DashboardPage";
-import { AuthPlaceholderPage } from "../../pages/auth/AuthPlaceholderPage";
 import { Login2faPage } from "../../pages/auth/Login2faPage";
 import { LoginPage } from "../../pages/auth/LoginPage";
 import { HomePage } from "../../pages/public/HomePage";
@@ -18,6 +17,7 @@ import { RegisterPage } from "../../pages/auth/RegisterPage";
 import { VerifyEmailPage } from "../../pages/auth/VerifyEmailPage";
 import { ForgotPasswordPage } from "../../pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "../../pages/auth/ResetPasswordPage";
+import { AcceptInvitationPage } from "../../pages/auth/AcceptInvitationPage";
 
 export function AppRouter() {
     return (
@@ -71,9 +71,7 @@ export function AppRouter() {
                         />
                         <Route
                             path={ROUTES.auth.acceptInvitation}
-                            element={
-                                <AuthPlaceholderPage pageKey="acceptInvitation" />
-                            }
+                            element={<AcceptInvitationPage />}
                         />
                     </Route>
                 </Route>

@@ -293,6 +293,29 @@ export const resources = {
             goToLogin: "Vai al login",
             backHome: "Torna alla home",
         },
+        authAcceptInvitation: {
+            title: "Accetta invito",
+            subtitle:
+                "Completa l'accesso al gruppo SerenityLine impostando la tua password.",
+            tokenLabel: "Token invito",
+            tokenPlaceholder: "Incolla il token ricevuto via email",
+            passwordLabel: "Password",
+            passwordPlaceholder: "Almeno 10 caratteri",
+            confirmPasswordLabel: "Conferma password",
+            confirmPasswordPlaceholder: "Ripeti la password",
+            submit: "Accetta invito",
+            submitting: "Accettazione in corso...",
+            successTitle: "Invito accettato",
+            successText:
+                "Il tuo accesso è stato configurato correttamente. Ora puoi accedere a SerenityLine.",
+            errorTitle: "Invito non accettato",
+            errorFallback:
+                "Non siamo riusciti ad accettare l'invito. Il link potrebbe essere scaduto o già utilizzato.",
+            passwordMismatch: "Le password non coincidono.",
+            passwordTooShort: "La password deve contenere almeno 10 caratteri.",
+            goToLogin: "Vai al login",
+            backHome: "Torna alla home",
+        },
     },
     en: {
         common: {
@@ -578,6 +601,29 @@ export const resources = {
             errorTitle: "Reset failed",
             errorFallback:
                 "We could not reset your password. The link may have expired or already been used.",
+            passwordMismatch: "Passwords do not match.",
+            passwordTooShort: "Password must be at least 10 characters long.",
+            goToLogin: "Go to login",
+            backHome: "Back to home",
+        },
+        authAcceptInvitation: {
+            title: "Accept invitation",
+            subtitle:
+                "Complete your access to the SerenityLine group by setting your password.",
+            tokenLabel: "Invitation token",
+            tokenPlaceholder: "Paste the token you received by email",
+            passwordLabel: "Password",
+            passwordPlaceholder: "At least 10 characters",
+            confirmPasswordLabel: "Confirm password",
+            confirmPasswordPlaceholder: "Repeat the password",
+            submit: "Accept invitation",
+            submitting: "Accepting...",
+            successTitle: "Invitation accepted",
+            successText:
+                "Your access has been configured successfully. You can now sign in to SerenityLine.",
+            errorTitle: "Invitation not accepted",
+            errorFallback:
+                "We could not accept the invitation. The link may have expired or already been used.",
             passwordMismatch: "Passwords do not match.",
             passwordTooShort: "Password must be at least 10 characters long.",
             goToLogin: "Go to login",
