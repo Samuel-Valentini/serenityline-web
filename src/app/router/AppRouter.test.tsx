@@ -9,6 +9,10 @@ import {
 } from "../../features/auth/authSlice";
 import { AppRouter } from "./AppRouter";
 import type { AuthUser } from "../../features/auth/authTypes";
+import {
+    accountCleared,
+    accountLoaded,
+} from "../../features/account/accountSlice";
 
 describe("AppRouter", () => {
     const user: AuthUser = {
@@ -26,6 +30,7 @@ describe("AppRouter", () => {
 
     beforeEach(() => {
         store.dispatch(authLoggedOut());
+        store.dispatch(accountCleared());
     });
 
     function renderRouterAt(path: string) {
@@ -91,4 +96,28 @@ describe("AppRouter", () => {
             }),
         ).toBeInTheDocument();
     });
+
+    it("renders the current user from account state in the app shell", () => {
+    store.dispatch(authAuthenticated(user));
+    store.dispatch(
+        accountLoaded({
+            userId: "account-user-id",
+            userName: "Utente da api me",
+            email: "account-user@example.com",
+            userGroupId: "group-id",
+            userGroupName: "Famiglia Valentini",
+            userRole: "OWNER",
+            userPlatformRole: "USER",
+            preferredLocale: "it-IT",
+            preferredTheme: "DEFAULT",
+            wantsInvoice: false,
+            emailTwoFactorEnabled: false,
+            paymentEmailRemindersEnabled: true,
+        }),
+    );
+
+    renderRouterAt("/app/dashboard");
+
+    expect(screen.getByText("Utente da api me")).toBeInTheDocument();
+});
 });
