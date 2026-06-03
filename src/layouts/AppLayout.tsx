@@ -59,7 +59,7 @@ const appNavigationItems = [
 ] as const;
 
 export function AppLayout() {
-    const { t } = useTranslation("appShell");
+    const { t } = useTranslation(["appShell", "common"]);
     const dispatch = useAppDispatch();
     const authUser = useAppSelector(selectAuthUser);
     const currentUser = useAppSelector(selectCurrentUser);
@@ -81,7 +81,7 @@ export function AppLayout() {
                 <div>
                     <p className="sl-app-brand-eyebrow">SerenityLine</p>
                     <strong className="sl-app-brand">
-                        La tua serenità non ha prezzo.
+                        {t("common:claim")}
                     </strong>
                 </div>
 

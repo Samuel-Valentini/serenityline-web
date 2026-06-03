@@ -18,6 +18,7 @@ import { VerifyEmailPage } from "../../pages/auth/VerifyEmailPage";
 import { ForgotPasswordPage } from "../../pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "../../pages/auth/ResetPasswordPage";
 import { AcceptInvitationPage } from "../../pages/auth/AcceptInvitationPage";
+import { SettingsPage } from "../../pages/app/SettingsPage";
 
 export function AppRouter() {
     return (
@@ -133,10 +134,7 @@ export function AppRouter() {
                                 <AppPlaceholderPage pageKey="categories" />
                             }
                         />
-                        <Route
-                            path="impostazioni"
-                            element={<AppPlaceholderPage pageKey="settings" />}
-                        />
+                        <Route path="impostazioni" element={<SettingsPage />} />
                         <Route
                             path="amministrazione"
                             element={

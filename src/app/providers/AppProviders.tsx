@@ -6,6 +6,7 @@ import { i18n } from "../../shared/i18n/i18n";
 import { AuthSessionBootstrap } from "./AuthSessionBootstrap";
 import { store } from "../store/store";
 import { AccountDataBootstrap } from "../../features/account/AccountDataBootstrap";
+import { AppLocaleBootstrap } from "./AppLocaleBootstrap";
 
 type AppProvidersProps = {
     children: ReactNode;
@@ -23,6 +24,7 @@ export function AppProviders({
                     <>
                         <AuthSessionBootstrap />
                         <AccountDataBootstrap />
+                        <AppLocaleBootstrap />
                     </>
                 ) : null}
                 {children}

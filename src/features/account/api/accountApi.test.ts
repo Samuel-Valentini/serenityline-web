@@ -60,6 +60,12 @@ function getLastRequestBody(): unknown {
     return JSON.parse(init.body);
 }
 
+function getLastRequestHeaders(): Headers {
+    const [, init] = getLastFetchCall();
+
+    return new Headers(init?.headers);
+}
+
 describe("accountApi", () => {
     beforeEach(() => {
         vi.stubGlobal("fetch", vi.fn());
@@ -93,6 +99,9 @@ describe("accountApi", () => {
 
         expect(getLastRequestPath()).toBe("/api/me");
         expect(init?.method).toBe("GET");
+        expect(getLastRequestHeaders().get("Authorization")).toBe(
+            "Bearer access-token",
+        );
     });
 
     it("sends the expected change password body and includes credentials to clear refresh cookie", async () => {

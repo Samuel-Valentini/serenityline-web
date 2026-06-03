@@ -17,7 +17,9 @@ import type {
 } from "./accountApiTypes";
 
 export async function getCurrentUser(): Promise<CurrentUserResponseDto> {
-    return apiRequest<CurrentUserResponseDto>("/api/me");
+    return apiRequest<CurrentUserResponseDto>("/api/me", {
+        requiresAuth: true,
+    });
 }
 
 export async function changePassword(
@@ -26,6 +28,7 @@ export async function changePassword(
     return apiRequest<void>("/api/me/change-password", {
         method: "POST",
         body: request,
+        requiresAuth: true,
         includeCredentials: true,
     });
 }
@@ -38,6 +41,7 @@ export async function updatePaymentEmailReminders(
         {
             method: "PATCH",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -48,6 +52,7 @@ export async function requestEmailChange(
     return apiRequest<void>("/api/me/email-change/request", {
         method: "POST",
         body: request,
+        requiresAuth: true,
     });
 }
 
@@ -59,6 +64,7 @@ export async function requestEnableEmail2fa(
         {
             method: "POST",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -69,6 +75,7 @@ export async function confirmEnableEmail2fa(
     return apiRequest<void>("/api/me/email-2fa/enable/confirm", {
         method: "POST",
         body: request,
+        requiresAuth: true,
     });
 }
 
@@ -80,6 +87,7 @@ export async function requestDisableEmail2fa(
         {
             method: "POST",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -90,12 +98,14 @@ export async function confirmDisableEmail2fa(
     return apiRequest<void>("/api/me/email-2fa/disable/confirm", {
         method: "POST",
         body: request,
+        requiresAuth: true,
     });
 }
 
 export async function deleteCurrentUser(): Promise<void> {
     return apiRequest<void>("/api/me", {
         method: "DELETE",
+        requiresAuth: true,
         includeCredentials: true,
     });
 }
