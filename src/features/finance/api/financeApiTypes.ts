@@ -351,3 +351,150 @@ export type FinancialPriorityResponseDto = {
     financialPriorityDescription: string;
     financialPriorityRanking: number;
 };
+
+export type FinanceCalendarMovementType =
+    | "PERSISTED_TRANSACTION"
+    | "PROJECTED_RECURRING_TRANSACTION";
+
+export type FinanceCalendarMovementResponseDto = {
+    movementType: FinanceCalendarMovementType;
+    transactionId: Uuid | null;
+    recurringTransactionId: Uuid | null;
+    logicalDate: IsoDate;
+    chargeDate: IsoDate;
+    description: string;
+    amount: MoneyAmount;
+    affectsAccountBalance: boolean;
+    affectsSerenityline: boolean;
+    categoryId: Uuid;
+    financialPriorityId: Uuid | null;
+    accountId: Uuid;
+    creditCardId: Uuid | null;
+    bucketId: Uuid | null;
+    confirmed: boolean;
+    simulated: boolean;
+    simulationGroupId: Uuid | null;
+    userEntered: boolean;
+    finalOccurrence: boolean;
+};
+
+export type FinanceCalendarAccountBucketDailyBalanceResponseDto = {
+    bucketId: Uuid;
+    endOfDayBucketBalance: MoneyAmount;
+};
+
+export type FinanceCalendarAccountDailyBalanceResponseDto = {
+    accountId: Uuid;
+    currency: string;
+    endOfDayAccountBalance: MoneyAmount;
+    endOfDaySerenityline: MoneyAmount;
+    endOfDayBucketsBalance: MoneyAmount;
+    buckets: FinanceCalendarAccountBucketDailyBalanceResponseDto[];
+};
+
+export type FinanceCalendarBucketDailyBalanceResponseDto = {
+    bucketId: Uuid;
+    currency: string;
+    endOfDayBucketBalance: MoneyAmount;
+};
+
+export type FinanceCalendarCurrencyDailyBalanceResponseDto = {
+    currency: string;
+    endOfDayAccountsBalance: MoneyAmount;
+    endOfDaySerenityline: MoneyAmount;
+    endOfDayBucketsBalance: MoneyAmount;
+};
+
+export type FinanceCalendarDailyBalanceResponseDto = {
+    date: IsoDate;
+    accounts: FinanceCalendarAccountDailyBalanceResponseDto[];
+    buckets: FinanceCalendarBucketDailyBalanceResponseDto[];
+    totalsByCurrency: FinanceCalendarCurrencyDailyBalanceResponseDto[];
+};
+
+export type FinanceCalendarSearchRequestDto = {
+    from?: IsoDate;
+    to?: IsoDate;
+    accountIds?: Uuid[];
+    simulationGroupIds?: Uuid[];
+};
+
+export type FinanceReportSummaryRequestDto = {
+    accountIds?: Uuid[];
+    simulationGroupIds?: Uuid[];
+};
+
+export type FinanceReportProjectionMode = "PROJECTED_PLANNING";
+
+export type FinanceReportTemporalPosition = "PAST" | "TODAY" | "FUTURE";
+
+export type FinanceReportExtremeClassification =
+    | "IN_RANGE_EXTREME"
+    | "RANGE_START_BOUNDARY"
+    | "RANGE_END_BOUNDARY"
+    | "MONOTONIC_TREND_WITHIN_HORIZON";
+
+export type FinanceReportTrendDirection = "UP" | "DOWN" | "FLAT" | "MIXED";
+
+export type FinanceReportTrendDto = {
+    direction: FinanceReportTrendDirection;
+    startedAt: IsoDate;
+    observedUntil: IsoDate;
+    monotonicUntilRangeEnd: boolean;
+};
+
+export type FinanceReportPointDto = {
+    date: IsoDate;
+    value: MoneyAmount;
+    temporalPosition: FinanceReportTemporalPosition;
+    classification: FinanceReportExtremeClassification;
+    trend: FinanceReportTrendDto;
+};
+
+export type FinanceReportRangeDto = {
+    from: IsoDate;
+    to: IsoDate;
+};
+
+export type FinanceRecurringReportSummaryResponseDto = {
+    currency: string;
+    annualIncome: MoneyAmount;
+    annualExpenses: MoneyAmount;
+    annualNetBalance: MoneyAmount;
+    averageMonthlyIncome: MoneyAmount;
+    averageMonthlyExpenses: MoneyAmount;
+    averageMonthlyNetBalance: MoneyAmount;
+};
+
+export type FinanceReportExtremesByCurrencyResponseDto = {
+    currency: string;
+    asOfDate: IsoDate;
+    rangeFrom: IsoDate;
+    rangeTo: IsoDate;
+    minSerenityline: FinanceReportPointDto;
+    maxSerenityline: FinanceReportPointDto;
+    minAccountBalance: FinanceReportPointDto;
+    maxAccountBalance: FinanceReportPointDto;
+};
+
+export type FinanceYearEndForecastByCurrencyResponseDto = {
+    currency: string;
+    endOfYearAccountBalance: MoneyAmount;
+    endOfYearSerenityline: MoneyAmount;
+};
+
+export type FinanceYearEndForecastResponseDto = {
+    year: number;
+    date: IsoDate;
+    balancesByCurrency: FinanceYearEndForecastByCurrencyResponseDto[];
+};
+
+export type FinanceReportSummaryResponseDto = {
+    asOfDate: IsoDate;
+    projectionMode: FinanceReportProjectionMode;
+    extremesRange: FinanceReportRangeDto;
+    yearEndForecastYears: number;
+    recurringByCurrency: FinanceRecurringReportSummaryResponseDto[];
+    extremesByCurrency: FinanceReportExtremesByCurrencyResponseDto[];
+    yearEndForecasts: FinanceYearEndForecastResponseDto[];
+};

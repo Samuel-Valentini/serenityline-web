@@ -42,6 +42,9 @@ import {
     unlinkSimulationGroupAccount,
     updateCreditCard,
     updateSimulationGroup,
+    getFinanceReportSummary,
+    listCalendarMovements,
+    listDailyBalances,
 } from "./financeApi";
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
@@ -928,6 +931,128 @@ describe("financeApi", () => {
         const [, init] = getLastFetchCall();
 
         expect(getLastRequestPath()).toBe("/api/finance/financial-priorities");
+        expect(init?.method).toBe("GET");
+    });
+
+    it("adds the expected calendar movement query parameters", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse([]));
+
+        await listCalendarMovements({
+            from: "2026-06-01",
+            to: "2026-06-30",
+            accountIds: ["account-1", "account-2"],
+            simulationGroupIds: ["simulation-group-1", "simulation-group-2"],
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/calendar");
+        expect(getLastRequestSearch()).toBe(
+            "?from=2026-06-01&to=2026-06-30&accountIds=account-1&accountIds=account-2&simulationGroupIds=simulation-group-1&simulationGroupIds=simulation-group-2",
+        );
+        expect(init?.method).toBe("GET");
+    });
+
+    it("adds the expected daily balances query parameters", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse([]));
+
+        await listDailyBalances({
+            from: "2026-06-01",
+            to: "2026-06-30",
+            accountIds: ["account-1"],
+            simulationGroupIds: ["simulation-group-1"],
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/calendar/daily-balances",
+        );
+        expect(getLastRequestSearch()).toBe(
+            "?from=2026-06-01&to=2026-06-30&accountIds=account-1&simulationGroupIds=simulation-group-1",
+        );
+        expect(init?.method).toBe("GET");
+    });
+
+    it("adds the expected finance report summary query parameters", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(
+            jsonResponse({
+                asOfDate: "2026-06-03",
+                projectionMode: "PROJECTED_PLANNING",
+                extremesRange: {
+                    from: "2026-06-03",
+                    to: "2027-06-03",
+                },
+                yearEndForecastYears: 5,
+                recurringByCurrency: [],
+                extremesByCurrency: [],
+                yearEndForecasts: [],
+            }),
+        );
+
+        await getFinanceReportSummary({
+            accountIds: ["account-1", "account-2"],
+            simulationGroupIds: ["simulation-group-1", "simulation-group-2"],
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/reports/summary");
+        expect(getLastRequestSearch()).toBe(
+            "?accountIds=account-1&accountIds=account-2&simulationGroupIds=simulation-group-1&simulationGroupIds=simulation-group-2",
+        );
+        expect(init?.method).toBe("GET");
+    });
+
+    it("omits empty dashboard query parameters", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse([]));
+
+        await listCalendarMovements();
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/calendar");
+        expect(getLastRequestSearch()).toBe("");
+        expect(init?.method).toBe("GET");
+    });
+
+    it("omits accountIds when listing calendar movements for all accessible accounts", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse([]));
+
+        await listCalendarMovements({
+            from: "2026-06-01",
+            to: "2026-06-30",
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/calendar");
+        expect(getLastRequestSearch()).toBe("?from=2026-06-01&to=2026-06-30");
+        expect(init?.method).toBe("GET");
+    });
+
+    it("omits accountIds when requesting the summary for all accessible accounts", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(
+            jsonResponse({
+                asOfDate: "2026-06-03",
+                projectionMode: "PROJECTED_PLANNING",
+                extremesRange: {
+                    from: "2026-06-03",
+                    to: "2027-06-03",
+                },
+                yearEndForecastYears: 5,
+                recurringByCurrency: [],
+                extremesByCurrency: [],
+                yearEndForecasts: [],
+            }),
+        );
+
+        await getFinanceReportSummary();
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/reports/summary");
+        expect(getLastRequestSearch()).toBe("");
         expect(init?.method).toBe("GET");
     });
 });

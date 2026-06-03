@@ -30,6 +30,11 @@ import type {
     SimulationGroupCreateRequestDto,
     SimulationGroupResponseDto,
     SimulationGroupUpdateRequestDto,
+    FinanceCalendarDailyBalanceResponseDto,
+    FinanceCalendarMovementResponseDto,
+    FinanceCalendarSearchRequestDto,
+    FinanceReportSummaryRequestDto,
+    FinanceReportSummaryResponseDto,
 } from "./financeApiTypes";
 
 function encodePathSegment(value: string): string {
@@ -102,6 +107,58 @@ function buildSimulationGroupQuery(
     });
 
     return `?${params.toString()}`;
+}
+
+function appendRepeatedParams(
+    params: URLSearchParams,
+    name: string,
+    values?: string[],
+) {
+    values?.forEach((value) => {
+        params.append(name, value);
+    });
+}
+
+function buildCalendarSearchQuery(
+    request?: FinanceCalendarSearchRequestDto,
+): string {
+    const params = new URLSearchParams();
+
+    if (request?.from) {
+        params.set("from", request.from);
+    }
+
+    if (request?.to) {
+        params.set("to", request.to);
+    }
+
+    appendRepeatedParams(params, "accountIds", request?.accountIds);
+    appendRepeatedParams(
+        params,
+        "simulationGroupIds",
+        request?.simulationGroupIds,
+    );
+
+    const query = params.toString();
+
+    return query ? `?${query}` : "";
+}
+
+function buildFinanceReportSummaryQuery(
+    request?: FinanceReportSummaryRequestDto,
+): string {
+    const params = new URLSearchParams();
+
+    appendRepeatedParams(params, "accountIds", request?.accountIds);
+    appendRepeatedParams(
+        params,
+        "simulationGroupIds",
+        request?.simulationGroupIds,
+    );
+
+    const query = params.toString();
+
+    return query ? `?${query}` : "";
 }
 
 export async function getAccounts(): Promise<AccountResponseDto[]> {
@@ -575,5 +632,33 @@ export async function listFinancialPriorities(): Promise<
 > {
     return apiRequest<FinancialPriorityResponseDto[]>(
         "/api/finance/financial-priorities",
+    );
+}
+
+export async function listCalendarMovements(
+    request?: FinanceCalendarSearchRequestDto,
+): Promise<FinanceCalendarMovementResponseDto[]> {
+    return apiRequest<FinanceCalendarMovementResponseDto[]>(
+        `/api/finance/calendar${buildCalendarSearchQuery(request)}`,
+    );
+}
+
+export async function listDailyBalances(
+    request?: FinanceCalendarSearchRequestDto,
+): Promise<FinanceCalendarDailyBalanceResponseDto[]> {
+    return apiRequest<FinanceCalendarDailyBalanceResponseDto[]>(
+        `/api/finance/calendar/daily-balances${buildCalendarSearchQuery(
+            request,
+        )}`,
+    );
+}
+
+export async function getFinanceReportSummary(
+    request?: FinanceReportSummaryRequestDto,
+): Promise<FinanceReportSummaryResponseDto> {
+    return apiRequest<FinanceReportSummaryResponseDto>(
+        `/api/finance/reports/summary${buildFinanceReportSummaryQuery(
+            request,
+        )}`,
     );
 }
