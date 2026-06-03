@@ -241,9 +241,14 @@ describe("SettingsPage", () => {
 
         renderPage();
 
-        fireEvent.change(screen.getByLabelText("Password attuale"), {
-            target: { value: "OldPassword123!" },
-        });
+        fireEvent.change(
+            screen.getByLabelText("Password attuale", {
+                selector: "#current-password",
+            }),
+            {
+                target: { value: "OldPassword123!" },
+            },
+        );
         fireEvent.change(screen.getByLabelText("Nuova password"), {
             target: { value: "NewPassword123!" },
         });
@@ -260,5 +265,59 @@ describe("SettingsPage", () => {
         });
 
         changePasswordSpy.mockRestore();
+    });
+
+    it("requests an email change for the current user", async () => {
+        const requestEmailChangeSpy = vi.spyOn(
+            accountApi,
+            "requestEmailChange",
+        );
+
+        requestEmailChangeSpy.mockResolvedValueOnce();
+
+        store.dispatch(
+            accountLoaded({
+                userId: "user-id",
+                userName: "Samuel",
+                email: "samuel@example.com",
+                userGroupId: "group-id",
+                userGroupName: "Famiglia Valentini",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+                emailTwoFactorEnabled: false,
+                paymentEmailRemindersEnabled: true,
+            }),
+        );
+
+        renderPage();
+
+        fireEvent.change(screen.getByLabelText("Nuova email"), {
+            target: { value: "nuova@example.com" },
+        });
+        fireEvent.change(screen.getAllByLabelText("Password attuale")[0], {
+            target: { value: "CurrentPassword123!" },
+        });
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Richiedi cambio email" }),
+        );
+
+        await waitFor(() => {
+            expect(requestEmailChangeSpy).toHaveBeenCalledWith({
+                newEmail: "nuova@example.com",
+                currentPassword: "CurrentPassword123!",
+            });
+        });
+
+        expect(
+            await screen.findByText(
+                "Ti abbiamo inviato un'email di conferma al nuovo indirizzo.",
+            ),
+        ).toBeInTheDocument();
+
+        requestEmailChangeSpy.mockRestore();
     });
 });

@@ -11,6 +11,7 @@ import { loadCurrentUser } from "../../features/account/accountThunks";
 import {
     changePassword,
     exportCurrentUserData,
+    requestEmailChange,
     updatePaymentEmailReminders,
 } from "../../features/account/api/accountApi";
 import { paymentEmailRemindersUpdated } from "../../features/account/accountSlice";
@@ -24,6 +25,7 @@ type SettingsDetailRowProps = {
 type ExportStatus = "idle" | "loading" | "success" | "failed";
 type PreferenceUpdateStatus = "idle" | "loading" | "success" | "failed";
 type PasswordChangeStatus = "idle" | "loading" | "success" | "failed";
+type EmailChangeStatus = "idle" | "loading" | "success" | "failed";
 
 function valueOrFallback(value: string | null | undefined): string {
     return value?.trim() ? value : "—";
@@ -65,6 +67,11 @@ export function SettingsPage() {
     const [newPassword, setNewPassword] = useState("");
     const [passwordChangeStatus, setPasswordChangeStatus] =
         useState<PasswordChangeStatus>("idle");
+    const [emailChangeNewEmail, setEmailChangeNewEmail] = useState("");
+    const [emailChangeCurrentPassword, setEmailChangeCurrentPassword] =
+        useState("");
+    const [emailChangeStatus, setEmailChangeStatus] =
+        useState<EmailChangeStatus>("idle");
 
     const isInitialLoading = accountStatus === "loading" && !currentUser;
     const hasError = accountStatus === "failed" && accountError !== null;
@@ -157,6 +164,23 @@ export function SettingsPage() {
         }
     }
 
+    async function submitEmailChangeRequest() {
+        setEmailChangeStatus("loading");
+
+        try {
+            await requestEmailChange({
+                newEmail: emailChangeNewEmail,
+                currentPassword: emailChangeCurrentPassword,
+            });
+
+            setEmailChangeNewEmail("");
+            setEmailChangeCurrentPassword("");
+            setEmailChangeStatus("success");
+        } catch {
+            setEmailChangeStatus("failed");
+        }
+    }
+
     return (
         <section className="sl-page">
             <header className="sl-page-header">
@@ -221,6 +245,84 @@ export function SettingsPage() {
                                     )}
                                 />
                             </dl>
+                            <hr />
+
+                            <form
+                                onSubmit={(event) => {
+                                    event.preventDefault();
+
+                                    if (emailChangeStatus === "loading") {
+                                        return;
+                                    }
+
+                                    void submitEmailChangeRequest();
+                                }}>
+                                <h3 className="h6">{t("emailChange.title")}</h3>
+
+                                <div className="mb-3">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="email-change-new-email">
+                                        {t("emailChange.newEmail")}
+                                    </label>
+                                    <input
+                                        autoComplete="email"
+                                        className="form-control"
+                                        id="email-change-new-email"
+                                        onChange={(event) => {
+                                            setEmailChangeNewEmail(
+                                                event.target.value,
+                                            );
+                                        }}
+                                        required
+                                        type="email"
+                                        value={emailChangeNewEmail}
+                                    />
+                                </div>
+
+                                <div className="mb-3">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="email-change-current-password">
+                                        {t("emailChange.currentPassword")}
+                                    </label>
+                                    <input
+                                        autoComplete="current-password"
+                                        className="form-control"
+                                        id="email-change-current-password"
+                                        minLength={8}
+                                        onChange={(event) => {
+                                            setEmailChangeCurrentPassword(
+                                                event.target.value,
+                                            );
+                                        }}
+                                        required
+                                        type="password"
+                                        value={emailChangeCurrentPassword}
+                                    />
+                                </div>
+
+                                <button
+                                    className="btn btn-outline-primary btn-sm"
+                                    disabled={emailChangeStatus === "loading"}
+                                    type="submit">
+                                    {emailChangeStatus === "loading"
+                                        ? t("emailChange.loading")
+                                        : t("emailChange.submit")}
+                                </button>
+
+                                {emailChangeStatus === "success" ? (
+                                    <p className="text-success mt-3 mb-0">
+                                        {t("emailChange.success")}
+                                    </p>
+                                ) : null}
+
+                                {emailChangeStatus === "failed" ? (
+                                    <p className="text-danger mt-3 mb-0">
+                                        {t("emailChange.error")}
+                                    </p>
+                                ) : null}
+                            </form>
                         </article>
                     </div>
 

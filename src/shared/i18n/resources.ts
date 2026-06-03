@@ -407,6 +407,16 @@ export const resources = {
                 success: "Password aggiornata. Effettua di nuovo l'accesso.",
                 error: "Non è stato possibile aggiornare la password. Controlla i dati e riprova.",
             },
+            emailChange: {
+                title: "Cambia email",
+                newEmail: "Nuova email",
+                currentPassword: "Password attuale",
+                submit: "Richiedi cambio email",
+                loading: "Invio richiesta...",
+                success:
+                    "Ti abbiamo inviato un'email di conferma al nuovo indirizzo.",
+                error: "Non è stato possibile richiedere il cambio email. Controlla i dati e riprova.",
+            },
         },
     },
     en: {
@@ -810,6 +820,15 @@ export const resources = {
                 loading: "Updating...",
                 success: "Password updated. Please sign in again.",
                 error: "Could not update the password. Check the details and try again.",
+            },
+            emailChange: {
+                title: "Change email",
+                newEmail: "New email",
+                currentPassword: "Current password",
+                submit: "Request email change",
+                loading: "Sending request...",
+                success: "We sent a confirmation email to the new address.",
+                error: "Could not request the email change. Check the details and try again.",
             },
         },
     },
