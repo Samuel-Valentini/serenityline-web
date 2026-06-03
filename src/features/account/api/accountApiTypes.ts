@@ -1,16 +1,27 @@
 export type Uuid = string;
 export type IsoDateTime = string;
 
+export type PreferredLocale = "it-IT" | "en-US";
+export type PreferredTheme = "DEFAULT" | "LIGHT" | "DARK";
+
+export type UserRole =
+    | "OWNER"
+    | "SUPER_COLLABORATOR"
+    | "VIEWER_COLLABORATOR"
+    | "COLLABORATOR";
+
+export type UserPlatformRole = "USER" | "ADMIN" | "SUPERADMIN";
+
 export type CurrentUserResponseDto = {
     userId: Uuid;
     userName: string;
     email: string;
     userGroupId: Uuid;
     userGroupName: string;
-    userRole: string;
-    userPlatformRole: string;
-    preferredLocale: string;
-    preferredTheme: string;
+    userRole: UserRole;
+    userPlatformRole: UserPlatformRole;
+    preferredLocale: PreferredLocale;
+    preferredTheme: PreferredTheme;
     wantsInvoice: boolean;
     emailTwoFactorEnabled: boolean;
     paymentEmailRemindersEnabled: boolean;

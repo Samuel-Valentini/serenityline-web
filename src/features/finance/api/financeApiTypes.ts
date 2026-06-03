@@ -2,6 +2,12 @@ export type Uuid = string;
 export type IsoDate = string;
 export type IsoDateTime = string;
 export type MoneyAmount = number;
+export type FinancialPriorityCode =
+    | "CRITICAL"
+    | "ESSENTIAL"
+    | "OPTIONAL"
+    | "LEISURE_WELLBEING"
+    | "UNCLASSIFIED";
 
 export type AccountResponseDto = {
     accountId: Uuid;
@@ -346,7 +352,7 @@ export type FindSimulationGroupsRequestDto = {
 
 export type FinancialPriorityResponseDto = {
     financialPriorityId: Uuid;
-    financialPriorityCode: string;
+    financialPriorityCode: FinancialPriorityCode;
     financialPriorityDisplayName: string;
     financialPriorityDescription: string;
     financialPriorityRanking: number;

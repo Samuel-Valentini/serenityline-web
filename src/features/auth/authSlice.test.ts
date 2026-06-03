@@ -21,7 +21,7 @@ describe("authSlice", () => {
         userRole: "OWNER",
         userPlatformRole: "USER",
         preferredLocale: "it-IT",
-        preferredTheme: "SYSTEM",
+        preferredTheme: "DEFAULT",
         wantsInvoice: false,
     };
 
