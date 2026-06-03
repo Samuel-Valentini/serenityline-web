@@ -111,7 +111,7 @@ export type TransactionResponseDto = {
 
 export type TransactionCreateRequestDto = {
     transactionDescription: string;
-    transactionAmount: MoneyAmount;
+    transactionAmount: MoneyAmountInput;
     transactionAffectsAccountBalance?: boolean | null;
     transactionAffectsSerenityline?: boolean | null;
     categoryId: Uuid;
@@ -128,7 +128,7 @@ export type TransactionCreateRequestDto = {
 
 export type TransactionUpdateRequestDto = {
     transactionDescription: string;
-    transactionAmount: MoneyAmount;
+    transactionAmount: MoneyAmountInput;
     transactionAffectsAccountBalance: boolean;
     transactionAffectsSerenityline: boolean;
     categoryId: Uuid;
@@ -194,14 +194,14 @@ export type RecurringTransactionResponseDto = {
 
 export type RecurringTransactionCreateRequestDto = {
     recurringTransactionDescription: string;
-    paymentAmount: MoneyAmount;
+    paymentAmount: MoneyAmountInput;
     recurringTransactionAmountIsAdjustable?: boolean | null;
     recurringTransactionFirstPaymentDate: IsoDate;
     recurrenceInterval: number;
     recurrenceUnit: RecurrenceUnit;
     paymentDateAdjustmentPolicy?: PaymentDateAdjustmentPolicy | null;
     recurringTransactionEndDate?: IsoDate | null;
-    finalPaymentAmount?: MoneyAmount | null;
+    finalPaymentAmount?: MoneyAmountInput | null;
     categoryId: Uuid;
     financialPriorityId: Uuid;
     linkedAccountId: Uuid;
@@ -219,12 +219,12 @@ export type RecurringTransactionRulePatchRequestDto = {
     effectiveFrom?: IsoDate;
     effectiveTo?: IsoDate | null;
     dayOfUnit?: number;
-    paymentAmount?: MoneyAmount;
+    paymentAmount?: MoneyAmountInput;
     recurrenceInterval?: number;
     recurrenceUnit?: RecurrenceUnit;
     paymentDateAdjustmentPolicy?: PaymentDateAdjustmentPolicy;
     recurringTransactionEndDate?: IsoDate | null;
-    finalPaymentAmount?: MoneyAmount | null;
+    finalPaymentAmount?: MoneyAmountInput | null;
 };
 
 export type RecurringTransactionDetailsPatchRequestDto = {
@@ -252,12 +252,12 @@ export type RecurringTransactionPatchRequestDto = {
 
 export type RecurringTransactionDeleteRequestDto = {
     endDate?: IsoDate;
-    finalPaymentAmount?: MoneyAmount | null;
+    finalPaymentAmount?: MoneyAmountInput | null;
 };
 
 export type RecurringTransactionOccurrenceConfirmRequestDto = {
     logicalDate?: IsoDate | null;
-    transactionAmount?: MoneyAmount | null;
+    transactionAmount?: MoneyAmountInput | null;
     transactionChargeDate?: IsoDate | null;
 };
 

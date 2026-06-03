@@ -400,7 +400,7 @@ describe("financeApi", () => {
 
         await createTransaction({
             transactionDescription: "Stipendio",
-            transactionAmount: 2500,
+            transactionAmount: "2500.00",
             transactionAffectsAccountBalance: true,
             transactionAffectsSerenityline: true,
             categoryId: "category-id",
@@ -421,7 +421,7 @@ describe("financeApi", () => {
         expect(init?.method).toBe("POST");
         expect(getLastRequestBody()).toEqual({
             transactionDescription: "Stipendio",
-            transactionAmount: 2500,
+            transactionAmount: "2500.00",
             transactionAffectsAccountBalance: true,
             transactionAffectsSerenityline: true,
             categoryId: "category-id",
@@ -442,7 +442,7 @@ describe("financeApi", () => {
 
         await updateTransaction("transaction-id", {
             transactionDescription: "Affitto",
-            transactionAmount: -850,
+            transactionAmount: "-850.00",
             transactionAffectsAccountBalance: true,
             transactionAffectsSerenityline: true,
             categoryId: "category-id",
@@ -465,7 +465,7 @@ describe("financeApi", () => {
         expect(init?.method).toBe("PUT");
         expect(getLastRequestBody()).toEqual({
             transactionDescription: "Affitto",
-            transactionAmount: -850,
+            transactionAmount: "-850.00",
             transactionAffectsAccountBalance: true,
             transactionAffectsSerenityline: true,
             categoryId: "category-id",
@@ -529,7 +529,7 @@ describe("financeApi", () => {
 
         await createRecurringTransaction({
             recurringTransactionDescription: "Affitto mensile",
-            paymentAmount: -850,
+            paymentAmount: "-850.00",
             recurringTransactionAmountIsAdjustable: false,
             recurringTransactionFirstPaymentDate: "2026-06-05",
             recurrenceInterval: 1,
@@ -558,7 +558,7 @@ describe("financeApi", () => {
         expect(init?.method).toBe("POST");
         expect(getLastRequestBody()).toEqual({
             recurringTransactionDescription: "Affitto mensile",
-            paymentAmount: -850,
+            paymentAmount: "-850.00",
             recurringTransactionAmountIsAdjustable: false,
             recurringTransactionFirstPaymentDate: "2026-06-05",
             recurrenceInterval: 1,
@@ -594,7 +594,7 @@ describe("financeApi", () => {
                 effectiveFrom: "2026-06-10",
                 effectiveTo: null,
                 dayOfUnit: 10,
-                paymentAmount: -900,
+                paymentAmount: "-900.00",
                 recurrenceInterval: 1,
                 recurrenceUnit: "MONTH",
                 paymentDateAdjustmentPolicy: "PREVIOUS_BUSINESS_DAY",
@@ -631,7 +631,7 @@ describe("financeApi", () => {
                 effectiveFrom: "2026-06-10",
                 effectiveTo: null,
                 dayOfUnit: 10,
-                paymentAmount: -900,
+                paymentAmount: "-900.00",
                 recurrenceInterval: 1,
                 recurrenceUnit: "MONTH",
                 paymentDateAdjustmentPolicy: "PREVIOUS_BUSINESS_DAY",
@@ -671,7 +671,7 @@ describe("financeApi", () => {
 
         await deleteRecurringTransaction("recurring-transaction-id", {
             endDate: "2026-12-31",
-            finalPaymentAmount: -425,
+            finalPaymentAmount: "-425.00",
         });
 
         const [, init] = getLastFetchCall();
@@ -682,7 +682,7 @@ describe("financeApi", () => {
         expect(init?.method).toBe("DELETE");
         expect(getLastRequestBody()).toEqual({
             endDate: "2026-12-31",
-            finalPaymentAmount: -425,
+            finalPaymentAmount: "-425.00",
         });
     });
 
@@ -712,7 +712,7 @@ describe("financeApi", () => {
             "recurring-transaction-id",
             {
                 logicalDate: "2026-06-05",
-                transactionAmount: -850,
+                transactionAmount: "-850.00",
                 transactionChargeDate: "2026-06-05",
             },
         );
@@ -725,7 +725,7 @@ describe("financeApi", () => {
         expect(init?.method).toBe("POST");
         expect(getLastRequestBody()).toEqual({
             logicalDate: "2026-06-05",
-            transactionAmount: -850,
+            transactionAmount: "-850.00",
             transactionChargeDate: "2026-06-05",
         });
     });

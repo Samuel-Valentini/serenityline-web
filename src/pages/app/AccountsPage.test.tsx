@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
 import { createAccount } from "../../features/finance/api/financeApi";
+import { i18n } from "../../shared/i18n/i18n";
 import {
     financeDataCleared,
     financeReferenceDataLoaded,
@@ -60,7 +61,8 @@ function renderPage() {
 }
 
 describe("AccountsPage", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+        await i18n.changeLanguage("it");
         vi.clearAllMocks();
         store.dispatch(financeDataCleared());
     });
