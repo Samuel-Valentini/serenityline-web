@@ -1,9 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
+import * as accountApi from "../../features/account/api/accountApi";
 import {
     accountCleared,
     accountLoaded,
@@ -11,11 +12,11 @@ import {
     accountLoadingStarted,
 } from "../../features/account/accountSlice";
 import { SettingsPage } from "./SettingsPage";
-import * as accountApi from "../../features/account/api/accountApi";
 
 describe("SettingsPage", () => {
     const createObjectUrlMock = vi.fn(() => "blob:account-export");
     const revokeObjectUrlMock = vi.fn();
+
     beforeEach(() => {
         store.dispatch(accountCleared());
         createObjectUrlMock.mockClear();
@@ -71,9 +72,7 @@ describe("SettingsPage", () => {
         expect(screen.getByText("Italiano")).toBeInTheDocument();
         expect(screen.getByText("Predefinito")).toBeInTheDocument();
         expect(
-            screen.getByRole("heading", {
-                name: "Autenticazione a due fattori",
-            }),
+            screen.getByText("Autenticazione a due fattori"),
         ).toBeInTheDocument();
         expect(screen.getByText("Attiva")).toBeInTheDocument();
         expect(screen.getByText("Ruolo utente")).toBeInTheDocument();
@@ -135,6 +134,44 @@ describe("SettingsPage", () => {
         expect(screen.getByText("Amministratore")).toBeInTheDocument();
     });
 
+    it("marks the opened settings action button as active", () => {
+        store.dispatch(
+            accountLoaded({
+                userId: "user-id",
+                userName: "Samuel",
+                email: "samuel@example.com",
+                userGroupId: "group-id",
+                userGroupName: "Famiglia Valentini",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+                emailTwoFactorEnabled: false,
+                paymentEmailRemindersEnabled: true,
+            }),
+        );
+
+        renderPage();
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Cambia password" }),
+        );
+
+        const openedButton = screen.getByRole("button", {
+            name: "Cambia password",
+        });
+
+        expect(openedButton).toHaveAttribute("aria-expanded", "true");
+        expect(openedButton).toHaveAttribute("aria-pressed", "true");
+        expect(openedButton).toHaveClass("active");
+        expect(
+            screen.getByLabelText("Password attuale", {
+                selector: "#current-password",
+            }),
+        ).toBeInTheDocument();
+    });
+
     it("exports the current user account data", async () => {
         const exportSpy = vi.spyOn(accountApi, "exportCurrentUserData");
 
@@ -162,9 +199,19 @@ describe("SettingsPage", () => {
 
         renderPage();
 
-        fireEvent.click(
-            screen.getByRole("button", { name: "Esporta dati account" }),
-        );
+        const closedExportButton = screen.getByRole("button", {
+            name: "Esporta dati account",
+        });
+
+        fireEvent.click(closedExportButton);
+
+        const exportButtons = screen.getAllByRole("button", {
+            name: "Esporta dati account",
+        });
+
+        expect(exportButtons[0]).toHaveClass("active");
+
+        fireEvent.click(exportButtons[1]);
 
         await waitFor(() => {
             expect(exportSpy).toHaveBeenCalledOnce();
@@ -246,6 +293,10 @@ describe("SettingsPage", () => {
 
         renderPage();
 
+        fireEvent.click(
+            screen.getByRole("button", { name: "Cambia password" }),
+        );
+
         fireEvent.change(
             screen.getByLabelText("Password attuale", {
                 selector: "#current-password",
@@ -299,10 +350,12 @@ describe("SettingsPage", () => {
 
         renderPage();
 
+        fireEvent.click(screen.getByRole("button", { name: "Cambia email" }));
+
         fireEvent.change(screen.getByLabelText("Nuova email"), {
             target: { value: "nuova@example.com" },
         });
-        fireEvent.change(screen.getAllByLabelText("Password attuale")[0], {
+        fireEvent.change(screen.getByLabelText("Password attuale"), {
             target: { value: "CurrentPassword123!" },
         });
 
@@ -325,6 +378,7 @@ describe("SettingsPage", () => {
 
         requestEmailChangeSpy.mockRestore();
     });
+
     it("deletes the current user account after email confirmation", async () => {
         const deleteCurrentUserSpy = vi.spyOn(accountApi, "deleteCurrentUser");
 
@@ -348,6 +402,10 @@ describe("SettingsPage", () => {
         );
 
         renderPage();
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Cancellazione account" }),
+        );
 
         const deleteButton = screen.getByRole("button", {
             name: "Elimina account",

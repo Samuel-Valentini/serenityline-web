@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
@@ -46,6 +46,43 @@ type Email2faFlowStatus =
     | "success"
     | "failed";
 type AccountDeletionStatus = "idle" | "loading" | "failed";
+type SettingsAction =
+    | "emailChange"
+    | "passwordChange"
+    | "email2fa"
+    | "accountExport"
+    | "accountDeletion";
+
+type SettingsActionDisclosureProps = {
+    buttonLabel: string;
+    children: ReactNode;
+    isOpen: boolean;
+    onToggle: () => void;
+};
+
+function SettingsActionDisclosure({
+    buttonLabel,
+    children,
+    isOpen,
+    onToggle,
+}: SettingsActionDisclosureProps) {
+    return (
+        <>
+            <div className="">
+                <button
+                    aria-expanded={isOpen}
+                    aria-pressed={isOpen}
+                    className={`btn btn-outline-primary btn-sm mt-1 mb-1 ${isOpen ? "active" : ""}`}
+                    onClick={onToggle}
+                    type="button">
+                    {buttonLabel}
+                </button>
+            </div>
+
+            {isOpen ? <div className="mt-3 mb-3">{children}</div> : null}
+        </>
+    );
+}
 
 function valueOrFallback(value: string | null | undefined): string {
     return value?.trim() ? value : "—";
@@ -54,8 +91,8 @@ function valueOrFallback(value: string | null | undefined): string {
 function SettingsDetailRow({ label, value }: SettingsDetailRowProps) {
     return (
         <>
-            <dt className="col-sm-4">{label}</dt>
-            <dd className="col-sm-8">{value}</dd>
+            <dt className="col-sm-6">{label}</dt>
+            <dd className="col-sm-6">{value}</dd>
         </>
     );
 }
@@ -103,6 +140,7 @@ export function SettingsPage() {
     const [deleteConfirmation, setDeleteConfirmation] = useState("");
     const [accountDeletionStatus, setAccountDeletionStatus] =
         useState<AccountDeletionStatus>("idle");
+    const [openAction, setOpenAction] = useState<SettingsAction | null>(null);
 
     const isInitialLoading = accountStatus === "loading" && !currentUser;
     const hasError = accountStatus === "failed" && accountError !== null;
@@ -292,6 +330,12 @@ export function SettingsPage() {
         }
     }
 
+    function toggleSettingsAction(action: SettingsAction) {
+        setOpenAction((currentAction) =>
+            currentAction === action ? null : action,
+        );
+    }
+
     return (
         <section className="sl-page">
             <header className="sl-page-header">
@@ -335,7 +379,7 @@ export function SettingsPage() {
 
             {currentUser ? (
                 <div className="row g-3">
-                    <div className="col-12 col-xl-4">
+                    <div className="col-12 col-xxl-4">
                         <article className="sl-panel">
                             <h2>{t("sections.profile")}</h2>
                             <dl className="row mb-0">
@@ -356,88 +400,98 @@ export function SettingsPage() {
                                     )}
                                 />
                             </dl>
-                            <hr />
 
-                            <form
-                                onSubmit={(event) => {
-                                    event.preventDefault();
+                            <SettingsActionDisclosure
+                                buttonLabel={t("emailChange.open")}
+                                isOpen={openAction === "emailChange"}
+                                onToggle={() =>
+                                    toggleSettingsAction("emailChange")
+                                }>
+                                <form
+                                    onSubmit={(event) => {
+                                        event.preventDefault();
 
-                                    if (emailChangeStatus === "loading") {
-                                        return;
-                                    }
+                                        if (emailChangeStatus === "loading") {
+                                            return;
+                                        }
 
-                                    void submitEmailChangeRequest();
-                                }}>
-                                <h3 className="h6">{t("emailChange.title")}</h3>
+                                        void submitEmailChangeRequest();
+                                    }}>
+                                    {/* <h3 className="h6">
+                                       {t("emailChange.title")}
+                                    </h3> */}
 
-                                <div className="mb-3">
-                                    <label
-                                        className="form-label"
-                                        htmlFor="email-change-new-email">
-                                        {t("emailChange.newEmail")}
-                                    </label>
-                                    <input
-                                        autoComplete="email"
-                                        className="form-control"
-                                        id="email-change-new-email"
-                                        onChange={(event) => {
-                                            setEmailChangeNewEmail(
-                                                event.target.value,
-                                            );
-                                        }}
-                                        required
-                                        type="email"
-                                        value={emailChangeNewEmail}
-                                    />
-                                </div>
+                                    <div className="mb-3">
+                                        <label
+                                            className="form-label"
+                                            htmlFor="email-change-new-email">
+                                            {t("emailChange.newEmail")}
+                                        </label>
+                                        <input
+                                            autoComplete="email"
+                                            className="form-control"
+                                            id="email-change-new-email"
+                                            onChange={(event) => {
+                                                setEmailChangeNewEmail(
+                                                    event.target.value,
+                                                );
+                                            }}
+                                            required
+                                            type="email"
+                                            value={emailChangeNewEmail}
+                                        />
+                                    </div>
 
-                                <div className="mb-3">
-                                    <label
-                                        className="form-label"
-                                        htmlFor="email-change-current-password">
-                                        {t("emailChange.currentPassword")}
-                                    </label>
-                                    <input
-                                        autoComplete="current-password"
-                                        className="form-control"
-                                        id="email-change-current-password"
-                                        minLength={8}
-                                        onChange={(event) => {
-                                            setEmailChangeCurrentPassword(
-                                                event.target.value,
-                                            );
-                                        }}
-                                        required
-                                        type="password"
-                                        value={emailChangeCurrentPassword}
-                                    />
-                                </div>
+                                    <div className="mb-3">
+                                        <label
+                                            className="form-label"
+                                            htmlFor="email-change-current-password">
+                                            {t("emailChange.currentPassword")}
+                                        </label>
+                                        <input
+                                            autoComplete="current-password"
+                                            className="form-control"
+                                            id="email-change-current-password"
+                                            minLength={8}
+                                            onChange={(event) => {
+                                                setEmailChangeCurrentPassword(
+                                                    event.target.value,
+                                                );
+                                            }}
+                                            required
+                                            type="password"
+                                            value={emailChangeCurrentPassword}
+                                        />
+                                    </div>
 
-                                <button
-                                    className="btn btn-outline-primary btn-sm"
-                                    disabled={emailChangeStatus === "loading"}
-                                    type="submit">
-                                    {emailChangeStatus === "loading"
-                                        ? t("emailChange.loading")
-                                        : t("emailChange.submit")}
-                                </button>
+                                    <button
+                                        className="btn btn-outline-primary btn-sm"
+                                        disabled={
+                                            emailChangeStatus === "loading"
+                                        }
+                                        type="submit">
+                                        {emailChangeStatus === "loading"
+                                            ? t("emailChange.loading")
+                                            : t("emailChange.submit")}
+                                    </button>
 
-                                {emailChangeStatus === "success" ? (
-                                    <p className="text-success mt-3 mb-0">
-                                        {t("emailChange.success")}
-                                    </p>
-                                ) : null}
+                                    {emailChangeStatus === "success" ? (
+                                        <p className="text-success mt-3 mb-0">
+                                            {t("emailChange.success")}
+                                        </p>
+                                    ) : null}
 
-                                {emailChangeStatus === "failed" ? (
-                                    <p className="text-danger mt-3 mb-0">
-                                        {t("emailChange.error")}
-                                    </p>
-                                ) : null}
-                            </form>
+                                    {emailChangeStatus === "failed" ? (
+                                        <p className="text-danger mt-3 mb-0">
+                                            {t("emailChange.error")}
+                                        </p>
+                                    ) : null}
+                                </form>
+                            </SettingsActionDisclosure>
                         </article>
                     </div>
 
-                    <div className="col-12 col-xl-4">
+                    <div className="col-12 col-xl-6 col-xxl-4">
                         <article className="sl-panel">
                             <h2>{t("sections.preferences")}</h2>
                             <dl className="row mb-0">
@@ -484,7 +538,7 @@ export function SettingsPage() {
                         </article>
                     </div>
 
-                    <div className="col-12 col-xl-4">
+                    <div className="col-12 col-xl-6 col-xxl-4 ">
                         <article className="sl-panel">
                             <h2>{t("sections.security")}</h2>
                             <dl className="row mb-0">
@@ -507,302 +561,348 @@ export function SettingsPage() {
                                     />
                                 ) : null}
                             </dl>
-                            <hr />
 
-                            <form
-                                onSubmit={(event) => {
-                                    event.preventDefault();
+                            <SettingsActionDisclosure
+                                buttonLabel={t("passwordChange.open")}
+                                isOpen={openAction === "passwordChange"}
+                                onToggle={() =>
+                                    toggleSettingsAction("passwordChange")
+                                }>
+                                <form
+                                    onSubmit={(event) => {
+                                        event.preventDefault();
 
-                                    if (passwordChangeStatus === "loading") {
-                                        return;
-                                    }
+                                        if (
+                                            passwordChangeStatus === "loading"
+                                        ) {
+                                            return;
+                                        }
 
-                                    void submitPasswordChange();
-                                }}>
-                                <h3 className="h6">
-                                    {t("passwordChange.title")}
-                                </h3>
+                                        void submitPasswordChange();
+                                    }}>
+                                    {/* <h3 className="h6">
+                                        {t("passwordChange.title")}
+                                    </h3> */}
 
-                                <div className="mb-3">
-                                    <label
-                                        className="form-label"
-                                        htmlFor="current-password">
-                                        {t("passwordChange.currentPassword")}
-                                    </label>
-                                    <input
-                                        autoComplete="current-password"
-                                        className="form-control"
-                                        id="current-password"
-                                        minLength={8}
-                                        onChange={(event) => {
-                                            setCurrentPassword(
-                                                event.target.value,
-                                            );
-                                        }}
-                                        required
-                                        type="password"
-                                        value={currentPassword}
-                                    />
-                                </div>
-
-                                <div className="mb-3">
-                                    <label
-                                        className="form-label"
-                                        htmlFor="new-password">
-                                        {t("passwordChange.newPassword")}
-                                    </label>
-                                    <input
-                                        autoComplete="new-password"
-                                        className="form-control"
-                                        id="new-password"
-                                        minLength={8}
-                                        onChange={(event) => {
-                                            setNewPassword(event.target.value);
-                                        }}
-                                        required
-                                        type="password"
-                                        value={newPassword}
-                                    />
-                                </div>
-
-                                <button
-                                    className="btn btn-outline-primary btn-sm"
-                                    disabled={
-                                        passwordChangeStatus === "loading"
-                                    }
-                                    type="submit">
-                                    {passwordChangeStatus === "loading"
-                                        ? t("passwordChange.loading")
-                                        : t("passwordChange.submit")}
-                                </button>
-
-                                {passwordChangeStatus === "success" ? (
-                                    <p className="text-success mt-3 mb-0">
-                                        {t("passwordChange.success")}
-                                    </p>
-                                ) : null}
-
-                                {passwordChangeStatus === "failed" ? (
-                                    <p className="text-danger mt-3 mb-0">
-                                        {t("passwordChange.error")}
-                                    </p>
-                                ) : null}
-                            </form>
-                            <hr />
-
-                            <form
-                                onSubmit={(event) => {
-                                    event.preventDefault();
-
-                                    if (
-                                        email2faStatus === "requesting" ||
-                                        email2faStatus === "confirming"
-                                    ) {
-                                        return;
-                                    }
-
-                                    if (email2faStatus === "challengeReady") {
-                                        void confirmEmail2faChallenge();
-                                        return;
-                                    }
-
-                                    void requestEmail2faChallenge();
-                                }}>
-                                <h3 className="h6">{t("email2fa.title")}</h3>
-                                {email2faStatus === "challengeReady" ? (
-                                    <p className="text-muted mt-3 mb-0">
-                                        {t("email2fa.challengeSent")}
-                                    </p>
-                                ) : null}
-
-                                {email2faStatus === "success" ? (
-                                    <p className="text-success mt-3 mb-0">
-                                        {t("email2fa.success")}
-                                    </p>
-                                ) : null}
-
-                                {email2faStatus === "failed" ? (
-                                    <p className="text-danger mt-3 mb-0">
-                                        {t("email2fa.error")}
-                                    </p>
-                                ) : null}
-
-                                <p className="text-muted">
-                                    {currentUser.emailTwoFactorEnabled
-                                        ? t("email2fa.disableDescription")
-                                        : t("email2fa.enableDescription")}
-                                </p>
-
-                                {email2faStatus !== "challengeReady" ? (
                                     <div className="mb-3">
                                         <label
                                             className="form-label"
-                                            htmlFor="email-2fa-password">
-                                            {t("email2fa.currentPassword")}
+                                            htmlFor="current-password">
+                                            {t(
+                                                "passwordChange.currentPassword",
+                                            )}
                                         </label>
                                         <input
                                             autoComplete="current-password"
                                             className="form-control"
-                                            id="email-2fa-password"
+                                            id="current-password"
                                             minLength={8}
                                             onChange={(event) => {
-                                                setEmail2faPassword(
+                                                setCurrentPassword(
                                                     event.target.value,
                                                 );
                                             }}
                                             required
                                             type="password"
-                                            value={email2faPassword}
+                                            value={currentPassword}
                                         />
                                     </div>
-                                ) : null}
 
-                                {email2faStatus === "challengeReady" ? (
                                     <div className="mb-3">
                                         <label
                                             className="form-label"
-                                            htmlFor="email-2fa-code">
-                                            {t("email2fa.code")}
+                                            htmlFor="new-password">
+                                            {t("passwordChange.newPassword")}
                                         </label>
                                         <input
-                                            autoComplete="one-time-code"
+                                            autoComplete="new-password"
                                             className="form-control"
-                                            id="email-2fa-code"
-                                            inputMode="numeric"
+                                            id="new-password"
+                                            minLength={8}
                                             onChange={(event) => {
-                                                setEmail2faCode(
+                                                setNewPassword(
                                                     event.target.value,
                                                 );
                                             }}
                                             required
-                                            value={email2faCode}
+                                            type="password"
+                                            value={newPassword}
                                         />
                                     </div>
-                                ) : null}
 
-                                <button
-                                    className="btn btn-outline-primary btn-sm"
-                                    disabled={
-                                        email2faStatus === "requesting" ||
-                                        email2faStatus === "confirming"
-                                    }
-                                    type="submit">
-                                    {email2faStatus === "requesting"
-                                        ? t("email2fa.sending")
-                                        : email2faStatus === "confirming"
-                                          ? t("email2fa.confirming")
-                                          : email2faStatus === "challengeReady"
-                                            ? t("email2fa.confirm")
-                                            : currentUser.emailTwoFactorEnabled
-                                              ? t("email2fa.disable")
-                                              : t("email2fa.enable")}
-                                </button>
-                            </form>
+                                    <button
+                                        className="btn btn-outline-primary btn-sm"
+                                        disabled={
+                                            passwordChangeStatus === "loading"
+                                        }
+                                        type="submit">
+                                        {passwordChangeStatus === "loading"
+                                            ? t("passwordChange.loading")
+                                            : t("passwordChange.submit")}
+                                    </button>
+
+                                    {passwordChangeStatus === "success" ? (
+                                        <p className="text-success mt-3 mb-0">
+                                            {t("passwordChange.success")}
+                                        </p>
+                                    ) : null}
+
+                                    {passwordChangeStatus === "failed" ? (
+                                        <p className="text-danger mt-3 mb-0">
+                                            {t("passwordChange.error")}
+                                        </p>
+                                    ) : null}
+                                </form>
+                            </SettingsActionDisclosure>
+
+                            <SettingsActionDisclosure
+                                buttonLabel={t("email2fa.open")}
+                                isOpen={openAction === "email2fa"}
+                                onToggle={() =>
+                                    toggleSettingsAction("email2fa")
+                                }>
+                                <form
+                                    onSubmit={(event) => {
+                                        event.preventDefault();
+
+                                        if (
+                                            email2faStatus === "requesting" ||
+                                            email2faStatus === "confirming"
+                                        ) {
+                                            return;
+                                        }
+
+                                        if (
+                                            email2faStatus === "challengeReady"
+                                        ) {
+                                            void confirmEmail2faChallenge();
+                                            return;
+                                        }
+
+                                        void requestEmail2faChallenge();
+                                    }}>
+                                    {/* <h3 className="h6">
+                                        {t("email2fa.title")}
+                                    </h3> */}
+                                    {email2faStatus === "challengeReady" ? (
+                                        <p className="text-muted mt-3 mb-0">
+                                            {t("email2fa.challengeSent")}
+                                        </p>
+                                    ) : null}
+
+                                    {email2faStatus === "success" ? (
+                                        <p className="text-success mt-3 mb-0">
+                                            {t("email2fa.success")}
+                                        </p>
+                                    ) : null}
+
+                                    {email2faStatus === "failed" ? (
+                                        <p className="text-danger mt-3 mb-0">
+                                            {t("email2fa.error")}
+                                        </p>
+                                    ) : null}
+
+                                    <p className="text-muted">
+                                        {currentUser.emailTwoFactorEnabled
+                                            ? t("email2fa.disableDescription")
+                                            : t("email2fa.enableDescription")}
+                                    </p>
+
+                                    {email2faStatus !== "challengeReady" ? (
+                                        <div className="mb-3">
+                                            <label
+                                                className="form-label"
+                                                htmlFor="email-2fa-password">
+                                                {t("email2fa.currentPassword")}
+                                            </label>
+                                            <input
+                                                autoComplete="current-password"
+                                                className="form-control"
+                                                id="email-2fa-password"
+                                                minLength={8}
+                                                onChange={(event) => {
+                                                    setEmail2faPassword(
+                                                        event.target.value,
+                                                    );
+                                                }}
+                                                required
+                                                type="password"
+                                                value={email2faPassword}
+                                            />
+                                        </div>
+                                    ) : null}
+
+                                    {email2faStatus === "challengeReady" ? (
+                                        <div className="mb-3">
+                                            <label
+                                                className="form-label"
+                                                htmlFor="email-2fa-code">
+                                                {t("email2fa.code")}
+                                            </label>
+                                            <input
+                                                autoComplete="one-time-code"
+                                                className="form-control"
+                                                id="email-2fa-code"
+                                                inputMode="numeric"
+                                                onChange={(event) => {
+                                                    setEmail2faCode(
+                                                        event.target.value,
+                                                    );
+                                                }}
+                                                required
+                                                value={email2faCode}
+                                            />
+                                        </div>
+                                    ) : null}
+
+                                    <button
+                                        className="btn btn-outline-primary btn-sm"
+                                        disabled={
+                                            email2faStatus === "requesting" ||
+                                            email2faStatus === "confirming"
+                                        }
+                                        type="submit">
+                                        {email2faStatus === "requesting"
+                                            ? t("email2fa.sending")
+                                            : email2faStatus === "confirming"
+                                              ? t("email2fa.confirming")
+                                              : email2faStatus ===
+                                                  "challengeReady"
+                                                ? t("email2fa.confirm")
+                                                : currentUser.emailTwoFactorEnabled
+                                                  ? t("email2fa.disable")
+                                                  : t("email2fa.enable")}
+                                    </button>
+                                </form>
+                            </SettingsActionDisclosure>
                         </article>
                     </div>
 
                     <div className="row g-3 mt-1 text-center">
                         <div className="col-12">
                             <article className="sl-panel">
-                                <h2>{t("sections.accountData")}</h2>
-                                <p>{t("accountExport.description")}</p>
+                                {/* <h2>{t("sections.accountData")}</h2> */}
+                                <SettingsActionDisclosure
+                                    buttonLabel={t("accountExport.open")}
+                                    isOpen={openAction === "accountExport"}
+                                    onToggle={() =>
+                                        toggleSettingsAction("accountExport")
+                                    }>
+                                    <p>{t("accountExport.description")}</p>
 
-                                <button
-                                    className="btn btn-outline-primary"
-                                    disabled={exportStatus === "loading"}
-                                    onClick={handleExportAccountData}
-                                    type="button">
-                                    {exportStatus === "loading"
-                                        ? t("accountExport.loading")
-                                        : t("accountExport.button")}
-                                </button>
+                                    <button
+                                        className="btn btn-outline-primary"
+                                        disabled={exportStatus === "loading"}
+                                        onClick={handleExportAccountData}
+                                        type="button">
+                                        {exportStatus === "loading"
+                                            ? t("accountExport.loading")
+                                            : t("accountExport.button")}
+                                    </button>
 
-                                {exportStatus === "success" ? (
-                                    <p className="text-success mt-3 mb-0">
-                                        {t("accountExport.success")}
-                                    </p>
-                                ) : null}
+                                    {exportStatus === "success" ? (
+                                        <p className="text-success mt-3 mb-0">
+                                            {t("accountExport.success")}
+                                        </p>
+                                    ) : null}
 
-                                {exportStatus === "failed" ? (
-                                    <p className="text-danger mt-3 mb-0">
-                                        {t("accountExport.error")}
-                                    </p>
-                                ) : null}
+                                    {exportStatus === "failed" ? (
+                                        <p className="text-danger mt-3 mb-0">
+                                            {t("accountExport.error")}
+                                        </p>
+                                    ) : null}
+                                </SettingsActionDisclosure>
 
                                 <div className="row g-3 mt-1">
                                     <div className="col-12">
                                         <article className="sl-panel border border-danger">
-                                            <h2>{t("sections.dangerZone")}</h2>
-                                            <p>
-                                                {t(
-                                                    "accountDeletion.description",
+                                            {/* <h2>{t("sections.dangerZone")}</h2> */}
+                                            <SettingsActionDisclosure
+                                                buttonLabel={t(
+                                                    "accountDeletion.open",
                                                 )}
-                                            </p>
+                                                isOpen={
+                                                    openAction ===
+                                                    "accountDeletion"
+                                                }
+                                                onToggle={() =>
+                                                    toggleSettingsAction(
+                                                        "accountDeletion",
+                                                    )
+                                                }>
+                                                <p>
+                                                    {t(
+                                                        "accountDeletion.description",
+                                                    )}
+                                                </p>
 
-                                            <form
-                                                onSubmit={(event) => {
-                                                    event.preventDefault();
-                                                    void submitAccountDeletion();
-                                                }}>
-                                                <div className="mb-3">
-                                                    <label
-                                                        className="form-label"
-                                                        htmlFor="delete-account-confirmation">
-                                                        {t(
-                                                            "accountDeletion.confirmLabel",
-                                                        )}
-                                                    </label>
-                                                    <input
-                                                        autoComplete="off"
-                                                        className="form-control"
-                                                        id="delete-account-confirmation"
-                                                        onChange={(event) => {
-                                                            setDeleteConfirmation(
-                                                                event.target
-                                                                    .value,
-                                                            );
-                                                        }}
-                                                        value={
-                                                            deleteConfirmation
+                                                <form
+                                                    onSubmit={(event) => {
+                                                        event.preventDefault();
+                                                        void submitAccountDeletion();
+                                                    }}>
+                                                    <div className="mb-3">
+                                                        <label
+                                                            className="form-label"
+                                                            htmlFor="delete-account-confirmation">
+                                                            {t(
+                                                                "accountDeletion.confirmLabel",
+                                                            )}
+                                                        </label>
+                                                        <input
+                                                            autoComplete="off"
+                                                            className="form-control"
+                                                            id="delete-account-confirmation"
+                                                            onChange={(
+                                                                event,
+                                                            ) => {
+                                                                setDeleteConfirmation(
+                                                                    event.target
+                                                                        .value,
+                                                                );
+                                                            }}
+                                                            value={
+                                                                deleteConfirmation
+                                                            }
+                                                        />
+                                                        <p className="form-text">
+                                                            {t(
+                                                                "accountDeletion.confirmHelp",
+                                                                {
+                                                                    email: currentUser.email,
+                                                                },
+                                                            )}
+                                                        </p>
+                                                    </div>
+
+                                                    <button
+                                                        className="btn btn-danger"
+                                                        disabled={
+                                                            !canDeleteAccount ||
+                                                            accountDeletionStatus ===
+                                                                "loading"
                                                         }
-                                                    />
-                                                    <p className="form-text">
-                                                        {t(
-                                                            "accountDeletion.confirmHelp",
-                                                            {
-                                                                email: currentUser.email,
-                                                            },
-                                                        )}
-                                                    </p>
-                                                </div>
+                                                        type="submit">
+                                                        {accountDeletionStatus ===
+                                                        "loading"
+                                                            ? t(
+                                                                  "accountDeletion.loading",
+                                                              )
+                                                            : t(
+                                                                  "accountDeletion.submit",
+                                                              )}
+                                                    </button>
 
-                                                <button
-                                                    className="btn btn-danger"
-                                                    disabled={
-                                                        !canDeleteAccount ||
-                                                        accountDeletionStatus ===
-                                                            "loading"
-                                                    }
-                                                    type="submit">
                                                     {accountDeletionStatus ===
-                                                    "loading"
-                                                        ? t(
-                                                              "accountDeletion.loading",
-                                                          )
-                                                        : t(
-                                                              "accountDeletion.submit",
-                                                          )}
-                                                </button>
-
-                                                {accountDeletionStatus ===
-                                                "failed" ? (
-                                                    <p className="text-danger mt-3 mb-0">
-                                                        {t(
-                                                            "accountDeletion.error",
-                                                        )}
-                                                    </p>
-                                                ) : null}
-                                            </form>
+                                                    "failed" ? (
+                                                        <p className="text-danger mt-3 mb-0">
+                                                            {t(
+                                                                "accountDeletion.error",
+                                                            )}
+                                                        </p>
+                                                    ) : null}
+                                                </form>
+                                            </SettingsActionDisclosure>
                                         </article>
                                     </div>
                                 </div>

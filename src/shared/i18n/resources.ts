@@ -397,6 +397,7 @@ export const resources = {
                 SUPERADMIN: "Super amministratore",
             },
             accountExport: {
+                open: "Esporta dati account",
                 description:
                     "Scarica una copia dei dati associati al tuo account SerenityLine.",
                 button: "Esporta dati account",
@@ -412,6 +413,7 @@ export const resources = {
                 error: "Non è stato possibile aggiornare la preferenza. Riprova tra qualche istante.",
             },
             passwordChange: {
+                open: "Cambia password",
                 title: "Cambia password",
                 currentPassword: "Password attuale",
                 newPassword: "Nuova password",
@@ -421,6 +423,7 @@ export const resources = {
                 error: "Non è stato possibile aggiornare la password. Controlla i dati e riprova.",
             },
             emailChange: {
+                open: "Cambia email",
                 title: "Cambia email",
                 newEmail: "Nuova email",
                 currentPassword: "Password attuale",
@@ -431,6 +434,7 @@ export const resources = {
                 error: "Non è stato possibile richiedere il cambio email. Controlla i dati e riprova.",
             },
             email2fa: {
+                open: "Gestisci autenticazione a due fattori",
                 title: "Autenticazione a due fattori",
                 enableDescription:
                     "Riceverai un codice via email per completare l'attivazione.",
@@ -449,6 +453,7 @@ export const resources = {
                 error: "Non è stato possibile aggiornare l'autenticazione a due fattori. Controlla i dati e riprova.",
             },
             accountDeletion: {
+                open: "Cancellazione account",
                 description:
                     "Con questa operazione avvii la cancellazione dell'account. Se non lo riattivi entro 30 giorni l'account verrà eliminato definitivamente e non sarà possibile recuperare i tuoi dati in alcun modo. Se sei il proprietario dell'account verranno cancellati i tuoi dati personali e i tuoi dati economici, se non sei il proprietario verranno cancellati solo i tuoi dati personali.",
                 confirmLabel: "Conferma cancellazione account",
@@ -873,6 +878,7 @@ export const resources = {
                 SUPERADMIN: "Super administrator",
             },
             accountExport: {
+                open: "Export account data",
                 description:
                     "Download a copy of the data associated with your SerenityLine account.",
                 button: "Export account data",
@@ -888,6 +894,7 @@ export const resources = {
                 error: "Could not update the preference. Please try again in a moment.",
             },
             passwordChange: {
+                open: "Change password",
                 title: "Change password",
                 currentPassword: "Current password",
                 newPassword: "New password",
@@ -897,6 +904,7 @@ export const resources = {
                 error: "Could not update the password. Check the details and try again.",
             },
             emailChange: {
+                open: "Change email",
                 title: "Change email",
                 newEmail: "New email",
                 currentPassword: "Current password",
@@ -906,6 +914,7 @@ export const resources = {
                 error: "Could not request the email change. Check the details and try again.",
             },
             accountDeletion: {
+                open: "Account deletion",
                 description:
                     "This action starts the account deletion process. If you do not reactivate it within 30 days, the account will be permanently deleted and your data cannot be recovered in any way. If you are the account owner, your personal data and financial data will be deleted; if you are not the owner, only your personal data will be deleted.",
                 confirmLabel: "Confirm account deletion",
@@ -914,6 +923,24 @@ export const resources = {
                 submit: "Delete account",
                 loading: "Deleting account...",
                 error: "Could not delete the account. Please try again in a moment.",
+            },
+            email2fa: {
+                open: "Manage two-factor authentication",
+                title: "Two-factor authentication",
+                enableDescription:
+                    "You will receive an email code to complete activation.",
+                disableDescription:
+                    "You will receive an email code to confirm deactivation.",
+                currentPassword: "Current password",
+                code: "Code received by email",
+                enable: "Enable two-factor authentication",
+                disable: "Disable two-factor authentication",
+                sending: "Sending code...",
+                challengeSent: "We sent you a code by email.",
+                confirm: "Confirm code",
+                confirming: "Confirming...",
+                success: "Two-factor authentication updated successfully.",
+                error: "Could not update two-factor authentication. Check the details and try again.",
             },
         },
         authConfirmEmailChange: {
