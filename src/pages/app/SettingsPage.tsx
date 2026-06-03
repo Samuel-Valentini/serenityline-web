@@ -8,9 +8,13 @@ import {
     selectCurrentUser,
 } from "../../features/account/accountSelectors";
 import { loadCurrentUser } from "../../features/account/accountThunks";
-import { exportCurrentUserData } from "../../features/account/api/accountApi";
-import { updatePaymentEmailReminders } from "../../features/account/api/accountApi";
+import {
+    changePassword,
+    exportCurrentUserData,
+    updatePaymentEmailReminders,
+} from "../../features/account/api/accountApi";
 import { paymentEmailRemindersUpdated } from "../../features/account/accountSlice";
+import { logoutUser } from "../../features/auth/authThunks";
 
 type SettingsDetailRowProps = {
     label: string;
@@ -19,6 +23,7 @@ type SettingsDetailRowProps = {
 
 type ExportStatus = "idle" | "loading" | "success" | "failed";
 type PreferenceUpdateStatus = "idle" | "loading" | "success" | "failed";
+type PasswordChangeStatus = "idle" | "loading" | "success" | "failed";
 
 function valueOrFallback(value: string | null | undefined): string {
     return value?.trim() ? value : "—";
@@ -56,6 +61,10 @@ export function SettingsPage() {
     const [exportStatus, setExportStatus] = useState<ExportStatus>("idle");
     const [reminderUpdateStatus, setReminderUpdateStatus] =
         useState<PreferenceUpdateStatus>("idle");
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [passwordChangeStatus, setPasswordChangeStatus] =
+        useState<PasswordChangeStatus>("idle");
 
     const isInitialLoading = accountStatus === "loading" && !currentUser;
     const hasError = accountStatus === "failed" && accountError !== null;
@@ -127,6 +136,25 @@ export function SettingsPage() {
         void updateReminderPreference(
             !currentUser.paymentEmailRemindersEnabled,
         );
+    }
+
+    async function submitPasswordChange() {
+        setPasswordChangeStatus("loading");
+
+        try {
+            await changePassword({
+                currentPassword,
+                newPassword,
+            });
+
+            setCurrentPassword("");
+            setNewPassword("");
+            setPasswordChangeStatus("success");
+
+            void dispatch(logoutUser());
+        } catch {
+            setPasswordChangeStatus("failed");
+        }
     }
 
     return (
@@ -266,6 +294,87 @@ export function SettingsPage() {
                                     />
                                 ) : null}
                             </dl>
+                            <hr />
+
+                            <form
+                                onSubmit={(event) => {
+                                    event.preventDefault();
+
+                                    if (passwordChangeStatus === "loading") {
+                                        return;
+                                    }
+
+                                    void submitPasswordChange();
+                                }}>
+                                <h3 className="h6">
+                                    {t("passwordChange.title")}
+                                </h3>
+
+                                <div className="mb-3">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="current-password">
+                                        {t("passwordChange.currentPassword")}
+                                    </label>
+                                    <input
+                                        autoComplete="current-password"
+                                        className="form-control"
+                                        id="current-password"
+                                        minLength={8}
+                                        onChange={(event) => {
+                                            setCurrentPassword(
+                                                event.target.value,
+                                            );
+                                        }}
+                                        required
+                                        type="password"
+                                        value={currentPassword}
+                                    />
+                                </div>
+
+                                <div className="mb-3">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="new-password">
+                                        {t("passwordChange.newPassword")}
+                                    </label>
+                                    <input
+                                        autoComplete="new-password"
+                                        className="form-control"
+                                        id="new-password"
+                                        minLength={8}
+                                        onChange={(event) => {
+                                            setNewPassword(event.target.value);
+                                        }}
+                                        required
+                                        type="password"
+                                        value={newPassword}
+                                    />
+                                </div>
+
+                                <button
+                                    className="btn btn-outline-primary btn-sm"
+                                    disabled={
+                                        passwordChangeStatus === "loading"
+                                    }
+                                    type="submit">
+                                    {passwordChangeStatus === "loading"
+                                        ? t("passwordChange.loading")
+                                        : t("passwordChange.submit")}
+                                </button>
+
+                                {passwordChangeStatus === "success" ? (
+                                    <p className="text-success mt-3 mb-0">
+                                        {t("passwordChange.success")}
+                                    </p>
+                                ) : null}
+
+                                {passwordChangeStatus === "failed" ? (
+                                    <p className="text-danger mt-3 mb-0">
+                                        {t("passwordChange.error")}
+                                    </p>
+                                ) : null}
+                            </form>
                         </article>
                     </div>
 

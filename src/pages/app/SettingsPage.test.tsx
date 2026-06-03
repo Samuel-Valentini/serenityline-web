@@ -216,4 +216,49 @@ describe("SettingsPage", () => {
 
         updateSpy.mockRestore();
     });
+
+    it("changes the current user password and logs out", async () => {
+        const changePasswordSpy = vi.spyOn(accountApi, "changePassword");
+
+        changePasswordSpy.mockResolvedValueOnce();
+
+        store.dispatch(
+            accountLoaded({
+                userId: "user-id",
+                userName: "Samuel",
+                email: "samuel@example.com",
+                userGroupId: "group-id",
+                userGroupName: "Famiglia Valentini",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+                emailTwoFactorEnabled: false,
+                paymentEmailRemindersEnabled: true,
+            }),
+        );
+
+        renderPage();
+
+        fireEvent.change(screen.getByLabelText("Password attuale"), {
+            target: { value: "OldPassword123!" },
+        });
+        fireEvent.change(screen.getByLabelText("Nuova password"), {
+            target: { value: "NewPassword123!" },
+        });
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Aggiorna password" }),
+        );
+
+        await waitFor(() => {
+            expect(changePasswordSpy).toHaveBeenCalledWith({
+                currentPassword: "OldPassword123!",
+                newPassword: "NewPassword123!",
+            });
+        });
+
+        changePasswordSpy.mockRestore();
+    });
 });
