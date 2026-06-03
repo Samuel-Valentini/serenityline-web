@@ -1,5 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
+import type { AccountResponseDto } from "./api/financeApiTypes";
+
 import type {
     FinanceDataError,
     FinanceDataState,
@@ -36,6 +38,9 @@ const financeDataSlice = createSlice({
             state.simulationGroups = action.payload.simulationGroups;
             state.financialPriorities = action.payload.financialPriorities;
         },
+        accountAdded(state, action: PayloadAction<AccountResponseDto>) {
+            state.accounts.push(action.payload);
+        },
         financeReferenceDataLoadingFailed(
             state,
             action: PayloadAction<FinanceDataError>,
@@ -50,6 +55,7 @@ const financeDataSlice = createSlice({
 });
 
 export const {
+    accountAdded,
     financeDataCleared,
     financeReferenceDataLoaded,
     financeReferenceDataLoadingFailed,

@@ -136,6 +136,52 @@ export const resources = {
                     "Sono disponibili {{count}} priorità per distinguere movimenti critici, essenziali e opzionali.",
             },
         },
+        accounts: {
+            eyebrow: "Base finanziaria",
+            title: "Conti",
+            subtitle:
+                "Gestisci i conti che alimentano la tua proiezione SerenityLine.",
+            loading: "Caricamento conti...",
+            loadErrorTitle: "Impossibile caricare i conti.",
+            loadErrorFallback: "Riprova tra qualche istante.",
+            listEyebrow: "Conti collegati",
+            listTitle: "I tuoi conti",
+            accountsCount: "{{count}} conti",
+            emptyState:
+                "Non hai ancora creato conti. Aggiungi il primo conto per iniziare.",
+            notProvided: "Non indicato",
+            table: {
+                name: "Nome",
+                institution: "Istituto",
+                openingBalance: "Saldo iniziale",
+                date: "Data",
+            },
+            formEyebrow: "Nuovo conto",
+            formTitle: "Aggiungi conto",
+            formIntro:
+                "Il saldo iniziale è il punto di partenza della proiezione futura.",
+            fields: {
+                accountName: "Nome conto",
+                currency: "Valuta",
+                openingBalance: "Saldo iniziale",
+                openingBalanceDate: "Data saldo iniziale",
+                issuingInstitution: "Istituto emittente",
+                accountDescription: "Descrizione",
+                optional: "opzionale",
+            },
+            validation: {
+                accountNameRequired: "Inserisci il nome del conto.",
+                currencyInvalid: "La valuta deve essere composta da 3 lettere.",
+                openingBalanceInvalid:
+                    "Inserisci un saldo iniziale valido, usando la virgola e al massimo 17 cifre intere e 2 decimali.",
+                openingBalanceDateRequired:
+                    "Inserisci la data del saldo iniziale.",
+            },
+            createSubmit: "Crea conto",
+            createSubmitting: "Creazione conto...",
+            createSuccess: "Conto creato correttamente.",
+            createErrorFallback: "Non siamo riusciti a creare il conto.",
+        },
         appPages: {
             placeholderBadge: "Area MVP",
             serenityline: {
@@ -639,6 +685,51 @@ export const resources = {
                 prioritiesText:
                     "{{count}} priorities are available to distinguish critical, essential and optional movements.",
             },
+        },
+        accounts: {
+            eyebrow: "Financial foundation",
+            title: "Accounts",
+            subtitle:
+                "Manage the accounts that feed your SerenityLine projection.",
+            loading: "Loading accounts...",
+            loadErrorTitle: "Could not load accounts.",
+            loadErrorFallback: "Please try again in a moment.",
+            listEyebrow: "Connected accounts",
+            listTitle: "Your accounts",
+            accountsCount: "{{count}} accounts",
+            emptyState:
+                "You have not created any accounts yet. Add your first account to get started.",
+            notProvided: "Not provided",
+            table: {
+                name: "Name",
+                institution: "Institution",
+                openingBalance: "Opening balance",
+                date: "Date",
+            },
+            formEyebrow: "New account",
+            formTitle: "Add account",
+            formIntro:
+                "The opening balance is the starting point of your future projection.",
+            fields: {
+                accountName: "Account name",
+                currency: "Currency",
+                openingBalance: "Opening balance",
+                openingBalanceDate: "Opening balance date",
+                issuingInstitution: "Issuing institution",
+                accountDescription: "Description",
+                optional: "optional",
+            },
+            validation: {
+                accountNameRequired: "Enter the account name.",
+                currencyInvalid: "Currency must be made of 3 letters.",
+                openingBalanceInvalid:
+                    "Enter a valid opening balance, using a dot and up to 17 integer digits and 2 decimal places.",
+                openingBalanceDateRequired: "Enter the opening balance date.",
+            },
+            createSubmit: "Create account",
+            createSubmitting: "Creating account...",
+            createSuccess: "Account created successfully.",
+            createErrorFallback: "We could not create the account.",
         },
         appPages: {
             placeholderBadge: "MVP area",

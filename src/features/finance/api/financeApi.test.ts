@@ -125,7 +125,7 @@ describe("financeApi", () => {
             accountDescription: "Conto corrente personale",
             currency: "EUR",
             issuingInstitution: "Banca Test",
-            openingBalance: 1250.5,
+            openingBalance: "1250.50",
             openingBalanceDate: "2026-06-02",
         });
 
@@ -138,7 +138,7 @@ describe("financeApi", () => {
             accountDescription: "Conto corrente personale",
             currency: "EUR",
             issuingInstitution: "Banca Test",
-            openingBalance: 1250.5,
+            openingBalance: "1250.50",
             openingBalanceDate: "2026-06-02",
         });
     });
@@ -150,7 +150,7 @@ describe("financeApi", () => {
             accountName: "Conto aggiornato",
             accountDescription: "Descrizione aggiornata",
             issuingInstitution: "Nuova banca",
-            openingBalance: 2000,
+            openingBalance: "2000.00",
             openingBalanceDate: "2026-06-03",
         });
 
@@ -162,7 +162,7 @@ describe("financeApi", () => {
             accountName: "Conto aggiornato",
             accountDescription: "Descrizione aggiornata",
             issuingInstitution: "Nuova banca",
-            openingBalance: 2000,
+            openingBalance: "2000.00",
             openingBalanceDate: "2026-06-03",
         });
     });

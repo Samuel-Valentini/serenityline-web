@@ -20,6 +20,7 @@ import { ResetPasswordPage } from "../../pages/auth/ResetPasswordPage";
 import { AcceptInvitationPage } from "../../pages/auth/AcceptInvitationPage";
 import { SettingsPage } from "../../pages/app/SettingsPage";
 import { ConfirmEmailChangePage } from "../../pages/auth/ConfirmEmailChangePage";
+import { AccountsPage } from "../../pages/app/AccountsPage";
 
 export function AppRouter() {
     return (
@@ -128,10 +129,7 @@ export function AppRouter() {
                                 <AppPlaceholderPage pageKey="portfolios" />
                             }
                         />
-                        <Route
-                            path="conti"
-                            element={<AppPlaceholderPage pageKey="accounts" />}
-                        />
+                        <Route path="conti" element={<AccountsPage />} />
                         <Route
                             path="saldi"
                             element={<AppPlaceholderPage pageKey="balances" />}

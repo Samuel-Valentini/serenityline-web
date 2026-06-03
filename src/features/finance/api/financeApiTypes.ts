@@ -2,6 +2,7 @@ export type Uuid = string;
 export type IsoDate = string;
 export type IsoDateTime = string;
 export type MoneyAmount = number;
+export type MoneyAmountInput = string;
 export type FinancialPriorityCode =
     | "CRITICAL"
     | "ESSENTIAL"
@@ -27,7 +28,7 @@ export type CreateAccountRequestDto = {
     accountDescription?: string | null;
     currency: string;
     issuingInstitution?: string | null;
-    openingBalance?: MoneyAmount | null;
+    openingBalance?: MoneyAmountInput | null;
     openingBalanceDate: IsoDate;
 };
 
@@ -35,7 +36,7 @@ export type UpdateAccountRequestDto = {
     accountName?: string | null;
     accountDescription?: string | null;
     issuingInstitution?: string | null;
-    openingBalance?: MoneyAmount | null;
+    openingBalance?: MoneyAmountInput | null;
     openingBalanceDate?: IsoDate | null;
 };
 

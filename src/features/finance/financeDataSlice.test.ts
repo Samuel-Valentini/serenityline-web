@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+    accountAdded,
     financeDataCleared,
     financeDataReducer,
     financeReferenceDataLoaded,
@@ -126,5 +127,30 @@ describe("financeDataSlice", () => {
         );
 
         expect(state).toEqual(initialFinanceDataState);
+    });
+
+    it("adds an account to the finance data state", () => {
+        const account = {
+            accountId: "new-account-id",
+            accountName: "Nuovo conto",
+            accountDescription: null,
+            currency: "EUR",
+            issuingInstitution: null,
+            openingBalance: 500,
+            openingBalanceDate: "2026-06-03",
+            userGroupId: "group-id",
+            accountCreatedAt: "2026-06-03T10:00:00Z",
+            accountUpdatedAt: "2026-06-03T10:00:00Z",
+        };
+
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                status: "loaded",
+            },
+            accountAdded(account),
+        );
+
+        expect(state.accounts).toEqual([account]);
     });
 });
