@@ -98,6 +98,7 @@ export const resources = {
                 simulations: "Simulazioni",
                 portfolios: "Portafogli",
                 accounts: "Conti",
+                creditCards: "Carte di Credito",
                 balances: "Saldi",
                 categories: "Categorie",
                 settings: "Impostazioni",
@@ -198,6 +199,75 @@ export const resources = {
             createSuccess: "Conto creato correttamente.",
             createErrorFallback: "Non siamo riusciti a creare il conto.",
         },
+        creditCards: {
+            eyebrow: "Base finanziaria",
+            title: "Carte",
+            subtitle:
+                "Gestisci le carte di credito collegate ai tuoi conti SerenityLine.",
+            loading: "Caricamento carte...",
+            loadErrorTitle: "Impossibile caricare le carte.",
+            loadErrorFallback: "Riprova tra qualche istante.",
+            listEyebrow: "Carte collegate",
+            listTitle: "Le tue carte",
+            creditCardsCount: "{{count}} carte",
+            emptyState:
+                "Non hai ancora creato carte. Aggiungi la prima carta collegandola a un conto.",
+            accountFallback: "Conto non disponibile",
+            table: {
+                name: "Nome",
+                account: "Conto",
+                chargeDay: "Giorno di addebito",
+            },
+            chargeDayValue: "Giorno {{day}}",
+            formEyebrow: "Nuova carta",
+            formTitle: "Aggiungi carta",
+            formIntro:
+                "Collega la carta a un conto e indica il giorno di addebito abituale.",
+            noAccountsWarning:
+                "Prima di creare una carta devi avere almeno un conto.",
+            selectAccount: "Seleziona un conto",
+            fields: {
+                creditCardName: "Nome carta",
+                account: "Conto collegato",
+                chargeDay: "Giorno di addebito",
+                description: "Descrizione",
+                optional: "opzionale",
+            },
+            validation: {
+                creditCardNameRequired: "Inserisci il nome della carta.",
+                accountRequired: "Seleziona il conto collegato alla carta.",
+                chargeDayInvalid:
+                    "Inserisci un giorno di addebito valido tra 1 e 31.",
+            },
+            createSubmit: "Crea carta",
+            createSubmitting: "Creazione carta...",
+            createSuccess: "Carta creata correttamente.",
+            createErrorFallback: "Non siamo riusciti a creare la carta.",
+            viewDetails: "Vedi dettaglio",
+            detailLoading: "Caricamento dettaglio carta...",
+            detailErrorFallback:
+                "Non siamo riusciti a caricare il dettaglio della carta.",
+            detailEyebrow: "Dettaglio carta",
+            edit: "Modifica",
+            editFormAriaLabel: "Modifica carta",
+            accountReadonlyHelp:
+                "Il conto collegato non è modificabile per una carta esistente.",
+            updateSubmit: "Salva modifiche",
+            updateSubmitting: "Salvataggio...",
+            cancelEdit: "Annulla",
+            editSuccess: "Carta aggiornata correttamente.",
+            editErrorFallback: "Non siamo riusciti ad aggiornare la carta.",
+            newCreditCard: "Nuova carta",
+            deleteConfirm:
+                "Vuoi eliminare questa carta? L'operazione è possibile solo se non è mai stata usata.",
+            deleteHint:
+                "Puoi eliminare solo carte mai usate in movimenti o transazioni.",
+            deleteSubmit: "Elimina carta",
+            deleteSubmitting: "Eliminazione...",
+            deleteSuccess: "Carta eliminata correttamente.",
+            deleteErrorFallback:
+                "Non siamo riusciti a eliminare la carta. Puoi eliminare solo carte mai usate.",
+        },
         appPages: {
             placeholderBadge: "Area MVP",
             serenityline: {
@@ -229,6 +299,10 @@ export const resources = {
                 title: "Conti",
                 subtitle:
                     "Su quali basi finanziarie si fonda la mia proiezione?",
+            },
+            creditCards: {
+                title: "Carte",
+                subtitle: "Quali carte alimentano la mia proiezione?",
             },
             balances: {
                 title: "Saldi",
@@ -664,6 +738,7 @@ export const resources = {
                 simulations: "Simulations",
                 portfolios: "Portfolios",
                 accounts: "Accounts",
+                creditCards: "Credit Cards",
                 balances: "Balances",
                 categories: "Categories",
                 settings: "Settings",
@@ -762,6 +837,73 @@ export const resources = {
             createSuccess: "Account created successfully.",
             createErrorFallback: "We could not create the account.",
         },
+        creditCards: {
+            eyebrow: "Financial foundation",
+            title: "Cards",
+            subtitle:
+                "Manage the credit cards connected to your SerenityLine accounts.",
+            loading: "Loading cards...",
+            loadErrorTitle: "Unable to load cards.",
+            loadErrorFallback: "Please try again in a moment.",
+            listEyebrow: "Connected cards",
+            listTitle: "Your cards",
+            creditCardsCount: "{{count}} cards",
+            emptyState:
+                "You have not created any cards yet. Add your first card and connect it to an account.",
+            accountFallback: "Account unavailable",
+            table: {
+                name: "Name",
+                account: "Account",
+                chargeDay: "Charge day",
+            },
+            chargeDayValue: "Day {{day}}",
+            formEyebrow: "New card",
+            formTitle: "Add card",
+            formIntro:
+                "Connect the card to an account and set its usual charge day.",
+            noAccountsWarning:
+                "You need at least one account before creating a card.",
+            selectAccount: "Select an account",
+            fields: {
+                creditCardName: "Card name",
+                account: "Connected account",
+                chargeDay: "Charge day",
+                description: "Description",
+                optional: "optional",
+            },
+            validation: {
+                creditCardNameRequired: "Enter the card name.",
+                accountRequired: "Select the account connected to the card.",
+                chargeDayInvalid: "Enter a valid charge day between 1 and 31.",
+            },
+            createSubmit: "Create card",
+            createSubmitting: "Creating card...",
+            createSuccess: "Card created successfully.",
+            createErrorFallback: "We could not create the card.",
+            viewDetails: "View details",
+            detailLoading: "Loading card detail...",
+            detailErrorFallback: "We could not load the card detail.",
+            detailEyebrow: "Card detail",
+            edit: "Edit",
+            editFormAriaLabel: "Edit card",
+            accountReadonlyHelp:
+                "The connected account cannot be changed for an existing card.",
+            updateSubmit: "Save changes",
+            updateSubmitting: "Saving...",
+            cancelEdit: "Cancel",
+            editSuccess: "Card updated successfully.",
+            editErrorFallback: "We could not update the card.",
+            newCreditCard: "New card",
+            deleteConfirm:
+                "Do you want to delete this card? This is only possible if it has never been used.",
+            deleteHint:
+                "You can only delete cards that have never been used in movements or transactions.",
+            deleteSubmit: "Delete card",
+            deleteSubmitting: "Deleting...",
+            deleteSuccess: "Card deleted successfully.",
+            deleteErrorFallback:
+                "We could not delete the card. You can only delete cards that have never been used.",
+        },
         appPages: {
             placeholderBadge: "MVP area",
             serenityline: {
@@ -791,6 +933,10 @@ export const resources = {
             accounts: {
                 title: "Accounts",
                 subtitle: "Which financial bases support my projection?",
+            },
+            creditCards: {
+                title: "Cards",
+                subtitle: "Which cards feed my projection?",
             },
             balances: {
                 title: "Balances",

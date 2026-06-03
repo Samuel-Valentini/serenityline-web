@@ -4,6 +4,7 @@ import type {
     CategoryResponseDto,
     FinancialPriorityResponseDto,
     SimulationGroupResponseDto,
+    CreditCardResponseDto,
 } from "./api/financeApiTypes";
 
 export type FinanceDataStatus = "idle" | "loading" | "loaded" | "failed";
@@ -15,6 +16,7 @@ export type FinanceDataError = {
 
 export type FinanceReferenceData = {
     accounts: AccountResponseDto[];
+    creditCards: CreditCardResponseDto[];
     categories: CategoryResponseDto[];
     buckets: BucketResponseDto[];
     simulationGroups: SimulationGroupResponseDto[];

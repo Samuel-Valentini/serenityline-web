@@ -26,6 +26,7 @@ export const ROUTES = {
         simulations: "/app/simulazioni",
         portfolios: "/app/portafogli",
         accounts: "/app/conti",
+        creditCards: "/app/carte",
         balances: "/app/saldi",
         categories: "/app/categorie",
         settings: "/app/impostazioni",

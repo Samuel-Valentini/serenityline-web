@@ -5,6 +5,7 @@ import {
     findSimulationGroups,
     getAccounts,
     listCategories,
+    listCreditCards,
     listFinancialPriorities,
 } from "./api/financeApi";
 import {
@@ -57,12 +58,14 @@ export function loadFinanceReferenceData(): AppThunk<Promise<void>> {
         try {
             const [
                 accounts,
+                creditCards,
                 categories,
                 buckets,
                 simulationGroups,
                 financialPriorities,
             ] = await Promise.all([
                 getAccounts(),
+                listCreditCards(),
                 listCategories(),
                 findBuckets({ status: "ACTIVE" }),
                 findSimulationGroups({ status: "ACTIVE" }),
@@ -72,6 +75,7 @@ export function loadFinanceReferenceData(): AppThunk<Promise<void>> {
             dispatch(
                 financeReferenceDataLoaded({
                     accounts,
+                    creditCards,
                     categories,
                     buckets,
                     simulationGroups,

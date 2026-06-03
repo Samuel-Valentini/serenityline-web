@@ -8,6 +8,9 @@ export const selectFinanceDataError = (state: RootState) =>
 
 export const selectAccounts = (state: RootState) => state.financeData.accounts;
 
+export const selectCreditCards = (state: RootState) =>
+    state.financeData.creditCards;
+
 export const selectCategories = (state: RootState) =>
     state.financeData.categories;
 

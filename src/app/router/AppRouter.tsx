@@ -21,6 +21,7 @@ import { AcceptInvitationPage } from "../../pages/auth/AcceptInvitationPage";
 import { SettingsPage } from "../../pages/app/SettingsPage";
 import { ConfirmEmailChangePage } from "../../pages/auth/ConfirmEmailChangePage";
 import { AccountsPage } from "../../pages/app/AccountsPage";
+import { CreditCardsPage } from "../../pages/app/CreditCardsPage";
 
 export function AppRouter() {
     return (
@@ -130,6 +131,7 @@ export function AppRouter() {
                             }
                         />
                         <Route path="conti" element={<AccountsPage />} />
+                        <Route path="carte" element={<CreditCardsPage />} />
                         <Route
                             path="saldi"
                             element={<AppPlaceholderPage pageKey="balances" />}

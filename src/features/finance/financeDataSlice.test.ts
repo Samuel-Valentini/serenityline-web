@@ -9,8 +9,22 @@ import {
     financeReferenceDataLoadingStarted,
     initialFinanceDataState,
     accountUpdated,
+    creditCardAdded,
+    creditCardUpdated,
+    creditCardDeleted,
 } from "./financeDataSlice";
 import type { FinanceReferenceData } from "./financeDataTypes";
+
+const creditCard = {
+    creditCardId: "credit-card-id",
+    creditCardName: "Carta principale",
+    creditCardDescription: null,
+    creditCardChargeDay: 15,
+    accountId: "account-id",
+    userGroupId: "group-id",
+    creditCardCreatedAt: "2026-01-01T00:00:00Z",
+    creditCardUpdatedAt: "2026-01-01T00:00:00Z",
+};
 
 const referenceData: FinanceReferenceData = {
     accounts: [
@@ -27,6 +41,7 @@ const referenceData: FinanceReferenceData = {
             accountUpdatedAt: "2026-01-01T00:00:00Z",
         },
     ],
+    creditCards: [creditCard],
     categories: [
         {
             categoryId: "category-id",
@@ -92,6 +107,7 @@ describe("financeDataSlice", () => {
         expect(state.status).toBe("loaded");
         expect(state.error).toBeNull();
         expect(state.accounts).toHaveLength(1);
+        expect(state.creditCards).toHaveLength(1);
         expect(state.categories).toHaveLength(1);
         expect(state.buckets).toHaveLength(1);
         expect(state.simulationGroups).toHaveLength(1);
@@ -176,5 +192,60 @@ describe("financeDataSlice", () => {
         );
 
         expect(state.accounts).toEqual([updatedAccount]);
+    });
+
+    it("adds a credit card to the finance data state", () => {
+        const newCreditCard = {
+            ...creditCard,
+            creditCardId: "new-credit-card-id",
+            creditCardName: "Nuova carta",
+            creditCardChargeDay: 20,
+            creditCardCreatedAt: "2026-06-03T10:00:00Z",
+            creditCardUpdatedAt: "2026-06-03T10:00:00Z",
+        };
+
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                status: "loaded",
+            },
+            creditCardAdded(newCreditCard),
+        );
+
+        expect(state.creditCards).toEqual([newCreditCard]);
+    });
+
+    it("updates a credit card in the finance data state", () => {
+        const updatedCreditCard = {
+            ...creditCard,
+            creditCardName: "Carta aggiornata",
+            creditCardDescription: "Descrizione aggiornata",
+            creditCardChargeDay: 10,
+            creditCardUpdatedAt: "2026-06-03T10:00:00Z",
+        };
+
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                creditCards: [creditCard],
+                status: "loaded",
+            },
+            creditCardUpdated(updatedCreditCard),
+        );
+
+        expect(state.creditCards).toEqual([updatedCreditCard]);
+    });
+
+    it("deletes a credit card from the finance data state", () => {
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                creditCards: [creditCard],
+                status: "loaded",
+            },
+            creditCardDeleted(creditCard.creditCardId),
+        );
+
+        expect(state.creditCards).toEqual([]);
     });
 });

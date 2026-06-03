@@ -5,6 +5,7 @@ import {
     findSimulationGroups,
     getAccounts,
     listCategories,
+    listCreditCards,
     listFinancialPriorities,
 } from "./api/financeApi";
 import {
@@ -14,12 +15,14 @@ import {
 } from "./financeDataSlice";
 import { loadFinanceReferenceData } from "./financeDataThunks";
 import { describe, expect, it, vi } from "vitest";
+import type { CreditCardResponseDto } from "./api/financeApiTypes";
 
 vi.mock("./api/financeApi", () => ({
     findBuckets: vi.fn(),
     findSimulationGroups: vi.fn(),
     getAccounts: vi.fn(),
     listCategories: vi.fn(),
+    listCreditCards: vi.fn(),
     listFinancialPriorities: vi.fn(),
 }));
 
@@ -52,6 +55,8 @@ describe("financeDataThunks", () => {
                 accountUpdatedAt: "2026-01-01T00:00:00Z",
             },
         ];
+
+        const creditCards: CreditCardResponseDto[] = [];
 
         const categories = [
             {
@@ -98,6 +103,7 @@ describe("financeDataThunks", () => {
         ];
 
         vi.mocked(getAccounts).mockResolvedValueOnce(accounts);
+        vi.mocked(listCreditCards).mockResolvedValueOnce(creditCards);
         vi.mocked(listCategories).mockResolvedValueOnce(categories);
         vi.mocked(findBuckets).mockResolvedValueOnce(buckets);
         vi.mocked(findSimulationGroups).mockResolvedValueOnce(simulationGroups);
@@ -118,6 +124,7 @@ describe("financeDataThunks", () => {
             financeReferenceDataLoadingStarted(),
             financeReferenceDataLoaded({
                 accounts,
+                creditCards,
                 categories,
                 buckets,
                 simulationGroups,
@@ -133,7 +140,7 @@ describe("financeDataThunks", () => {
                 message: "Finance error",
             }),
         );
-
+        vi.mocked(listCreditCards).mockResolvedValueOnce([]);
         vi.mocked(listCategories).mockResolvedValueOnce([]);
         vi.mocked(findBuckets).mockResolvedValueOnce([]);
         vi.mocked(findSimulationGroups).mockResolvedValueOnce([]);

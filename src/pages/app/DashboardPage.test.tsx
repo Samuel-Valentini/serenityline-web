@@ -27,6 +27,7 @@ const referenceData: FinanceReferenceData = {
             accountUpdatedAt: "2026-01-01T00:00:00Z",
         },
     ],
+    creditCards: [],
     categories: [
         {
             categoryId: "category-id",
@@ -140,6 +141,7 @@ describe("DashboardPage", () => {
         store.dispatch(
             financeReferenceDataLoaded({
                 accounts: [],
+                creditCards: [],
                 categories: [],
                 buckets: [],
                 simulationGroups: [],

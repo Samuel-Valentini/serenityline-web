@@ -1,6 +1,9 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-import type { AccountResponseDto } from "./api/financeApiTypes";
+import type {
+    AccountResponseDto,
+    CreditCardResponseDto,
+} from "./api/financeApiTypes";
 
 import type {
     FinanceDataError,
@@ -12,6 +15,7 @@ export const initialFinanceDataState: FinanceDataState = {
     status: "idle",
     error: null,
     accounts: [],
+    creditCards: [],
     categories: [],
     buckets: [],
     simulationGroups: [],
@@ -33,6 +37,7 @@ const financeDataSlice = createSlice({
             state.status = "loaded";
             state.error = null;
             state.accounts = action.payload.accounts;
+            state.creditCards = action.payload.creditCards;
             state.categories = action.payload.categories;
             state.buckets = action.payload.buckets;
             state.simulationGroups = action.payload.simulationGroups;
@@ -50,6 +55,24 @@ const financeDataSlice = createSlice({
                 state.accounts[accountIndex] = action.payload;
             }
         },
+        creditCardAdded(state, action: PayloadAction<CreditCardResponseDto>) {
+            state.creditCards.push(action.payload);
+        },
+        creditCardUpdated(state, action: PayloadAction<CreditCardResponseDto>) {
+            const creditCardIndex = state.creditCards.findIndex(
+                (creditCard) =>
+                    creditCard.creditCardId === action.payload.creditCardId,
+            );
+
+            if (creditCardIndex >= 0) {
+                state.creditCards[creditCardIndex] = action.payload;
+            }
+        },
+        creditCardDeleted(state, action: PayloadAction<string>) {
+            state.creditCards = state.creditCards.filter(
+                (creditCard) => creditCard.creditCardId !== action.payload,
+            );
+        },
         financeReferenceDataLoadingFailed(
             state,
             action: PayloadAction<FinanceDataError>,
@@ -65,11 +88,14 @@ const financeDataSlice = createSlice({
 
 export const {
     accountAdded,
+    accountUpdated,
+    creditCardAdded,
+    creditCardUpdated,
+    creditCardDeleted,
     financeDataCleared,
     financeReferenceDataLoaded,
     financeReferenceDataLoadingFailed,
     financeReferenceDataLoadingStarted,
-    accountUpdated,
 } = financeDataSlice.actions;
 
 export const financeDataReducer = financeDataSlice.reducer;
