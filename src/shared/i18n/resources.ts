@@ -107,16 +107,33 @@ export const resources = {
         dashboard: {
             title: "Dashboard",
             subtitle: "Cosa devo sapere adesso?",
-            cards: {
-                serenitylineTitle: "SerenityLine",
-                serenitylineText:
-                    "La proiezione della liquidità futura sarà il cuore operativo dell'app.",
-                calendarTitle: "Calendario",
-                calendarText:
-                    "Qui leggerai entrate, uscite e scadenze giorno per giorno.",
-                simulationsTitle: "Simulazioni",
-                simulationsText:
-                    "Qui confronterai scenari alternativi prima di prendere decisioni.",
+            loading: "Caricamento dati finanziari...",
+            loadErrorTitle: "Impossibile caricare i dati finanziari.",
+            loadErrorFallback: "Riprova tra qualche istante.",
+            emptyState: {
+                title: "Non hai ancora dati finanziari",
+                text: "Aggiungi il primo conto per iniziare a costruire la tua proiezione SerenityLine.",
+            },
+            metrics: {
+                accounts: "Conti",
+                accountsDescription: "Conti collegati alla tua proiezione.",
+                buckets: "Portafogli",
+                bucketsDescription:
+                    "Portafogli attivi per organizzare la liquidità.",
+                simulations: "Simulazioni",
+                simulationsDescription:
+                    "Scenari attivi per confrontare decisioni.",
+                categories: "Categorie",
+                categoriesDescription:
+                    "Categorie attive per classificare i movimenti.",
+            },
+            sections: {
+                nextSteps: "Prossimi passi",
+                nextStepsText:
+                    "La dashboard userà questi dati come base per saldi, calendario, simulazioni e SerenityLine.",
+                priorities: "Priorità finanziarie",
+                prioritiesText:
+                    "Sono disponibili {{count}} priorità per distinguere movimenti critici, essenziali e opzionali.",
             },
         },
         appPages: {
@@ -593,17 +610,34 @@ export const resources = {
         },
         dashboard: {
             title: "Dashboard",
-            subtitle: "What do I need to know now?",
-            cards: {
-                serenitylineTitle: "SerenityLine",
-                serenitylineText:
-                    "The future liquidity projection will be the operational heart of the app.",
-                calendarTitle: "Calendar",
-                calendarText:
-                    "Here you will read income, expenses and deadlines day by day.",
-                simulationsTitle: "Simulations",
-                simulationsText:
-                    "Here you will compare alternative scenarios before making decisions.",
+            subtitle: "What should I know right now?",
+            loading: "Loading financial data...",
+            loadErrorTitle: "Could not load financial data.",
+            loadErrorFallback: "Please try again in a moment.",
+            emptyState: {
+                title: "You do not have financial data yet",
+                text: "Add your first account to start building your SerenityLine projection.",
+            },
+            metrics: {
+                accounts: "Accounts",
+                accountsDescription: "Accounts connected to your projection.",
+                buckets: "Portfolios",
+                bucketsDescription:
+                    "Active portfolios used to organize liquidity.",
+                simulations: "Simulations",
+                simulationsDescription:
+                    "Active scenarios for comparing decisions.",
+                categories: "Categories",
+                categoriesDescription:
+                    "Active categories used to classify movements.",
+            },
+            sections: {
+                nextSteps: "Next steps",
+                nextStepsText:
+                    "The dashboard will use this data as the foundation for balances, calendar, simulations and SerenityLine.",
+                priorities: "Financial priorities",
+                prioritiesText:
+                    "{{count}} priorities are available to distinguish critical, essential and optional movements.",
             },
         },
         appPages: {
