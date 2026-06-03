@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 import {
@@ -7,11 +8,14 @@ import {
     selectCurrentUser,
 } from "../../features/account/accountSelectors";
 import { loadCurrentUser } from "../../features/account/accountThunks";
+import { exportCurrentUserData } from "../../features/account/api/accountApi";
 
 type SettingsDetailRowProps = {
     label: string;
     value: string;
 };
+
+type ExportStatus = "idle" | "loading" | "success" | "failed";
 
 function valueOrFallback(value: string | null | undefined): string {
     return value?.trim() ? value : "—";
@@ -26,6 +30,19 @@ function SettingsDetailRow({ label, value }: SettingsDetailRowProps) {
     );
 }
 
+function downloadBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+}
+
 export function SettingsPage() {
     const { t } = useTranslation("settings");
     const dispatch = useAppDispatch();
@@ -33,6 +50,7 @@ export function SettingsPage() {
     const accountStatus = useAppSelector(selectAccountStatus);
     const accountError = useAppSelector(selectAccountError);
     const currentUser = useAppSelector(selectCurrentUser);
+    const [exportStatus, setExportStatus] = useState<ExportStatus>("idle");
 
     const isInitialLoading = accountStatus === "loading" && !currentUser;
     const hasError = accountStatus === "failed" && accountError !== null;
@@ -60,6 +78,23 @@ export function SettingsPage() {
 
     function handleReloadCurrentUser() {
         void dispatch(loadCurrentUser());
+    }
+
+    async function exportAccountData() {
+        setExportStatus("loading");
+
+        try {
+            const file = await exportCurrentUserData();
+
+            downloadBlob(file.blob, file.filename);
+            setExportStatus("success");
+        } catch {
+            setExportStatus("failed");
+        }
+    }
+
+    function handleExportAccountData() {
+        void exportAccountData();
     }
 
     return (
@@ -177,6 +212,37 @@ export function SettingsPage() {
                                 ) : null}
                             </dl>
                         </article>
+                    </div>
+
+                    <div className="row g-3 mt-1 text-center">
+                        <div className="col-12">
+                            <article className="sl-panel">
+                                <h2>{t("sections.accountData")}</h2>
+                                <p>{t("accountExport.description")}</p>
+
+                                <button
+                                    className="btn btn-outline-primary"
+                                    disabled={exportStatus === "loading"}
+                                    onClick={handleExportAccountData}
+                                    type="button">
+                                    {exportStatus === "loading"
+                                        ? t("accountExport.loading")
+                                        : t("accountExport.button")}
+                                </button>
+
+                                {exportStatus === "success" ? (
+                                    <p className="text-success mt-3 mb-0">
+                                        {t("accountExport.success")}
+                                    </p>
+                                ) : null}
+
+                                {exportStatus === "failed" ? (
+                                    <p className="text-danger mt-3 mb-0">
+                                        {t("accountExport.error")}
+                                    </p>
+                                ) : null}
+                            </article>
+                        </div>
                     </div>
                 </div>
             ) : null}

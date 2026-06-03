@@ -341,6 +341,7 @@ export const resources = {
                 profile: "Profilo",
                 preferences: "Preferenze",
                 security: "Sicurezza",
+                accountData: "Dati account",
             },
             fields: {
                 userName: "Nome",
@@ -373,13 +374,22 @@ export const resources = {
             userRoles: {
                 OWNER: "Proprietario",
                 SUPER_COLLABORATOR: "Collaboratore avanzato",
-                VIEWER_COLLABORATOR: "Collaboratore con visibilità su tutti i conti",
+                VIEWER_COLLABORATOR:
+                    "Collaboratore con visibilità su tutti i conti",
                 COLLABORATOR: "Collaboratore",
             },
             platformRoles: {
                 USER: "Utente",
                 ADMIN: "Amministratore",
                 SUPERADMIN: "Super amministratore",
+            },
+            accountExport: {
+                description:
+                    "Scarica una copia dei dati associati al tuo account SerenityLine.",
+                button: "Esporta dati account",
+                loading: "Preparazione export...",
+                success: "Export scaricato correttamente.",
+                error: "Non è stato possibile esportare i dati. Riprova tra qualche istante.",
             },
         },
     },
@@ -719,6 +729,7 @@ export const resources = {
                 profile: "Profile",
                 preferences: "Preferences",
                 security: "Security",
+                accountData: "Account data",
             },
             fields: {
                 userName: "Name",
@@ -759,6 +770,14 @@ export const resources = {
                 USER: "User",
                 ADMIN: "Administrator",
                 SUPERADMIN: "Super administrator",
+            },
+            accountExport: {
+                description:
+                    "Download a copy of the data associated with your SerenityLine account.",
+                button: "Export account data",
+                loading: "Preparing export...",
+                success: "Export downloaded successfully.",
+                error: "Could not export your data. Please try again in a moment.",
             },
         },
     },

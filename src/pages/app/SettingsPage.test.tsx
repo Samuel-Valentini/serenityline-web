@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
@@ -10,10 +10,25 @@ import {
     accountLoadingStarted,
 } from "../../features/account/accountSlice";
 import { SettingsPage } from "./SettingsPage";
+import * as accountApi from "../../features/account/api/accountApi";
 
 describe("SettingsPage", () => {
+    const createObjectUrlMock = vi.fn(() => "blob:account-export");
+    const revokeObjectUrlMock = vi.fn();
     beforeEach(() => {
         store.dispatch(accountCleared());
+        createObjectUrlMock.mockClear();
+        revokeObjectUrlMock.mockClear();
+
+        Object.defineProperty(URL, "createObjectURL", {
+            configurable: true,
+            value: createObjectUrlMock,
+        });
+
+        Object.defineProperty(URL, "revokeObjectURL", {
+            configurable: true,
+            value: revokeObjectUrlMock,
+        });
     });
 
     function renderPage() {
@@ -113,5 +128,49 @@ describe("SettingsPage", () => {
 
         expect(screen.getByText("Ruolo piattaforma")).toBeInTheDocument();
         expect(screen.getByText("Amministratore")).toBeInTheDocument();
+    });
+
+    it("exports the current user account data", async () => {
+        const exportSpy = vi.spyOn(accountApi, "exportCurrentUserData");
+
+        exportSpy.mockResolvedValueOnce({
+            blob: new Blob(["zip-content"], { type: "application/zip" }),
+            filename: "serenityline-export.zip",
+        });
+
+        store.dispatch(
+            accountLoaded({
+                userId: "user-id",
+                userName: "Samuel",
+                email: "samuel@example.com",
+                userGroupId: "group-id",
+                userGroupName: "Famiglia Valentini",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+                emailTwoFactorEnabled: false,
+                paymentEmailRemindersEnabled: true,
+            }),
+        );
+
+        renderPage();
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Esporta dati account" }),
+        );
+
+        await waitFor(() => {
+            expect(exportSpy).toHaveBeenCalledOnce();
+        });
+
+        expect(createObjectUrlMock).toHaveBeenCalledOnce();
+        expect(revokeObjectUrlMock).toHaveBeenCalledWith("blob:account-export");
+        expect(
+            await screen.findByText("Export scaricato correttamente."),
+        ).toBeInTheDocument();
+
+        exportSpy.mockRestore();
     });
 });
