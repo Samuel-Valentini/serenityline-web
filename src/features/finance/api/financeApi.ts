@@ -22,6 +22,14 @@ import type {
     RecurringTransactionOccurrenceConfirmRequestDto,
     RecurringTransactionPatchRequestDto,
     RecurringTransactionResponseDto,
+    CreditCardResponseDto,
+    CreateCreditCardRequestDto,
+    UpdateCreditCardRequestDto,
+    FindSimulationGroupsRequestDto,
+    FinancialPriorityResponseDto,
+    SimulationGroupCreateRequestDto,
+    SimulationGroupResponseDto,
+    SimulationGroupUpdateRequestDto,
 } from "./financeApiTypes";
 
 function encodePathSegment(value: string): string {
@@ -80,6 +88,20 @@ function buildRecurringTransactionQuery(
     const query = params.toString();
 
     return query ? `?${query}` : "";
+}
+
+function buildSimulationGroupQuery(
+    request?: FindSimulationGroupsRequestDto,
+): string {
+    if (!request?.status) {
+        return "";
+    }
+
+    const params = new URLSearchParams({
+        status: request.status,
+    });
+
+    return `?${params.toString()}`;
 }
 
 export async function getAccounts(): Promise<AccountResponseDto[]> {
@@ -403,5 +425,155 @@ export async function confirmRecurringTransactionOccurrence(
             method: "POST",
             body: request,
         },
+    );
+}
+
+export async function listCreditCards(): Promise<CreditCardResponseDto[]> {
+    return apiRequest<CreditCardResponseDto[]>("/api/finance/credit-cards");
+}
+
+export async function getCreditCard(
+    creditCardId: Uuid,
+): Promise<CreditCardResponseDto> {
+    return apiRequest<CreditCardResponseDto>(
+        `/api/finance/credit-cards/${encodePathSegment(creditCardId)}`,
+    );
+}
+
+export async function createCreditCard(
+    request: CreateCreditCardRequestDto,
+): Promise<CreditCardResponseDto> {
+    return apiRequest<CreditCardResponseDto>("/api/finance/credit-cards", {
+        method: "POST",
+        body: request,
+    });
+}
+
+export async function updateCreditCard(
+    creditCardId: Uuid,
+    request: UpdateCreditCardRequestDto,
+): Promise<CreditCardResponseDto> {
+    return apiRequest<CreditCardResponseDto>(
+        `/api/finance/credit-cards/${encodePathSegment(creditCardId)}`,
+        {
+            method: "PATCH",
+            body: request,
+        },
+    );
+}
+
+export async function deleteCreditCard(creditCardId: Uuid): Promise<void> {
+    return apiRequest<void>(
+        `/api/finance/credit-cards/${encodePathSegment(creditCardId)}`,
+        {
+            method: "DELETE",
+        },
+    );
+}
+
+export async function findSimulationGroups(
+    request?: FindSimulationGroupsRequestDto,
+): Promise<SimulationGroupResponseDto[]> {
+    return apiRequest<SimulationGroupResponseDto[]>(
+        `/api/finance/simulation-groups${buildSimulationGroupQuery(request)}`,
+    );
+}
+
+export async function findSimulationGroup(
+    simulationGroupId: Uuid,
+): Promise<SimulationGroupResponseDto> {
+    return apiRequest<SimulationGroupResponseDto>(
+        `/api/finance/simulation-groups/${encodePathSegment(
+            simulationGroupId,
+        )}`,
+    );
+}
+
+export async function createSimulationGroup(
+    request: SimulationGroupCreateRequestDto,
+): Promise<SimulationGroupResponseDto> {
+    return apiRequest<SimulationGroupResponseDto>(
+        "/api/finance/simulation-groups",
+        {
+            method: "POST",
+            body: request,
+        },
+    );
+}
+
+export async function updateSimulationGroup(
+    simulationGroupId: Uuid,
+    request: SimulationGroupUpdateRequestDto,
+): Promise<SimulationGroupResponseDto> {
+    return apiRequest<SimulationGroupResponseDto>(
+        `/api/finance/simulation-groups/${encodePathSegment(
+            simulationGroupId,
+        )}`,
+        {
+            method: "PATCH",
+            body: request,
+        },
+    );
+}
+
+export async function archiveSimulationGroup(
+    simulationGroupId: Uuid,
+): Promise<SimulationGroupResponseDto> {
+    return apiRequest<SimulationGroupResponseDto>(
+        `/api/finance/simulation-groups/${encodePathSegment(
+            simulationGroupId,
+        )}/archive`,
+        {
+            method: "POST",
+        },
+    );
+}
+
+export async function restoreSimulationGroup(
+    simulationGroupId: Uuid,
+): Promise<SimulationGroupResponseDto> {
+    return apiRequest<SimulationGroupResponseDto>(
+        `/api/finance/simulation-groups/${encodePathSegment(
+            simulationGroupId,
+        )}/restore`,
+        {
+            method: "POST",
+        },
+    );
+}
+
+export async function linkSimulationGroupAccount(
+    simulationGroupId: Uuid,
+    accountId: Uuid,
+): Promise<SimulationGroupResponseDto> {
+    return apiRequest<SimulationGroupResponseDto>(
+        `/api/finance/simulation-groups/${encodePathSegment(
+            simulationGroupId,
+        )}/accounts/${encodePathSegment(accountId)}`,
+        {
+            method: "POST",
+        },
+    );
+}
+
+export async function unlinkSimulationGroupAccount(
+    simulationGroupId: Uuid,
+    accountId: Uuid,
+): Promise<SimulationGroupResponseDto> {
+    return apiRequest<SimulationGroupResponseDto>(
+        `/api/finance/simulation-groups/${encodePathSegment(
+            simulationGroupId,
+        )}/accounts/${encodePathSegment(accountId)}`,
+        {
+            method: "DELETE",
+        },
+    );
+}
+
+export async function listFinancialPriorities(): Promise<
+    FinancialPriorityResponseDto[]
+> {
+    return apiRequest<FinancialPriorityResponseDto[]>(
+        "/api/finance/financial-priorities",
     );
 }

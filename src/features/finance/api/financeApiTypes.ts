@@ -292,3 +292,62 @@ export type RecurringTransactionHistoryResponseDto = {
     ruleHistory: RecurringTransactionRuleHistoryItemResponseDto[];
     detailsHistory: RecurringTransactionDetailsHistoryItemResponseDto[];
 };
+
+export type CreditCardResponseDto = {
+    creditCardId: Uuid;
+    creditCardName: string;
+    creditCardDescription: string | null;
+    creditCardChargeDay: number;
+    accountId: Uuid;
+    userGroupId: Uuid;
+    creditCardCreatedAt: IsoDateTime;
+    creditCardUpdatedAt: IsoDateTime;
+};
+
+export type CreateCreditCardRequestDto = {
+    creditCardName: string;
+    creditCardDescription?: string | null;
+    creditCardChargeDay: number;
+    accountId: Uuid;
+};
+
+export type UpdateCreditCardRequestDto = {
+    creditCardName?: string | null;
+    creditCardDescription?: string | null;
+    creditCardChargeDay?: number | null;
+};
+
+export type SimulationGroupStatusFilter = "ACTIVE" | "ARCHIVED" | "ALL";
+
+export type SimulationGroupResponseDto = {
+    simulationGroupId: Uuid;
+    simulationGroupName: string;
+    simulationGroupDescription: string | null;
+    simulationGroupCreatedAt: IsoDateTime;
+    simulationGroupUpdatedAt: IsoDateTime;
+    simulationGroupArchivedAt: IsoDateTime | null;
+    accountIds: Uuid[];
+};
+
+export type SimulationGroupCreateRequestDto = {
+    simulationGroupName: string;
+    simulationGroupDescription?: string | null;
+    accountIds?: Uuid[] | null;
+};
+
+export type SimulationGroupUpdateRequestDto = {
+    simulationGroupName?: string | null;
+    simulationGroupDescription?: string | null;
+};
+
+export type FindSimulationGroupsRequestDto = {
+    status?: SimulationGroupStatusFilter;
+};
+
+export type FinancialPriorityResponseDto = {
+    financialPriorityId: Uuid;
+    financialPriorityCode: string;
+    financialPriorityDisplayName: string;
+    financialPriorityDescription: string;
+    financialPriorityRanking: number;
+};

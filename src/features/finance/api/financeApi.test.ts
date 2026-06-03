@@ -28,6 +28,20 @@ import {
     getRecurringTransactionHistory,
     listRecurringTransactions,
     patchRecurringTransaction,
+    archiveSimulationGroup,
+    createCreditCard,
+    createSimulationGroup,
+    deleteCreditCard,
+    findSimulationGroup,
+    findSimulationGroups,
+    getCreditCard,
+    linkSimulationGroupAccount,
+    listCreditCards,
+    listFinancialPriorities,
+    restoreSimulationGroup,
+    unlinkSimulationGroupAccount,
+    updateCreditCard,
+    updateSimulationGroup,
 } from "./financeApi";
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
@@ -699,5 +713,221 @@ describe("financeApi", () => {
             transactionAmount: -850,
             transactionChargeDate: "2026-06-05",
         });
+    });
+
+    it("lists credit cards", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse([]));
+
+        await listCreditCards();
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/credit-cards");
+        expect(init?.method).toBe("GET");
+    });
+
+    it("gets a credit card by id", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await getCreditCard("credit-card-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/credit-cards/credit-card-id",
+        );
+        expect(init?.method).toBe("GET");
+    });
+
+    it("sends the expected create credit card body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await createCreditCard({
+            creditCardName: "Carta principale",
+            creditCardDescription: "Carta Visa",
+            creditCardChargeDay: 15,
+            accountId: "account-id",
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/credit-cards");
+        expect(init?.method).toBe("POST");
+        expect(getLastRequestBody()).toEqual({
+            creditCardName: "Carta principale",
+            creditCardDescription: "Carta Visa",
+            creditCardChargeDay: 15,
+            accountId: "account-id",
+        });
+    });
+
+    it("sends the expected update credit card body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await updateCreditCard("credit-card-id", {
+            creditCardName: "Carta aggiornata",
+            creditCardDescription: "Descrizione aggiornata",
+            creditCardChargeDay: 20,
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/credit-cards/credit-card-id",
+        );
+        expect(init?.method).toBe("PATCH");
+        expect(getLastRequestBody()).toEqual({
+            creditCardName: "Carta aggiornata",
+            creditCardDescription: "Descrizione aggiornata",
+            creditCardChargeDay: 20,
+        });
+    });
+
+    it("deletes a credit card without a request body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(noContentResponse());
+
+        await deleteCreditCard("credit-card-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/credit-cards/credit-card-id",
+        );
+        expect(init?.method).toBe("DELETE");
+        expect(init?.body).toBeUndefined();
+    });
+
+    it("adds the expected simulation group status query parameter", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse([]));
+
+        await findSimulationGroups({
+            status: "ARCHIVED",
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/simulation-groups");
+        expect(getLastRequestSearch()).toBe("?status=ARCHIVED");
+        expect(init?.method).toBe("GET");
+    });
+
+    it("gets a simulation group by id", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await findSimulationGroup("simulation-group-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/simulation-groups/simulation-group-id",
+        );
+        expect(init?.method).toBe("GET");
+    });
+
+    it("sends the expected create simulation group body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await createSimulationGroup({
+            simulationGroupName: "Scenario prudente",
+            simulationGroupDescription: "Scenario con spese ridotte",
+            accountIds: ["account-1", "account-2"],
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/simulation-groups");
+        expect(init?.method).toBe("POST");
+        expect(getLastRequestBody()).toEqual({
+            simulationGroupName: "Scenario prudente",
+            simulationGroupDescription: "Scenario con spese ridotte",
+            accountIds: ["account-1", "account-2"],
+        });
+    });
+
+    it("sends the expected update simulation group body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await updateSimulationGroup("simulation-group-id", {
+            simulationGroupName: "Scenario aggiornato",
+            simulationGroupDescription: "Descrizione aggiornata",
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/simulation-groups/simulation-group-id",
+        );
+        expect(init?.method).toBe("PATCH");
+        expect(getLastRequestBody()).toEqual({
+            simulationGroupName: "Scenario aggiornato",
+            simulationGroupDescription: "Descrizione aggiornata",
+        });
+    });
+
+    it("archives a simulation group without a request body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await archiveSimulationGroup("simulation-group-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/simulation-groups/simulation-group-id/archive",
+        );
+        expect(init?.method).toBe("POST");
+        expect(init?.body).toBeUndefined();
+    });
+
+    it("restores a simulation group without a request body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await restoreSimulationGroup("simulation-group-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/simulation-groups/simulation-group-id/restore",
+        );
+        expect(init?.method).toBe("POST");
+        expect(init?.body).toBeUndefined();
+    });
+
+    it("links an account to a simulation group without a request body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await linkSimulationGroupAccount("simulation-group-id", "account-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/simulation-groups/simulation-group-id/accounts/account-id",
+        );
+        expect(init?.method).toBe("POST");
+        expect(init?.body).toBeUndefined();
+    });
+
+    it("unlinks an account from a simulation group without a request body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}));
+
+        await unlinkSimulationGroupAccount("simulation-group-id", "account-id");
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe(
+            "/api/finance/simulation-groups/simulation-group-id/accounts/account-id",
+        );
+        expect(init?.method).toBe("DELETE");
+        expect(init?.body).toBeUndefined();
+    });
+
+    it("lists financial priorities", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse([]));
+
+        await listFinancialPriorities();
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/finance/financial-priorities");
+        expect(init?.method).toBe("GET");
     });
 });
