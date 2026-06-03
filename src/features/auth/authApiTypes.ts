@@ -54,6 +54,11 @@ export type LoginResult =
           type: "twoFactorRequired";
           challengeId: string;
           codeExpiresAt: string;
+      }
+    | {
+          type: "restoreRequired";
+          restoreToken: string;
+          restoreTokenExpiresAt: string;
       };
 
 export type RegisterRequestDto = {
@@ -94,22 +99,41 @@ export type ResetPasswordRequestDto = {
 };
 
 export type AcceptUserInvitationRequestDto = {
-  token: string;
-  password: string;
+    token: string;
+    password: string;
 };
 
 export type ResendEmailVerificationRequestDto = {
-  emailVerificationResendToken: string;
+    emailVerificationResendToken: string;
 };
 
 export type EmailVerificationRequiredResponseDto = {
-  userId: string;
-  email: string;
-  emailVerificationResendToken: string;
-  emailVerificationResendTokenExpiresAt: string;
-  emailVerificationResendAvailableAt: string;
+    userId: string;
+    email: string;
+    emailVerificationResendToken: string;
+    emailVerificationResendTokenExpiresAt: string;
+    emailVerificationResendAvailableAt: string;
 };
 
 export type ConfirmEmailChangeRequestDto = {
     token: string;
 };
+
+export type RestoreAccountChallengeResponseDto = {
+    restoreToken: string;
+    restoreTokenExpiresAt: string;
+};
+
+export type RestoreAccountRequestDto = {
+    restoreToken: string;
+};
+
+export type RestoreAccountResult =
+    | {
+          type: "restored";
+          user: LoginUserDto;
+      }
+    | {
+          type: "emailVerificationRequired";
+          emailVerificationRequired: EmailVerificationRequiredResponseDto;
+      };

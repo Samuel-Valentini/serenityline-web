@@ -1,4 +1,7 @@
-import type { EmailVerificationRequiredResponseDto } from "./authApiTypes";
+import type {
+    EmailVerificationRequiredResponseDto,
+    RestoreAccountChallengeResponseDto,
+} from "./authApiTypes";
 
 export type AuthStatus =
     | "anonymous"
@@ -30,6 +33,7 @@ export type AuthError = {
     code: string;
     message?: string;
     emailVerificationRequired?: EmailVerificationRequiredResponseDto;
+    restoreAccountChallenge?: RestoreAccountChallengeResponseDto;
 };
 
 export type AuthState = {

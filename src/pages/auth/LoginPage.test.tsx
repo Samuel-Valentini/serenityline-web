@@ -4,7 +4,10 @@ import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { resendEmailVerification } from "../../features/auth/authApi";
+import {
+    resendEmailVerification,
+    restoreAccount,
+} from "../../features/auth/authApi";
 import type { EmailVerificationRequiredResponseDto } from "../../features/auth/authApiTypes";
 import { authReducer } from "../../features/auth/authSlice";
 import type { AuthState } from "../../features/auth/authTypes";
@@ -37,6 +40,16 @@ vi.mock("react-i18next", () => ({
                 emailVerificationResendErrorTitle: "Reinvio non riuscito",
                 emailVerificationResendErrorFallback:
                     "Non siamo riusciti a inviare un nuovo link. Riprova tra qualche istante.",
+                restoreAccountRequiredTitle: "Account in cancellazione",
+                restoreAccountRequiredText:
+                    "Questo account è stato messo in cancellazione.",
+                restoreAccountSubmit: "Ripristina account",
+                restoreAccountSubmitting: "Ripristino in corso...",
+                restoreAccountSuccess:
+                    "Account ripristinato correttamente. Ora puoi effettuare di nuovo l'accesso.",
+                restoreAccountErrorTitle: "Ripristino non riuscito",
+                restoreAccountErrorFallback:
+                    "Non è stato possibile ripristinare l'account.",
             };
 
             return translations[key] ?? key;
@@ -51,6 +64,7 @@ vi.mock("../../features/auth/authApi", async (importOriginal) => {
     return {
         ...actual,
         resendEmailVerification: vi.fn(),
+        restoreAccount: vi.fn(),
     };
 });
 
@@ -150,6 +164,56 @@ describe("LoginPage", () => {
         expect(
             await screen.findByText(
                 "Abbiamo inviato un nuovo link di verifica. Controlla la tua email.",
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it("restores a deleted account from the login restore challenge", async () => {
+        vi.mocked(restoreAccount).mockResolvedValueOnce({
+            type: "restored",
+            user: {
+                userId: "user-id",
+                userName: "Samuel",
+                email: "samuel@example.com",
+                userGroupId: "group-id",
+                userGroupName: "Famiglia Valentini",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+            },
+        });
+
+        renderLoginPage({
+            error: {
+                code: "auth.restoreAccount.required",
+                restoreAccountChallenge: {
+                    restoreToken: "restore-token",
+                    restoreTokenExpiresAt: "2026-06-03T18:00:00Z",
+                },
+            },
+        });
+
+        expect(
+            screen.getByText("Account in cancellazione"),
+        ).toBeInTheDocument();
+
+        fireEvent.click(
+            screen.getByRole("button", {
+                name: "Ripristina account",
+            }),
+        );
+
+        await waitFor(() => {
+            expect(restoreAccount).toHaveBeenCalledWith({
+                restoreToken: "restore-token",
+            });
+        });
+
+        expect(
+            await screen.findByText(
+                "Account ripristinato correttamente. Ora puoi effettuare di nuovo l'accesso.",
             ),
         ).toBeInTheDocument();
     });

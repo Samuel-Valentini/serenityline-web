@@ -72,6 +72,18 @@ export const resources = {
             emailVerificationResendErrorTitle: "Reinvio non riuscito",
             emailVerificationResendErrorFallback:
                 "Non siamo riusciti a inviare un nuovo link. Riprova tra qualche istante.",
+            restoreAccountRequiredTitle: "Account in cancellazione",
+            restoreAccountRequiredText:
+                "Questo account è stato messo in cancellazione. Puoi ripristinarlo se sei ancora entro il periodo di sicurezza di 30 giorni.",
+            restoreAccountSubmit: "Ripristina account",
+            restoreAccountSubmitting: "Ripristino in corso...",
+            restoreAccountSuccess:
+                "Account ripristinato correttamente. Ora puoi effettuare di nuovo l'accesso.",
+            restoreAccountEmailVerificationRequiredSuccess:
+                "Account ripristinato. Prima di accedere devi completare la verifica email.",
+            restoreAccountErrorTitle: "Ripristino non riuscito",
+            restoreAccountErrorFallback:
+                "Non è stato possibile ripristinare l'account. Il token potrebbe essere scaduto o non più valido.",
         },
         appShell: {
             navigationLabel: "Navigazione principale",
@@ -542,6 +554,18 @@ export const resources = {
             emailVerificationResendErrorTitle: "Resend failed",
             emailVerificationResendErrorFallback:
                 "We could not send a new verification link. Please try again in a moment.",
+            restoreAccountRequiredTitle: "Account pending deletion",
+            restoreAccountRequiredText:
+                "This account has been marked for deletion. You can restore it if you are still within the 30-day safety period.",
+            restoreAccountSubmit: "Restore account",
+            restoreAccountSubmitting: "Restoring account...",
+            restoreAccountSuccess:
+                "Account restored successfully. You can now sign in again.",
+            restoreAccountEmailVerificationRequiredSuccess:
+                "Account restored. Before signing in, you need to complete email verification.",
+            restoreAccountErrorTitle: "Restore failed",
+            restoreAccountErrorFallback:
+                "Could not restore the account. The token may have expired or may no longer be valid.",
         },
         appShell: {
             navigationLabel: "Main navigation",

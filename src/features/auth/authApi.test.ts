@@ -8,6 +8,8 @@ import {
     verifyEmail,
     resendEmailVerification,
     confirmEmailChange,
+    login,
+    restoreAccount,
 } from "./authApi";
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
@@ -243,5 +245,59 @@ describe("authApi", () => {
         expect(getLastRequestBody()).toEqual({
             token: "email-change-token",
         });
+    });
+
+    it("returns restore required when login receives a restore challenge", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(
+            jsonResponse(
+                {
+                    restoreToken: "restore-token",
+                    restoreTokenExpiresAt: "2026-06-03T18:00:00Z",
+                },
+                { status: 409 },
+            ),
+        );
+
+        const result = await login({
+            email: "samuel@example.com",
+            password: "Password123!",
+        });
+
+        expect(result).toEqual({
+            type: "restoreRequired",
+            restoreToken: "restore-token",
+            restoreTokenExpiresAt: "2026-06-03T18:00:00Z",
+        });
+    });
+
+    it("sends the expected restore account body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(
+            jsonResponse({
+                userId: "user-id",
+                userName: "Samuel",
+                email: "samuel@example.com",
+                userGroupId: "group-id",
+                userGroupName: "Famiglia Valentini",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+            }),
+        );
+
+        const result = await restoreAccount({
+            restoreToken: "restore-token",
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/auth/restore-account");
+        expect(init?.method).toBe("POST");
+        expect(init?.credentials).toBe("include");
+        expect(getLastRequestBody()).toEqual({
+            restoreToken: "restore-token",
+        });
+        expect(result.type).toBe("restored");
     });
 });

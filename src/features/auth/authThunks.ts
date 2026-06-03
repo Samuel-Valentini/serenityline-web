@@ -86,6 +86,20 @@ export function loginUser(request: LoginRequestDto): AppThunk<Promise<void>> {
                 return;
             }
 
+            if (result.type === "restoreRequired") {
+                dispatch(
+                    authFailed({
+                        code: "auth.restoreAccount.required",
+                        restoreAccountChallenge: {
+                            restoreToken: result.restoreToken,
+                            restoreTokenExpiresAt: result.restoreTokenExpiresAt,
+                        },
+                    }),
+                );
+
+                return;
+            }
+
             dispatch(
                 authTwoFactorRequired({
                     challengeId: result.challengeId,

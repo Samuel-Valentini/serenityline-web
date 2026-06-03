@@ -3,7 +3,10 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
-import { resendEmailVerification } from "../../features/auth/authApi";
+import {
+    resendEmailVerification,
+    restoreAccount,
+} from "../../features/auth/authApi";
 import type { EmailVerificationRequiredResponseDto } from "../../features/auth/authApiTypes";
 import {
     selectAuthError,
@@ -72,11 +75,23 @@ export function LoginPage() {
     const [resendErrorMessage, setResendErrorMessage] = useState<string | null>(
         null,
     );
+    const [isRestoringAccount, setIsRestoringAccount] = useState(false);
+    const [restoreSuccessMessage, setRestoreSuccessMessage] = useState<
+        string | null
+    >(null);
+    const [restoreErrorMessage, setRestoreErrorMessage] = useState<
+        string | null
+    >(null);
+    const [hasRestoredAccount, setHasRestoredAccount] = useState(false);
 
     const emailVerificationRequired =
         emailVerificationRequiredOverride ??
         authError?.emailVerificationRequired ??
         null;
+
+    const restoreAccountChallenge = hasRestoredAccount
+        ? null
+        : (authError?.restoreAccountChallenge ?? null);
 
     const locationState = location.state as RouteLocationState | null;
     const redirectTo = locationState?.from?.pathname ?? ROUTES.app.dashboard;
@@ -100,6 +115,9 @@ export function LoginPage() {
         setEmailVerificationRequiredOverride(null);
         setResendSuccessMessage(null);
         setResendErrorMessage(null);
+        setRestoreSuccessMessage(null);
+        setRestoreErrorMessage(null);
+        setHasRestoredAccount(false);
 
         void dispatch(
             loginUser({
@@ -138,8 +156,49 @@ export function LoginPage() {
         }
     }
 
+    async function submitRestoreAccount() {
+        if (!restoreAccountChallenge) {
+            return;
+        }
+
+        setIsRestoringAccount(true);
+        setRestoreSuccessMessage(null);
+        setRestoreErrorMessage(null);
+
+        try {
+            const result = await restoreAccount({
+                restoreToken: restoreAccountChallenge.restoreToken,
+            });
+
+            setHasRestoredAccount(true);
+
+            if (result.type === "emailVerificationRequired") {
+                setEmailVerificationRequiredOverride(
+                    result.emailVerificationRequired,
+                );
+                setRestoreSuccessMessage(
+                    t("restoreAccountEmailVerificationRequiredSuccess"),
+                );
+                return;
+            }
+
+            setRestoreSuccessMessage(t("restoreAccountSuccess"));
+        } catch (error) {
+            setRestoreErrorMessage(
+                getLoginApiErrorMessage(
+                    error,
+                    t("restoreAccountErrorFallback"),
+                ),
+            );
+        } finally {
+            setIsRestoringAccount(false);
+        }
+    }
+
     const shouldShowGenericAuthError =
-        authError !== null && !authError.emailVerificationRequired;
+        authError !== null &&
+        !authError.emailVerificationRequired &&
+        !authError.restoreAccountChallenge;
 
     return (
         <main className="sl-auth-page">
@@ -193,6 +252,43 @@ export function LoginPage() {
                                 ? t("emailVerificationResendSubmitting")
                                 : t("emailVerificationResendSubmit")}
                         </button>
+                    </div>
+                ) : null}
+
+                {restoreAccountChallenge ? (
+                    <div className="alert alert-warning" role="alert">
+                        <strong>{t("restoreAccountRequiredTitle")}</strong>
+                        <p className="mb-3 mt-2">
+                            {t("restoreAccountRequiredText")}
+                        </p>
+
+                        {restoreErrorMessage ? (
+                            <div
+                                className="alert alert-danger mb-3"
+                                role="alert">
+                                <strong>{t("restoreAccountErrorTitle")}</strong>
+                                <br />
+                                {restoreErrorMessage}
+                            </div>
+                        ) : null}
+
+                        <button
+                            className="btn btn-outline-primary"
+                            disabled={isRestoringAccount}
+                            onClick={() => {
+                                void submitRestoreAccount();
+                            }}
+                            type="button">
+                            {isRestoringAccount
+                                ? t("restoreAccountSubmitting")
+                                : t("restoreAccountSubmit")}
+                        </button>
+                    </div>
+                ) : null}
+
+                {restoreSuccessMessage ? (
+                    <div className="alert alert-success" role="status">
+                        {restoreSuccessMessage}
                     </div>
                 ) : null}
 

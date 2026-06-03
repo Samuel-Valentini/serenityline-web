@@ -226,4 +226,32 @@ describe("authThunks", () => {
             },
         });
     });
+
+    it("dispatches restore required state after login restore challenge", async () => {
+        const result: LoginResult = {
+            type: "restoreRequired",
+            restoreToken: "restore-token",
+            restoreTokenExpiresAt: "2026-06-03T18:00:00Z",
+        };
+
+        vi.mocked(loginApi).mockResolvedValue(result);
+
+        const { dispatch, actions } = createDispatch();
+
+        await loginUser({
+            email: "samuel@example.com",
+            password: "password",
+        })(dispatch, vi.fn());
+
+        expect(actions).toEqual([
+            authCheckingStarted(),
+            authFailed({
+                code: "auth.restoreAccount.required",
+                restoreAccountChallenge: {
+                    restoreToken: "restore-token",
+                    restoreTokenExpiresAt: "2026-06-03T18:00:00Z",
+                },
+            }),
+        ]);
+    });
 });

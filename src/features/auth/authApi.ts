@@ -23,6 +23,10 @@ import type {
     EmailVerificationRequiredResponseDto,
     ResendEmailVerificationRequestDto,
     ConfirmEmailChangeRequestDto,
+    RestoreAccountChallengeResponseDto,
+    RestoreAccountRequestDto,
+    RestoreAccountResult,
+    LoginUserDto,
 } from "./authApiTypes";
 
 function isAuthenticatedResponse(
@@ -44,6 +48,45 @@ function isLogin2faRequiredResponse(
         value !== null &&
         "login2faChallengeId" in value &&
         "login2faCodeExpiresAt" in value
+    );
+}
+
+function isRestoreAccountChallengeResponse(
+    value: unknown,
+): value is RestoreAccountChallengeResponseDto {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        "restoreToken" in value &&
+        typeof value.restoreToken === "string" &&
+        "restoreTokenExpiresAt" in value &&
+        typeof value.restoreTokenExpiresAt === "string"
+    );
+}
+
+function isEmailVerificationRequiredResponse(
+    value: unknown,
+): value is EmailVerificationRequiredResponseDto {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        "emailVerificationResendToken" in value &&
+        typeof value.emailVerificationResendToken === "string" &&
+        "email" in value &&
+        typeof value.email === "string"
+    );
+}
+
+function isLoginUserResponse(value: unknown): value is LoginUserDto {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        "userId" in value &&
+        typeof value.userId === "string" &&
+        "userName" in value &&
+        typeof value.userName === "string" &&
+        "email" in value &&
+        typeof value.email === "string"
     );
 }
 
@@ -89,11 +132,29 @@ function storeAuthenticatedResponse(
 }
 
 export async function login(request: LoginRequestDto): Promise<LoginResult> {
-    const response = await apiRequest<unknown>("/api/auth/login", {
-        method: "POST",
-        body: request,
-        includeCredentials: true,
-    });
+    let response: unknown;
+
+    try {
+        response = await apiRequest<unknown>("/api/auth/login", {
+            method: "POST",
+            body: request,
+            includeCredentials: true,
+        });
+    } catch (error) {
+        if (
+            error instanceof ApiError &&
+            error.status === 409 &&
+            isRestoreAccountChallengeResponse(error.body)
+        ) {
+            return {
+                type: "restoreRequired",
+                restoreToken: error.body.restoreToken,
+                restoreTokenExpiresAt: error.body.restoreTokenExpiresAt,
+            };
+        }
+
+        throw error;
+    }
 
     if (isAuthenticatedResponse(response)) {
         storeAuthenticatedResponse(response);
@@ -229,6 +290,32 @@ export async function confirmEmailChange(
     } finally {
         clearAccessToken();
     }
+}
+
+export async function restoreAccount(
+    request: RestoreAccountRequestDto,
+): Promise<RestoreAccountResult> {
+    const response = await apiRequest<unknown>("/api/auth/restore-account", {
+        method: "POST",
+        body: request,
+        includeCredentials: true,
+    });
+
+    if (isEmailVerificationRequiredResponse(response)) {
+        return {
+            type: "emailVerificationRequired",
+            emailVerificationRequired: response,
+        };
+    }
+
+    if (isLoginUserResponse(response)) {
+        return {
+            type: "restored",
+            user: response,
+        };
+    }
+
+    throw new Error("Unexpected restore account response.");
 }
 
 setSessionRefreshHandler(async () => {
