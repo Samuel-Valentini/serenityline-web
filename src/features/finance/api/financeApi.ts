@@ -162,12 +162,17 @@ function buildFinanceReportSummaryQuery(
 }
 
 export async function getAccounts(): Promise<AccountResponseDto[]> {
-    return apiRequest<AccountResponseDto[]>("/api/finance/accounts");
+    return apiRequest<AccountResponseDto[]>("/api/finance/accounts", {
+        requiresAuth: true,
+    });
 }
 
 export async function getAccount(accountId: Uuid): Promise<AccountResponseDto> {
     return apiRequest<AccountResponseDto>(
         `/api/finance/accounts/${encodePathSegment(accountId)}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -177,6 +182,7 @@ export async function createAccount(
     return apiRequest<AccountResponseDto>("/api/finance/accounts", {
         method: "POST",
         body: request,
+        requiresAuth: true,
     });
 }
 
@@ -189,6 +195,7 @@ export async function updateAccount(
         {
             method: "PATCH",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -203,6 +210,7 @@ export async function grantAccountAccess(
         )}/users/${encodePathSegment(targetUserId)}`,
         {
             method: "POST",
+            requiresAuth: true,
         },
     );
 }
@@ -217,12 +225,15 @@ export async function revokeAccountAccess(
         )}/users/${encodePathSegment(targetUserId)}`,
         {
             method: "DELETE",
+            requiresAuth: true,
         },
     );
 }
 
 export async function listCategories(): Promise<CategoryResponseDto[]> {
-    return apiRequest<CategoryResponseDto[]>("/api/finance/categories");
+    return apiRequest<CategoryResponseDto[]>("/api/finance/categories", {
+        requiresAuth: true,
+    });
 }
 
 export async function createCategory(
@@ -231,6 +242,7 @@ export async function createCategory(
     return apiRequest<CategoryResponseDto>("/api/finance/categories", {
         method: "POST",
         body: request,
+        requiresAuth: true,
     });
 }
 
@@ -243,6 +255,7 @@ export async function updateCategory(
         {
             method: "PUT",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -254,6 +267,7 @@ export async function deactivateCategory(
         `/api/finance/categories/${encodePathSegment(categoryId)}/deactivate`,
         {
             method: "POST",
+            requiresAuth: true,
         },
     );
 }
@@ -265,6 +279,7 @@ export async function reactivateCategory(
         `/api/finance/categories/${encodePathSegment(categoryId)}/reactivate`,
         {
             method: "POST",
+            requiresAuth: true,
         },
     );
 }
@@ -274,12 +289,18 @@ export async function findBuckets(
 ): Promise<BucketResponseDto[]> {
     return apiRequest<BucketResponseDto[]>(
         `/api/finance/buckets${buildBucketQuery(request)}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
 export async function findBucket(bucketId: Uuid): Promise<BucketResponseDto> {
     return apiRequest<BucketResponseDto>(
         `/api/finance/buckets/${encodePathSegment(bucketId)}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -289,6 +310,7 @@ export async function createBucket(
     return apiRequest<BucketResponseDto>("/api/finance/buckets", {
         method: "POST",
         body: request,
+        requiresAuth: true,
     });
 }
 
@@ -301,6 +323,7 @@ export async function updateBucket(
         {
             method: "PATCH",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -315,6 +338,7 @@ export async function linkBucketAccount(
         )}/accounts/${encodePathSegment(accountId)}`,
         {
             method: "POST",
+            requiresAuth: true,
         },
     );
 }
@@ -329,6 +353,7 @@ export async function unlinkBucketAccount(
         )}/accounts/${encodePathSegment(accountId)}`,
         {
             method: "DELETE",
+            requiresAuth: true,
         },
     );
 }
@@ -338,6 +363,7 @@ export async function closeBucket(bucketId: Uuid): Promise<BucketResponseDto> {
         `/api/finance/buckets/${encodePathSegment(bucketId)}/close`,
         {
             method: "POST",
+            requiresAuth: true,
         },
     );
 }
@@ -347,6 +373,7 @@ export async function reopenBucket(bucketId: Uuid): Promise<BucketResponseDto> {
         `/api/finance/buckets/${encodePathSegment(bucketId)}/reopen`,
         {
             method: "POST",
+            requiresAuth: true,
         },
     );
 }
@@ -356,6 +383,9 @@ export async function listTransactions(
 ): Promise<TransactionResponseDto[]> {
     return apiRequest<TransactionResponseDto[]>(
         `/api/finance/transactions${buildTransactionQuery(request)}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -364,6 +394,9 @@ export async function getTransaction(
 ): Promise<TransactionResponseDto> {
     return apiRequest<TransactionResponseDto>(
         `/api/finance/transactions/${encodePathSegment(transactionId)}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -373,6 +406,7 @@ export async function createTransaction(
     return apiRequest<TransactionResponseDto>("/api/finance/transactions", {
         method: "POST",
         body: request,
+        requiresAuth: true,
     });
 }
 
@@ -385,6 +419,7 @@ export async function updateTransaction(
         {
             method: "PUT",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -394,6 +429,7 @@ export async function deleteTransaction(transactionId: Uuid): Promise<void> {
         `/api/finance/transactions/${encodePathSegment(transactionId)}`,
         {
             method: "DELETE",
+            requiresAuth: true,
         },
     );
 }
@@ -405,6 +441,9 @@ export async function listRecurringTransactions(
         `/api/finance/recurring-transactions${buildRecurringTransactionQuery(
             request,
         )}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -415,6 +454,9 @@ export async function getRecurringTransaction(
         `/api/finance/recurring-transactions/${encodePathSegment(
             recurringTransactionId,
         )}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -426,6 +468,7 @@ export async function createRecurringTransaction(
         {
             method: "POST",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -441,6 +484,7 @@ export async function patchRecurringTransaction(
         {
             method: "PATCH",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -456,6 +500,7 @@ export async function deleteRecurringTransaction(
         {
             method: "DELETE",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -467,6 +512,9 @@ export async function getRecurringTransactionHistory(
         `/api/finance/recurring-transactions/${encodePathSegment(
             recurringTransactionId,
         )}/history`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -481,12 +529,15 @@ export async function confirmRecurringTransactionOccurrence(
         {
             method: "POST",
             body: request,
+            requiresAuth: true,
         },
     );
 }
 
 export async function listCreditCards(): Promise<CreditCardResponseDto[]> {
-    return apiRequest<CreditCardResponseDto[]>("/api/finance/credit-cards");
+    return apiRequest<CreditCardResponseDto[]>("/api/finance/credit-cards", {
+        requiresAuth: true,
+    });
 }
 
 export async function getCreditCard(
@@ -494,6 +545,9 @@ export async function getCreditCard(
 ): Promise<CreditCardResponseDto> {
     return apiRequest<CreditCardResponseDto>(
         `/api/finance/credit-cards/${encodePathSegment(creditCardId)}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -503,6 +557,7 @@ export async function createCreditCard(
     return apiRequest<CreditCardResponseDto>("/api/finance/credit-cards", {
         method: "POST",
         body: request,
+        requiresAuth: true,
     });
 }
 
@@ -515,6 +570,7 @@ export async function updateCreditCard(
         {
             method: "PATCH",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -524,6 +580,7 @@ export async function deleteCreditCard(creditCardId: Uuid): Promise<void> {
         `/api/finance/credit-cards/${encodePathSegment(creditCardId)}`,
         {
             method: "DELETE",
+            requiresAuth: true,
         },
     );
 }
@@ -533,6 +590,9 @@ export async function findSimulationGroups(
 ): Promise<SimulationGroupResponseDto[]> {
     return apiRequest<SimulationGroupResponseDto[]>(
         `/api/finance/simulation-groups${buildSimulationGroupQuery(request)}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -543,6 +603,9 @@ export async function findSimulationGroup(
         `/api/finance/simulation-groups/${encodePathSegment(
             simulationGroupId,
         )}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -554,6 +617,7 @@ export async function createSimulationGroup(
         {
             method: "POST",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -569,6 +633,7 @@ export async function updateSimulationGroup(
         {
             method: "PATCH",
             body: request,
+            requiresAuth: true,
         },
     );
 }
@@ -582,6 +647,7 @@ export async function archiveSimulationGroup(
         )}/archive`,
         {
             method: "POST",
+            requiresAuth: true,
         },
     );
 }
@@ -595,6 +661,7 @@ export async function restoreSimulationGroup(
         )}/restore`,
         {
             method: "POST",
+            requiresAuth: true,
         },
     );
 }
@@ -609,6 +676,7 @@ export async function linkSimulationGroupAccount(
         )}/accounts/${encodePathSegment(accountId)}`,
         {
             method: "POST",
+            requiresAuth: true,
         },
     );
 }
@@ -623,6 +691,7 @@ export async function unlinkSimulationGroupAccount(
         )}/accounts/${encodePathSegment(accountId)}`,
         {
             method: "DELETE",
+            requiresAuth: true,
         },
     );
 }
@@ -632,6 +701,9 @@ export async function listFinancialPriorities(): Promise<
 > {
     return apiRequest<FinancialPriorityResponseDto[]>(
         "/api/finance/financial-priorities",
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -640,6 +712,9 @@ export async function listCalendarMovements(
 ): Promise<FinanceCalendarMovementResponseDto[]> {
     return apiRequest<FinanceCalendarMovementResponseDto[]>(
         `/api/finance/calendar${buildCalendarSearchQuery(request)}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -650,6 +725,9 @@ export async function listDailyBalances(
         `/api/finance/calendar/daily-balances${buildCalendarSearchQuery(
             request,
         )}`,
+        {
+            requiresAuth: true,
+        },
     );
 }
 
@@ -660,5 +738,8 @@ export async function getFinanceReportSummary(
         `/api/finance/reports/summary${buildFinanceReportSummaryQuery(
             request,
         )}`,
+        {
+            requiresAuth: true,
+        },
     );
 }

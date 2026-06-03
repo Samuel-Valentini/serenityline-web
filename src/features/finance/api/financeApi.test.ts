@@ -45,7 +45,10 @@ import {
     getFinanceReportSummary,
     listCalendarMovements,
     listDailyBalances,
+    getAccounts,
 } from "./financeApi";
+
+import { setAccessToken, clearAccessToken } from "../../../shared/api";
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
     return new Response(JSON.stringify(body), {
@@ -96,12 +99,21 @@ function getLastRequestBody(): unknown {
     return JSON.parse(init.body);
 }
 
+function getLastRequestHeaders(): Headers {
+    const [, init] = getLastFetchCall();
+
+    return new Headers(init?.headers);
+}
+
 describe("financeApi", () => {
     beforeEach(() => {
+        clearAccessToken();
+        setAccessToken("access-token");
         vi.stubGlobal("fetch", vi.fn());
     });
 
     afterEach(() => {
+        clearAccessToken();
         vi.unstubAllGlobals();
     });
 
@@ -1054,5 +1066,16 @@ describe("financeApi", () => {
         expect(getLastRequestPath()).toBe("/api/finance/reports/summary");
         expect(getLastRequestSearch()).toBe("");
         expect(init?.method).toBe("GET");
+    });
+
+    it("sends the access token for finance requests", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(jsonResponse([]));
+
+        await getAccounts();
+
+        expect(getLastRequestPath()).toBe("/api/finance/accounts");
+        expect(getLastRequestHeaders().get("Authorization")).toBe(
+            "Bearer access-token",
+        );
     });
 });
