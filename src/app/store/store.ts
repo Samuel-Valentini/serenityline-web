@@ -3,12 +3,14 @@ import { configureStore } from "@reduxjs/toolkit";
 import { authReducer } from "../../features/auth/authSlice";
 import { appReducer } from "./appSlice";
 import { accountReducer } from "../../features/account/accountSlice";
+import { financeDataReducer } from "../../features/finance/financeDataSlice";
 
 export const store = configureStore({
     reducer: {
         app: appReducer,
         auth: authReducer,
         account: accountReducer,
+        financeData: financeDataReducer,
     },
 });
 
