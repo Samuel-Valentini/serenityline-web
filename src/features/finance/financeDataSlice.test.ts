@@ -8,6 +8,7 @@ import {
     financeReferenceDataLoadingFailed,
     financeReferenceDataLoadingStarted,
     initialFinanceDataState,
+    accountUpdated,
 } from "./financeDataSlice";
 import type { FinanceReferenceData } from "./financeDataTypes";
 
@@ -152,5 +153,28 @@ describe("financeDataSlice", () => {
         );
 
         expect(state.accounts).toEqual([account]);
+    });
+
+    it("updates an account in the finance data state", () => {
+        const updatedAccount = {
+            ...referenceData.accounts[0],
+            accountName: "Conto aggiornato",
+            accountDescription: "Descrizione aggiornata",
+            issuingInstitution: "Banca aggiornata",
+            openingBalance: 1500.25,
+            openingBalanceDate: "2026-02-01",
+            accountUpdatedAt: "2026-06-03T10:00:00Z",
+        };
+
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                ...referenceData,
+                status: "loaded",
+            },
+            accountUpdated(updatedAccount),
+        );
+
+        expect(state.accounts).toEqual([updatedAccount]);
     });
 });

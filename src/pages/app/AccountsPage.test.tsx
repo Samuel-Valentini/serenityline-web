@@ -1,9 +1,19 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
-import { createAccount } from "../../features/finance/api/financeApi";
+import {
+    createAccount,
+    getAccount,
+    updateAccount,
+} from "../../features/finance/api/financeApi";
 import { i18n } from "../../shared/i18n/i18n";
 import {
     financeDataCleared,
@@ -16,6 +26,8 @@ import { AccountsPage } from "./AccountsPage";
 
 vi.mock("../../features/finance/api/financeApi", () => ({
     createAccount: vi.fn(),
+    getAccount: vi.fn(),
+    updateAccount: vi.fn(),
 }));
 
 const referenceData: FinanceReferenceData = {
@@ -49,6 +61,16 @@ const createdAccount = {
     openingBalanceDate: "2026-06-03",
     userGroupId: "group-id",
     accountCreatedAt: "2026-06-03T10:00:00Z",
+    accountUpdatedAt: "2026-06-03T10:00:00Z",
+};
+
+const updatedAccount = {
+    ...referenceData.accounts[0],
+    accountName: "Conto aggiornato",
+    accountDescription: null,
+    issuingInstitution: "Banca Aggiornata",
+    openingBalance: 1500.25,
+    openingBalanceDate: "2026-02-01",
     accountUpdatedAt: "2026-06-03T10:00:00Z",
 };
 
@@ -176,5 +198,84 @@ describe("AccountsPage", () => {
         });
 
         expect(store.getState().financeData.accounts).toEqual([createdAccount]);
+    });
+
+    it("shows account details", async () => {
+        store.dispatch(financeReferenceDataLoaded(referenceData));
+        vi.mocked(getAccount).mockResolvedValueOnce(referenceData.accounts[0]);
+
+        renderPage();
+
+        fireEvent.click(screen.getByRole("button", { name: "Vedi dettaglio" }));
+
+        await waitFor(() => {
+            expect(getAccount).toHaveBeenCalledWith("account-id");
+        });
+
+        expect(screen.getByText("Dettaglio conto")).toBeInTheDocument();
+        expect(screen.getAllByText("Banca Test")).not.toHaveLength(0);
+        expect(screen.getAllByText("2026-01-01")).not.toHaveLength(0);
+    });
+
+    it("updates an account and stores it in finance data", async () => {
+        store.dispatch(financeReferenceDataLoaded(referenceData));
+        vi.mocked(getAccount).mockResolvedValueOnce(referenceData.accounts[0]);
+        vi.mocked(updateAccount).mockResolvedValueOnce(updatedAccount);
+
+        renderPage();
+
+        fireEvent.click(screen.getByRole("button", { name: "Vedi dettaglio" }));
+
+        await waitFor(() => {
+            expect(getAccount).toHaveBeenCalledWith("account-id");
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Modifica" }));
+
+        const editForm = screen.getByRole("form", { name: "Modifica conto" });
+
+        fireEvent.change(within(editForm).getByLabelText("Nome conto"), {
+            target: { value: "Conto aggiornato" },
+        });
+        fireEvent.change(within(editForm).getByLabelText("Saldo iniziale"), {
+            target: { value: "1500,25" },
+        });
+        fireEvent.change(
+            within(editForm).getByLabelText("Data saldo iniziale"),
+            {
+                target: { value: "2026-02-01" },
+            },
+        );
+        fireEvent.change(
+            within(editForm).getByLabelText(/Istituto emittente/i),
+            {
+                target: { value: "Banca Aggiornata" },
+            },
+        );
+        fireEvent.change(within(editForm).getByLabelText(/Descrizione/i), {
+            target: { value: "" },
+        });
+
+        fireEvent.click(
+            within(editForm).getByRole("button", { name: "Salva modifiche" }),
+        );
+
+        await waitFor(() => {
+            expect(updateAccount).toHaveBeenCalledWith("account-id", {
+                accountName: "Conto aggiornato",
+                accountDescription: null,
+                issuingInstitution: "Banca Aggiornata",
+                openingBalance: "1500.25",
+                openingBalanceDate: "2026-02-01",
+            });
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Conto aggiornato correttamente."),
+            ).toBeInTheDocument();
+        });
+
+        expect(store.getState().financeData.accounts).toEqual([updatedAccount]);
     });
 });

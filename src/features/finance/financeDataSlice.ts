@@ -41,6 +41,15 @@ const financeDataSlice = createSlice({
         accountAdded(state, action: PayloadAction<AccountResponseDto>) {
             state.accounts.push(action.payload);
         },
+        accountUpdated(state, action: PayloadAction<AccountResponseDto>) {
+            const accountIndex = state.accounts.findIndex(
+                (account) => account.accountId === action.payload.accountId,
+            );
+
+            if (accountIndex >= 0) {
+                state.accounts[accountIndex] = action.payload;
+            }
+        },
         financeReferenceDataLoadingFailed(
             state,
             action: PayloadAction<FinanceDataError>,
@@ -60,6 +69,7 @@ export const {
     financeReferenceDataLoaded,
     financeReferenceDataLoadingFailed,
     financeReferenceDataLoadingStarted,
+    accountUpdated,
 } = financeDataSlice.actions;
 
 export const financeDataReducer = financeDataSlice.reducer;
