@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 import {
@@ -17,10 +18,16 @@ import {
     confirmEnableEmail2fa,
     requestDisableEmail2fa,
     requestEnableEmail2fa,
+    deleteCurrentUser,
 } from "../../features/account/api/accountApi";
-import { paymentEmailRemindersUpdated } from "../../features/account/accountSlice";
+import {
+    accountCleared,
+    emailTwoFactorUpdated,
+    paymentEmailRemindersUpdated,
+} from "../../features/account/accountSlice";
 import { logoutUser } from "../../features/auth/authThunks";
-import { emailTwoFactorUpdated } from "../../features/account/accountSlice";
+import { authLoggedOut } from "../../features/auth/authSlice";
+import { ROUTES } from "../../shared/constants/routes";
 
 type SettingsDetailRowProps = {
     label: string;
@@ -38,6 +45,7 @@ type Email2faFlowStatus =
     | "confirming"
     | "success"
     | "failed";
+type AccountDeletionStatus = "idle" | "loading" | "failed";
 
 function valueOrFallback(value: string | null | undefined): string {
     return value?.trim() ? value : "—";
@@ -68,6 +76,7 @@ function downloadBlob(blob: Blob, filename: string) {
 export function SettingsPage() {
     const { t } = useTranslation("settings");
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
 
     const accountStatus = useAppSelector(selectAccountStatus);
     const accountError = useAppSelector(selectAccountError);
@@ -91,6 +100,9 @@ export function SettingsPage() {
     >(null);
     const [email2faStatus, setEmail2faStatus] =
         useState<Email2faFlowStatus>("idle");
+    const [deleteConfirmation, setDeleteConfirmation] = useState("");
+    const [accountDeletionStatus, setAccountDeletionStatus] =
+        useState<AccountDeletionStatus>("idle");
 
     const isInitialLoading = accountStatus === "loading" && !currentUser;
     const hasError = accountStatus === "failed" && accountError !== null;
@@ -115,6 +127,11 @@ export function SettingsPage() {
     const platformRoleLabel = currentUser
         ? t(`platformRoles.${currentUser.userPlatformRole}`)
         : "";
+
+    const canDeleteAccount =
+        currentUser !== null &&
+        deleteConfirmation.trim().toLowerCase() ===
+            currentUser.email.toLowerCase();
 
     function handleReloadCurrentUser() {
         void dispatch(loadCurrentUser());
@@ -253,6 +270,25 @@ export function SettingsPage() {
             setEmail2faStatus("success");
         } catch {
             setEmail2faStatus("failed");
+        }
+    }
+
+    async function submitAccountDeletion() {
+        if (!currentUser || !canDeleteAccount) {
+            return;
+        }
+
+        setAccountDeletionStatus("loading");
+
+        try {
+            await deleteCurrentUser();
+
+            dispatch(authLoggedOut());
+            dispatch(accountCleared());
+
+            navigate(ROUTES.auth.login, { replace: true });
+        } catch {
+            setAccountDeletionStatus("failed");
         }
     }
 
@@ -692,6 +728,84 @@ export function SettingsPage() {
                                         {t("accountExport.error")}
                                     </p>
                                 ) : null}
+
+                                <div className="row g-3 mt-1">
+                                    <div className="col-12">
+                                        <article className="sl-panel border border-danger">
+                                            <h2>{t("sections.dangerZone")}</h2>
+                                            <p>
+                                                {t(
+                                                    "accountDeletion.description",
+                                                )}
+                                            </p>
+
+                                            <form
+                                                onSubmit={(event) => {
+                                                    event.preventDefault();
+                                                    void submitAccountDeletion();
+                                                }}>
+                                                <div className="mb-3">
+                                                    <label
+                                                        className="form-label"
+                                                        htmlFor="delete-account-confirmation">
+                                                        {t(
+                                                            "accountDeletion.confirmLabel",
+                                                        )}
+                                                    </label>
+                                                    <input
+                                                        autoComplete="off"
+                                                        className="form-control"
+                                                        id="delete-account-confirmation"
+                                                        onChange={(event) => {
+                                                            setDeleteConfirmation(
+                                                                event.target
+                                                                    .value,
+                                                            );
+                                                        }}
+                                                        value={
+                                                            deleteConfirmation
+                                                        }
+                                                    />
+                                                    <p className="form-text">
+                                                        {t(
+                                                            "accountDeletion.confirmHelp",
+                                                            {
+                                                                email: currentUser.email,
+                                                            },
+                                                        )}
+                                                    </p>
+                                                </div>
+
+                                                <button
+                                                    className="btn btn-danger"
+                                                    disabled={
+                                                        !canDeleteAccount ||
+                                                        accountDeletionStatus ===
+                                                            "loading"
+                                                    }
+                                                    type="submit">
+                                                    {accountDeletionStatus ===
+                                                    "loading"
+                                                        ? t(
+                                                              "accountDeletion.loading",
+                                                          )
+                                                        : t(
+                                                              "accountDeletion.submit",
+                                                          )}
+                                                </button>
+
+                                                {accountDeletionStatus ===
+                                                "failed" ? (
+                                                    <p className="text-danger mt-3 mb-0">
+                                                        {t(
+                                                            "accountDeletion.error",
+                                                        )}
+                                                    </p>
+                                                ) : null}
+                                            </form>
+                                        </article>
+                                    </div>
+                                </div>
                             </article>
                         </div>
                     </div>

@@ -342,6 +342,7 @@ export const resources = {
                 preferences: "Preferenze",
                 security: "Sicurezza",
                 accountData: "Dati account",
+                dangerZone: "Cancellazione account",
             },
             fields: {
                 userName: "Nome",
@@ -434,6 +435,16 @@ export const resources = {
                 success:
                     "Autenticazione a due fattori aggiornata correttamente.",
                 error: "Non è stato possibile aggiornare l'autenticazione a due fattori. Controlla i dati e riprova.",
+            },
+            accountDeletion: {
+                description:
+                    "Con questa operazione avvii la cancellazione dell'account. Se non lo riattivi entro 30 giorni l'account verrà eliminato definitivamente e non sarà possibile recuperare i tuoi dati in alcun modo. Se sei il proprietario dell'account verranno cancellati i tuoi dati personali e i tuoi dati economici, se non sei il proprietario verranno cancellati solo i tuoi dati personali.",
+                confirmLabel: "Conferma cancellazione account",
+                confirmHelp:
+                    "Per continuare, digita esattamente l'indirizzo email {{email}}.",
+                submit: "Elimina account",
+                loading: "Eliminazione in corso...",
+                error: "Non è stato possibile eliminare l'account. Riprova tra qualche istante.",
             },
         },
         authConfirmEmailChange: {
@@ -795,6 +806,7 @@ export const resources = {
                 preferences: "Preferences",
                 security: "Security",
                 accountData: "Account data",
+                dangerZone: "Account deletion",
             },
             fields: {
                 userName: "Name",
@@ -868,6 +880,16 @@ export const resources = {
                 loading: "Sending request...",
                 success: "We sent a confirmation email to the new address.",
                 error: "Could not request the email change. Check the details and try again.",
+            },
+            accountDeletion: {
+                description:
+                    "This action starts the account deletion process. If you do not reactivate it within 30 days, the account will be permanently deleted and your data cannot be recovered in any way. If you are the account owner, your personal data and financial data will be deleted; if you are not the owner, only your personal data will be deleted.",
+                confirmLabel: "Confirm account deletion",
+                confirmHelp:
+                    "To continue, type exactly the email address {{email}}.",
+                submit: "Delete account",
+                loading: "Deleting account...",
+                error: "Could not delete the account. Please try again in a moment.",
             },
         },
         authConfirmEmailChange: {

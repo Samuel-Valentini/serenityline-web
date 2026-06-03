@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearAccessToken } from "../../../shared/api/accessTokenStore";
 
 import {
     changePassword,
@@ -14,6 +15,7 @@ import {
 } from "./accountApi";
 
 vi.mock("../../../shared/api/accessTokenStore", () => ({
+    clearAccessToken: vi.fn(),
     getAccessToken: vi.fn(() => "access-token"),
 }));
 
@@ -68,6 +70,7 @@ function getLastRequestHeaders(): Headers {
 
 describe("accountApi", () => {
     beforeEach(() => {
+        vi.clearAllMocks();
         vi.stubGlobal("fetch", vi.fn());
     });
 
@@ -299,5 +302,19 @@ describe("accountApi", () => {
         const result = await exportCurrentUserData();
 
         expect(result.filename).toBe("serenityline-account-export.zip");
+    });
+
+    it("deletes the current user and clears the access token", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(noContentResponse());
+
+        await deleteCurrentUser();
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/me");
+        expect(init?.method).toBe("DELETE");
+        expect(init?.credentials).toBe("include");
+        expect(init?.body).toBeUndefined();
+        expect(clearAccessToken).toHaveBeenCalledOnce();
     });
 });

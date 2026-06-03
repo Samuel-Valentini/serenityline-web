@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 
 import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
@@ -33,9 +34,11 @@ describe("SettingsPage", () => {
 
     function renderPage() {
         return render(
-            <AppProviders enableAuthBootstrap={false}>
-                <SettingsPage />
-            </AppProviders>,
+            <MemoryRouter>
+                <AppProviders enableAuthBootstrap={false}>
+                    <SettingsPage />
+                </AppProviders>
+            </MemoryRouter>,
         );
     }
 
@@ -321,5 +324,56 @@ describe("SettingsPage", () => {
         ).toBeInTheDocument();
 
         requestEmailChangeSpy.mockRestore();
+    });
+    it("deletes the current user account after email confirmation", async () => {
+        const deleteCurrentUserSpy = vi.spyOn(accountApi, "deleteCurrentUser");
+
+        deleteCurrentUserSpy.mockResolvedValueOnce();
+
+        store.dispatch(
+            accountLoaded({
+                userId: "user-id",
+                userName: "Samuel",
+                email: "samuel@example.com",
+                userGroupId: "group-id",
+                userGroupName: "Famiglia Valentini",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+                emailTwoFactorEnabled: false,
+                paymentEmailRemindersEnabled: true,
+            }),
+        );
+
+        renderPage();
+
+        const deleteButton = screen.getByRole("button", {
+            name: "Elimina account",
+        });
+
+        expect(deleteButton).toBeDisabled();
+
+        fireEvent.change(
+            screen.getByLabelText("Conferma cancellazione account"),
+            {
+                target: { value: "samuel@example.com" },
+            },
+        );
+
+        expect(deleteButton).toBeEnabled();
+
+        fireEvent.click(deleteButton);
+
+        await waitFor(() => {
+            expect(deleteCurrentUserSpy).toHaveBeenCalledOnce();
+        });
+
+        await waitFor(() => {
+            expect(store.getState().account.currentUser).toBeNull();
+        });
+
+        deleteCurrentUserSpy.mockRestore();
     });
 });

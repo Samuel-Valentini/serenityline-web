@@ -1,5 +1,8 @@
 import { apiRequest } from "../../../shared/api";
-import { getAccessToken } from "../../../shared/api/accessTokenStore";
+import {
+    clearAccessToken,
+    getAccessToken,
+} from "../../../shared/api/accessTokenStore";
 import { env } from "../../../shared/config/env";
 
 import type {
@@ -103,11 +106,13 @@ export async function confirmDisableEmail2fa(
 }
 
 export async function deleteCurrentUser(): Promise<void> {
-    return apiRequest<void>("/api/me", {
+    await apiRequest<void>("/api/me", {
         method: "DELETE",
         requiresAuth: true,
         includeCredentials: true,
     });
+
+    clearAccessToken();
 }
 
 function getFilenameFromContentDisposition(
