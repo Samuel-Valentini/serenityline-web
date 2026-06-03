@@ -173,4 +173,47 @@ describe("SettingsPage", () => {
 
         exportSpy.mockRestore();
     });
+
+    it("updates the payment email reminders preference", async () => {
+        const updateSpy = vi.spyOn(accountApi, "updatePaymentEmailReminders");
+
+        updateSpy.mockResolvedValueOnce({
+            paymentEmailRemindersEnabled: false,
+        });
+
+        store.dispatch(
+            accountLoaded({
+                userId: "user-id",
+                userName: "Samuel",
+                email: "samuel@example.com",
+                userGroupId: "group-id",
+                userGroupName: "Famiglia Valentini",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+                emailTwoFactorEnabled: false,
+                paymentEmailRemindersEnabled: true,
+            }),
+        );
+
+        renderPage();
+
+        fireEvent.click(
+            screen.getByRole("button", {
+                name: "Disattiva promemoria email",
+            }),
+        );
+
+        await waitFor(() => {
+            expect(updateSpy).toHaveBeenCalledWith({ enabled: false });
+        });
+
+        expect(
+            await screen.findByText("Preferenza aggiornata correttamente."),
+        ).toBeInTheDocument();
+
+        updateSpy.mockRestore();
+    });
 });

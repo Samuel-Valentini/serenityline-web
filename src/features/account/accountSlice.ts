@@ -31,6 +31,11 @@ const accountSlice = createSlice({
             state.currentUser = null;
             state.error = null;
         },
+        paymentEmailRemindersUpdated(state, action: PayloadAction<boolean>) {
+            if (state.currentUser) {
+                state.currentUser.paymentEmailRemindersEnabled = action.payload;
+            }
+        },
     },
 });
 
@@ -39,6 +44,7 @@ export const {
     accountLoaded,
     accountLoadingFailed,
     accountLoadingStarted,
+    paymentEmailRemindersUpdated,
 } = accountSlice.actions;
 
 export const accountReducer = accountSlice.reducer;

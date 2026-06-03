@@ -391,6 +391,13 @@ export const resources = {
                 success: "Export scaricato correttamente.",
                 error: "Non è stato possibile esportare i dati. Riprova tra qualche istante.",
             },
+            paymentReminders: {
+                enable: "Attiva promemoria email",
+                disable: "Disattiva promemoria email",
+                updating: "Aggiornamento...",
+                success: "Preferenza aggiornata correttamente.",
+                error: "Non è stato possibile aggiornare la preferenza. Riprova tra qualche istante.",
+            },
         },
     },
     en: {
@@ -778,6 +785,13 @@ export const resources = {
                 loading: "Preparing export...",
                 success: "Export downloaded successfully.",
                 error: "Could not export your data. Please try again in a moment.",
+            },
+            paymentReminders: {
+                enable: "Enable email reminders",
+                disable: "Disable email reminders",
+                updating: "Updating...",
+                success: "Preference updated successfully.",
+                error: "Could not update the preference. Please try again in a moment.",
             },
         },
     },

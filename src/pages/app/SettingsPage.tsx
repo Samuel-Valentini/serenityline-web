@@ -9,6 +9,8 @@ import {
 } from "../../features/account/accountSelectors";
 import { loadCurrentUser } from "../../features/account/accountThunks";
 import { exportCurrentUserData } from "../../features/account/api/accountApi";
+import { updatePaymentEmailReminders } from "../../features/account/api/accountApi";
+import { paymentEmailRemindersUpdated } from "../../features/account/accountSlice";
 
 type SettingsDetailRowProps = {
     label: string;
@@ -16,6 +18,7 @@ type SettingsDetailRowProps = {
 };
 
 type ExportStatus = "idle" | "loading" | "success" | "failed";
+type PreferenceUpdateStatus = "idle" | "loading" | "success" | "failed";
 
 function valueOrFallback(value: string | null | undefined): string {
     return value?.trim() ? value : "—";
@@ -51,6 +54,8 @@ export function SettingsPage() {
     const accountError = useAppSelector(selectAccountError);
     const currentUser = useAppSelector(selectCurrentUser);
     const [exportStatus, setExportStatus] = useState<ExportStatus>("idle");
+    const [reminderUpdateStatus, setReminderUpdateStatus] =
+        useState<PreferenceUpdateStatus>("idle");
 
     const isInitialLoading = accountStatus === "loading" && !currentUser;
     const hasError = accountStatus === "failed" && accountError !== null;
@@ -95,6 +100,33 @@ export function SettingsPage() {
 
     function handleExportAccountData() {
         void exportAccountData();
+    }
+
+    async function updateReminderPreference(enabled: boolean) {
+        setReminderUpdateStatus("loading");
+
+        try {
+            const response = await updatePaymentEmailReminders({ enabled });
+
+            dispatch(
+                paymentEmailRemindersUpdated(
+                    response.paymentEmailRemindersEnabled,
+                ),
+            );
+            setReminderUpdateStatus("success");
+        } catch {
+            setReminderUpdateStatus("failed");
+        }
+    }
+
+    function handleTogglePaymentReminders() {
+        if (!currentUser || reminderUpdateStatus === "loading") {
+            return;
+        }
+
+        void updateReminderPreference(
+            !currentUser.paymentEmailRemindersEnabled,
+        );
     }
 
     return (
@@ -185,6 +217,29 @@ export function SettingsPage() {
                                     }
                                 />
                             </dl>
+                            <button
+                                className="btn btn-outline-primary btn-sm mt-3"
+                                disabled={reminderUpdateStatus === "loading"}
+                                onClick={handleTogglePaymentReminders}
+                                type="button">
+                                {reminderUpdateStatus === "loading"
+                                    ? t("paymentReminders.updating")
+                                    : currentUser.paymentEmailRemindersEnabled
+                                      ? t("paymentReminders.disable")
+                                      : t("paymentReminders.enable")}
+                            </button>
+
+                            {reminderUpdateStatus === "success" ? (
+                                <p className="text-success mt-3 mb-0">
+                                    {t("paymentReminders.success")}
+                                </p>
+                            ) : null}
+
+                            {reminderUpdateStatus === "failed" ? (
+                                <p className="text-danger mt-3 mb-0">
+                                    {t("paymentReminders.error")}
+                                </p>
+                            ) : null}
                         </article>
                     </div>
 

@@ -7,6 +7,7 @@ import {
     accountLoadingStarted,
     accountReducer,
     initialAccountState,
+    paymentEmailRemindersUpdated,
 } from "./accountSlice";
 
 describe("accountSlice", () => {
@@ -98,5 +99,31 @@ describe("accountSlice", () => {
         );
 
         expect(state).toEqual(initialAccountState);
+    });
+
+    it("updates the payment email reminders preference", () => {
+        const state = accountReducer(
+            {
+                status: "loaded",
+                currentUser: {
+                    userId: "user-id",
+                    userName: "Samuel",
+                    email: "samuel@example.com",
+                    userGroupId: "group-id",
+                    userGroupName: "Famiglia Valentini",
+                    userRole: "OWNER",
+                    userPlatformRole: "USER",
+                    preferredLocale: "it-IT",
+                    preferredTheme: "DEFAULT",
+                    wantsInvoice: false,
+                    emailTwoFactorEnabled: false,
+                    paymentEmailRemindersEnabled: true,
+                },
+                error: null,
+            },
+            paymentEmailRemindersUpdated(false),
+        );
+
+        expect(state.currentUser?.paymentEmailRemindersEnabled).toBe(false);
     });
 });
