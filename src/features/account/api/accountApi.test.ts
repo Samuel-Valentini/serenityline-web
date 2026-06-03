@@ -10,7 +10,12 @@ import {
     requestEmailChange,
     requestEnableEmail2fa,
     updatePaymentEmailReminders,
+    exportCurrentUserData,
 } from "./accountApi";
+
+vi.mock("../../../shared/api/accessTokenStore", () => ({
+    getAccessToken: vi.fn(() => "access-token"),
+}));
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
     return new Response(JSON.stringify(body), {
@@ -236,5 +241,54 @@ describe("accountApi", () => {
         expect(init?.method).toBe("DELETE");
         expect(init?.credentials).toBe("include");
         expect(init?.body).toBeUndefined();
+    });
+
+    it("exports the current user data as a zip file", async () => {
+        const blob = new Blob(["zip-content"], {
+            type: "application/zip",
+        });
+
+        vi.mocked(fetch).mockResolvedValueOnce(
+            new Response(blob, {
+                status: 200,
+                headers: {
+                    "Content-Type": "application/zip",
+                    "Content-Disposition":
+                        'attachment; filename="serenityline-export.zip"',
+                },
+            }),
+        );
+
+        const result = await exportCurrentUserData();
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/me/export");
+        expect(init?.method).toBe("GET");
+        expect(init?.headers).toMatchObject({
+            Accept: "application/zip",
+            Authorization: "Bearer access-token",
+        });
+        expect(result.filename).toBe("serenityline-export.zip");
+        expect(result.blob.type).toBe("application/zip");
+    });
+
+    it("uses a default filename when account export response has no content disposition", async () => {
+        const blob = new Blob(["zip-content"], {
+            type: "application/zip",
+        });
+
+        vi.mocked(fetch).mockResolvedValueOnce(
+            new Response(blob, {
+                status: 200,
+                headers: {
+                    "Content-Type": "application/zip",
+                },
+            }),
+        );
+
+        const result = await exportCurrentUserData();
+
+        expect(result.filename).toBe("serenityline-account-export.zip");
     });
 });

@@ -56,3 +56,8 @@ export type ConfirmDisableEmail2faRequestDto = {
     challengeId: Uuid;
     code: string;
 };
+
+export type AccountExportFile = {
+    blob: Blob;
+    filename: string;
+};
