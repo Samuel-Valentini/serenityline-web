@@ -14,6 +14,7 @@ export const ROUTES = {
         resetPassword: "/reset-password",
         login2fa: "/login/2fa",
         acceptInvitation: "/invito/accetta",
+        confirmEmailChange: "/cambia-email/conferma",
     },
     app: {
         root: "/app",

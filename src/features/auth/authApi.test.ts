@@ -7,6 +7,7 @@ import {
     resetPassword,
     verifyEmail,
     resendEmailVerification,
+    confirmEmailChange,
 } from "./authApi";
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
@@ -84,7 +85,7 @@ describe("authApi", () => {
             paymentEmailRemindersEnabled: true,
         });
 
-       const [, init] = getLastFetchCall();
+        const [, init] = getLastFetchCall();
 
         expect(getLastRequestPath()).toBe("/api/auth/register");
         expect(init?.method).toBe("POST");
@@ -135,7 +136,7 @@ describe("authApi", () => {
             token: "email-verification-token",
         });
 
-       const [, init] = getLastFetchCall();
+        const [, init] = getLastFetchCall();
 
         expect(getLastRequestPath()).toBe(`/api/auth/verify-email`);
         expect(init?.method).toBe("POST");
@@ -152,7 +153,7 @@ describe("authApi", () => {
             email: "mario@example.com",
         });
 
-       const [, init] = getLastFetchCall();
+        const [, init] = getLastFetchCall();
 
         expect(getLastRequestPath()).toBe(`/api/auth/forgot-password`);
         expect(init?.method).toBe("POST");
@@ -189,7 +190,7 @@ describe("authApi", () => {
             password: "Password1234",
         });
 
-       const [, init] = getLastFetchCall();
+        const [, init] = getLastFetchCall();
 
         expect(getLastRequestPath()).toBe(`/api/auth/user-invitations/accept`);
         expect(init?.method).toBe("POST");
@@ -201,27 +202,46 @@ describe("authApi", () => {
     });
 
     it("sends the expected resend email verification body", async () => {
-  vi.mocked(fetch).mockResolvedValueOnce(
-    jsonResponse({
-      userId: "user-id",
-      email: "mario@example.com",
-      emailVerificationResendToken: "next-resend-token",
-      emailVerificationResendTokenExpiresAt: "2026-06-02T20:30:00Z",
-      emailVerificationResendAvailableAt: "2026-06-02T20:05:00Z",
-    }),
-  );
+        vi.mocked(fetch).mockResolvedValueOnce(
+            jsonResponse({
+                userId: "user-id",
+                email: "mario@example.com",
+                emailVerificationResendToken: "next-resend-token",
+                emailVerificationResendTokenExpiresAt: "2026-06-02T20:30:00Z",
+                emailVerificationResendAvailableAt: "2026-06-02T20:05:00Z",
+            }),
+        );
 
-  await resendEmailVerification({
-    emailVerificationResendToken: "resend-token",
-  });
+        await resendEmailVerification({
+            emailVerificationResendToken: "resend-token",
+        });
 
-  const [, init] = getLastFetchCall();
+        const [, init] = getLastFetchCall();
 
-  expect(getLastRequestPath()).toBe("/api/auth/resend-email-verification");
-  expect(init?.method).toBe("POST");
-  expect(init?.credentials).toBe("include");
-  expect(getLastRequestBody()).toEqual({
-    emailVerificationResendToken: "resend-token",
-  });
-});
+        expect(getLastRequestPath()).toBe(
+            "/api/auth/resend-email-verification",
+        );
+        expect(init?.method).toBe("POST");
+        expect(init?.credentials).toBe("include");
+        expect(getLastRequestBody()).toEqual({
+            emailVerificationResendToken: "resend-token",
+        });
+    });
+
+    it("sends the expected confirm email change body", async () => {
+        vi.mocked(fetch).mockResolvedValueOnce(noContentResponse());
+
+        await confirmEmailChange({
+            token: "email-change-token",
+        });
+
+        const [, init] = getLastFetchCall();
+
+        expect(getLastRequestPath()).toBe("/api/auth/email-change/confirm");
+        expect(init?.method).toBe("POST");
+        expect(init?.credentials).toBe("include");
+        expect(getLastRequestBody()).toEqual({
+            token: "email-change-token",
+        });
+    });
 });

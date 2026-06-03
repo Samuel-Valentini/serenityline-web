@@ -109,3 +109,7 @@ export type EmailVerificationRequiredResponseDto = {
   emailVerificationResendTokenExpiresAt: string;
   emailVerificationResendAvailableAt: string;
 };
+
+export type ConfirmEmailChangeRequestDto = {
+    token: string;
+};

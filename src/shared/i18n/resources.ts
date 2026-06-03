@@ -418,6 +418,27 @@ export const resources = {
                 error: "Non è stato possibile richiedere il cambio email. Controlla i dati e riprova.",
             },
         },
+        authConfirmEmailChange: {
+            title: "Conferma cambio email",
+            subtitle: "Conferma il nuovo indirizzo email del tuo account.",
+            manualTitle: "Inserisci il token di conferma",
+            manualText:
+                "Se il link non si è aperto correttamente, incolla qui il token ricevuto via email.",
+            tokenLabel: "Token di conferma",
+            tokenPlaceholder: "Incolla il token ricevuto via email",
+            submit: "Conferma cambio email",
+            confirmingTitle: "Conferma in corso",
+            confirmingText:
+                "Attendi qualche istante mentre confermiamo il nuovo indirizzo email.",
+            successTitle: "Email aggiornata",
+            successText:
+                "Il tuo indirizzo email è stato aggiornato correttamente. Per sicurezza effettua di nuovo l'accesso.",
+            errorTitle: "Conferma non riuscita",
+            errorFallback:
+                "Non siamo riusciti a confermare il cambio email. Il link potrebbe essere scaduto o già utilizzato.",
+            goToLogin: "Vai al login",
+            backHome: "Torna alla home",
+        },
     },
     en: {
         common: {
@@ -830,6 +851,27 @@ export const resources = {
                 success: "We sent a confirmation email to the new address.",
                 error: "Could not request the email change. Check the details and try again.",
             },
+        },
+        authConfirmEmailChange: {
+            title: "Confirm email change",
+            subtitle: "Confirm the new email address for your account.",
+            manualTitle: "Enter the confirmation token",
+            manualText:
+                "If the link did not open correctly, paste the token you received by email here.",
+            tokenLabel: "Confirmation token",
+            tokenPlaceholder: "Paste the token you received by email",
+            submit: "Confirm email change",
+            confirmingTitle: "Confirming email change",
+            confirmingText:
+                "Please wait while we confirm your new email address.",
+            successTitle: "Email updated",
+            successText:
+                "Your email address has been updated successfully. For security reasons, please sign in again.",
+            errorTitle: "Confirmation failed",
+            errorFallback:
+                "We could not confirm the email change. The link may have expired or already been used.",
+            goToLogin: "Go to login",
+            backHome: "Back to home",
         },
     },
 } as const;

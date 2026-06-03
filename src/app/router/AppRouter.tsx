@@ -19,6 +19,7 @@ import { ForgotPasswordPage } from "../../pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "../../pages/auth/ResetPasswordPage";
 import { AcceptInvitationPage } from "../../pages/auth/AcceptInvitationPage";
 import { SettingsPage } from "../../pages/app/SettingsPage";
+import { ConfirmEmailChangePage } from "../../pages/auth/ConfirmEmailChangePage";
 
 export function AppRouter() {
     return (
@@ -41,6 +42,13 @@ export function AppRouter() {
                     <Route
                         path={ROUTES.public.terms}
                         element={<PublicInfoPage pageKey="terms" />}
+                    />
+                </Route>
+
+                <Route element={<AuthLayout />}>
+                    <Route
+                        path={ROUTES.auth.confirmEmailChange}
+                        element={<ConfirmEmailChangePage />}
                     />
                 </Route>
 
