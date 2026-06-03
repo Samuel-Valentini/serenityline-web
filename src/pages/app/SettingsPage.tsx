@@ -13,9 +13,14 @@ import {
     exportCurrentUserData,
     requestEmailChange,
     updatePaymentEmailReminders,
+    confirmDisableEmail2fa,
+    confirmEnableEmail2fa,
+    requestDisableEmail2fa,
+    requestEnableEmail2fa,
 } from "../../features/account/api/accountApi";
 import { paymentEmailRemindersUpdated } from "../../features/account/accountSlice";
 import { logoutUser } from "../../features/auth/authThunks";
+import { emailTwoFactorUpdated } from "../../features/account/accountSlice";
 
 type SettingsDetailRowProps = {
     label: string;
@@ -26,6 +31,13 @@ type ExportStatus = "idle" | "loading" | "success" | "failed";
 type PreferenceUpdateStatus = "idle" | "loading" | "success" | "failed";
 type PasswordChangeStatus = "idle" | "loading" | "success" | "failed";
 type EmailChangeStatus = "idle" | "loading" | "success" | "failed";
+type Email2faFlowStatus =
+    | "idle"
+    | "requesting"
+    | "challengeReady"
+    | "confirming"
+    | "success"
+    | "failed";
 
 function valueOrFallback(value: string | null | undefined): string {
     return value?.trim() ? value : "—";
@@ -72,6 +84,13 @@ export function SettingsPage() {
         useState("");
     const [emailChangeStatus, setEmailChangeStatus] =
         useState<EmailChangeStatus>("idle");
+    const [email2faPassword, setEmail2faPassword] = useState("");
+    const [email2faCode, setEmail2faCode] = useState("");
+    const [email2faChallengeId, setEmail2faChallengeId] = useState<
+        string | null
+    >(null);
+    const [email2faStatus, setEmail2faStatus] =
+        useState<Email2faFlowStatus>("idle");
 
     const isInitialLoading = accountStatus === "loading" && !currentUser;
     const hasError = accountStatus === "failed" && accountError !== null;
@@ -178,6 +197,62 @@ export function SettingsPage() {
             setEmailChangeStatus("success");
         } catch {
             setEmailChangeStatus("failed");
+        }
+    }
+
+    async function requestEmail2faChallenge() {
+        if (!currentUser) {
+            return;
+        }
+
+        setEmail2faStatus("requesting");
+
+        try {
+            const response = currentUser.emailTwoFactorEnabled
+                ? await requestDisableEmail2fa({
+                      currentPassword: email2faPassword,
+                  })
+                : await requestEnableEmail2fa({
+                      currentPassword: email2faPassword,
+                  });
+
+            setEmail2faChallengeId(response.challengeId);
+            setEmail2faStatus("challengeReady");
+        } catch {
+            setEmail2faStatus("failed");
+        }
+    }
+
+    async function confirmEmail2faChallenge() {
+        if (!currentUser || !email2faChallengeId) {
+            return;
+        }
+
+        setEmail2faStatus("confirming");
+
+        try {
+            if (currentUser.emailTwoFactorEnabled) {
+                await confirmDisableEmail2fa({
+                    challengeId: email2faChallengeId,
+                    code: email2faCode,
+                });
+
+                dispatch(emailTwoFactorUpdated(false));
+            } else {
+                await confirmEnableEmail2fa({
+                    challengeId: email2faChallengeId,
+                    code: email2faCode,
+                });
+
+                dispatch(emailTwoFactorUpdated(true));
+            }
+
+            setEmail2faPassword("");
+            setEmail2faCode("");
+            setEmail2faChallengeId(null);
+            setEmail2faStatus("success");
+        } catch {
+            setEmail2faStatus("failed");
         }
     }
 
@@ -476,6 +551,116 @@ export function SettingsPage() {
                                         {t("passwordChange.error")}
                                     </p>
                                 ) : null}
+                            </form>
+                            <hr />
+
+                            <form
+                                onSubmit={(event) => {
+                                    event.preventDefault();
+
+                                    if (
+                                        email2faStatus === "requesting" ||
+                                        email2faStatus === "confirming"
+                                    ) {
+                                        return;
+                                    }
+
+                                    if (email2faStatus === "challengeReady") {
+                                        void confirmEmail2faChallenge();
+                                        return;
+                                    }
+
+                                    void requestEmail2faChallenge();
+                                }}>
+                                <h3 className="h6">{t("email2fa.title")}</h3>
+                                {email2faStatus === "challengeReady" ? (
+                                    <p className="text-muted mt-3 mb-0">
+                                        {t("email2fa.challengeSent")}
+                                    </p>
+                                ) : null}
+
+                                {email2faStatus === "success" ? (
+                                    <p className="text-success mt-3 mb-0">
+                                        {t("email2fa.success")}
+                                    </p>
+                                ) : null}
+
+                                {email2faStatus === "failed" ? (
+                                    <p className="text-danger mt-3 mb-0">
+                                        {t("email2fa.error")}
+                                    </p>
+                                ) : null}
+
+                                <p className="text-muted">
+                                    {currentUser.emailTwoFactorEnabled
+                                        ? t("email2fa.disableDescription")
+                                        : t("email2fa.enableDescription")}
+                                </p>
+
+                                {email2faStatus !== "challengeReady" ? (
+                                    <div className="mb-3">
+                                        <label
+                                            className="form-label"
+                                            htmlFor="email-2fa-password">
+                                            {t("email2fa.currentPassword")}
+                                        </label>
+                                        <input
+                                            autoComplete="current-password"
+                                            className="form-control"
+                                            id="email-2fa-password"
+                                            minLength={8}
+                                            onChange={(event) => {
+                                                setEmail2faPassword(
+                                                    event.target.value,
+                                                );
+                                            }}
+                                            required
+                                            type="password"
+                                            value={email2faPassword}
+                                        />
+                                    </div>
+                                ) : null}
+
+                                {email2faStatus === "challengeReady" ? (
+                                    <div className="mb-3">
+                                        <label
+                                            className="form-label"
+                                            htmlFor="email-2fa-code">
+                                            {t("email2fa.code")}
+                                        </label>
+                                        <input
+                                            autoComplete="one-time-code"
+                                            className="form-control"
+                                            id="email-2fa-code"
+                                            inputMode="numeric"
+                                            onChange={(event) => {
+                                                setEmail2faCode(
+                                                    event.target.value,
+                                                );
+                                            }}
+                                            required
+                                            value={email2faCode}
+                                        />
+                                    </div>
+                                ) : null}
+
+                                <button
+                                    className="btn btn-outline-primary btn-sm"
+                                    disabled={
+                                        email2faStatus === "requesting" ||
+                                        email2faStatus === "confirming"
+                                    }
+                                    type="submit">
+                                    {email2faStatus === "requesting"
+                                        ? t("email2fa.sending")
+                                        : email2faStatus === "confirming"
+                                          ? t("email2fa.confirming")
+                                          : email2faStatus === "challengeReady"
+                                            ? t("email2fa.confirm")
+                                            : currentUser.emailTwoFactorEnabled
+                                              ? t("email2fa.disable")
+                                              : t("email2fa.enable")}
+                                </button>
                             </form>
                         </article>
                     </div>

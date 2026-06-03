@@ -68,7 +68,9 @@ describe("SettingsPage", () => {
         expect(screen.getByText("Italiano")).toBeInTheDocument();
         expect(screen.getByText("Predefinito")).toBeInTheDocument();
         expect(
-            screen.getByText("Autenticazione a due fattori"),
+            screen.getByRole("heading", {
+                name: "Autenticazione a due fattori",
+            }),
         ).toBeInTheDocument();
         expect(screen.getByText("Attiva")).toBeInTheDocument();
         expect(screen.getByText("Ruolo utente")).toBeInTheDocument();

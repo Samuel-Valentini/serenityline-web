@@ -417,6 +417,24 @@ export const resources = {
                     "Ti abbiamo inviato un'email di conferma al nuovo indirizzo.",
                 error: "Non è stato possibile richiedere il cambio email. Controlla i dati e riprova.",
             },
+            email2fa: {
+                title: "Autenticazione a due fattori",
+                enableDescription:
+                    "Riceverai un codice via email per completare l'attivazione.",
+                disableDescription:
+                    "Riceverai un codice via email per confermare la disattivazione.",
+                currentPassword: "Password attuale",
+                code: "Codice ricevuto via email",
+                enable: "Attiva autenticazione a due fattori",
+                disable: "Disattiva autenticazione a due fattori",
+                sending: "Invio codice...",
+                challengeSent: "Ti abbiamo inviato un codice via email.",
+                confirm: "Conferma codice",
+                confirming: "Conferma in corso...",
+                success:
+                    "Autenticazione a due fattori aggiornata correttamente.",
+                error: "Non è stato possibile aggiornare l'autenticazione a due fattori. Controlla i dati e riprova.",
+            },
         },
         authConfirmEmailChange: {
             title: "Conferma cambio email",
@@ -872,6 +890,23 @@ export const resources = {
                 "We could not confirm the email change. The link may have expired or already been used.",
             goToLogin: "Go to login",
             backHome: "Back to home",
+        },
+        email2fa: {
+            title: "Two-factor authentication",
+            enableDescription:
+                "You will receive an email code to complete activation.",
+            disableDescription:
+                "You will receive an email code to confirm deactivation.",
+            currentPassword: "Current password",
+            code: "Code received by email",
+            enable: "Enable two-factor authentication",
+            disable: "Disable two-factor authentication",
+            sending: "Sending code...",
+            challengeSent: "We sent you a code by email.",
+            confirm: "Confirm code",
+            confirming: "Confirming...",
+            success: "Two-factor authentication updated successfully.",
+            error: "Could not update two-factor authentication. Check the details and try again.",
         },
     },
 } as const;

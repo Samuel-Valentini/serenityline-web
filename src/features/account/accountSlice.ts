@@ -36,6 +36,11 @@ const accountSlice = createSlice({
                 state.currentUser.paymentEmailRemindersEnabled = action.payload;
             }
         },
+        emailTwoFactorUpdated(state, action: PayloadAction<boolean>) {
+            if (state.currentUser) {
+                state.currentUser.emailTwoFactorEnabled = action.payload;
+            }
+        },
     },
 });
 
@@ -45,6 +50,7 @@ export const {
     accountLoadingFailed,
     accountLoadingStarted,
     paymentEmailRemindersUpdated,
+    emailTwoFactorUpdated,
 } = accountSlice.actions;
 
 export const accountReducer = accountSlice.reducer;
