@@ -1,3 +1,10 @@
+import type {
+    PreferredLocale,
+    PreferredTheme,
+    UserPlatformRole,
+    UserRole,
+} from "../account/api/accountApiTypes";
+
 export type LoginRequestDto = {
     email: string;
     password: string;
@@ -16,10 +23,10 @@ export type LoginUserDto = {
     email: string;
     userGroupId: string;
     userGroupName: string;
-    userRole: string;
-    userPlatformRole: string;
-    preferredLocale: string;
-    preferredTheme: string;
+    userRole: UserRole;
+    userPlatformRole: UserPlatformRole;
+    preferredLocale: PreferredLocale;
+    preferredTheme: PreferredTheme;
     wantsInvoice: boolean;
 };
 

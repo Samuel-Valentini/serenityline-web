@@ -1,6 +1,7 @@
 import type {
     EmailVerificationRequiredResponseDto,
     RestoreAccountChallengeResponseDto,
+    LoginUserDto,
 } from "./authApiTypes";
 
 export type AuthStatus =
@@ -9,20 +10,7 @@ export type AuthStatus =
     | "authenticated"
     | "twoFactorRequired";
 
-export type AuthUser = {
-    userId: string;
-    userName: string;
-    email: string;
-    userGroupId: string;
-    userGroupName: string;
-    userRole: string;
-    userPlatformRole: string;
-    preferredLocale: string;
-    preferredTheme: string;
-    wantsInvoice: boolean;
-    emailTwoFactorEnabled?: boolean;
-    paymentEmailRemindersEnabled?: boolean;
-};
+export type AuthUser = LoginUserDto;
 
 export type AuthTwoFactorChallenge = {
     challengeId: string;

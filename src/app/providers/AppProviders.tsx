@@ -7,6 +7,7 @@ import { AuthSessionBootstrap } from "./AuthSessionBootstrap";
 import { store } from "../store/store";
 import { AccountDataBootstrap } from "../../features/account/AccountDataBootstrap";
 import { AppLocaleBootstrap } from "./AppLocaleBootstrap";
+import { FinanceDataBootstrap } from "../../features/finance/FinanceDataBootstrap";
 
 type AppProvidersProps = {
     children: ReactNode;
@@ -24,6 +25,7 @@ export function AppProviders({
                     <>
                         <AuthSessionBootstrap />
                         <AccountDataBootstrap />
+                        <FinanceDataBootstrap />
                         <AppLocaleBootstrap />
                     </>
                 ) : null}
