@@ -464,6 +464,29 @@ export const resources = {
                     "Inserisci un numero di giorni di promemoria valido.",
             },
         },
+        referenceModals: {
+            common: {
+                cancel: "Annulla",
+                close: "Chiudi",
+                optional: "opzionale",
+            },
+            category: {
+                eyebrow: "Nuova voce",
+                title: "Nuova categoria",
+                intro: "Crea una categoria senza uscire dal form della transazione.",
+                fields: {
+                    name: "Nome categoria",
+                    description: "Descrizione",
+                },
+                validation: {
+                    nameRequired: "Inserisci il nome della categoria.",
+                },
+                submit: "Crea categoria",
+                submitting: "Creazione...",
+                createErrorFallback:
+                    "Non siamo riusciti a creare la categoria.",
+            },
+        },
         appPages: {
             placeholderBadge: "Area MVP",
             serenityline: {
@@ -1286,6 +1309,28 @@ export const resources = {
                 categoryRequired: "Select a category.",
                 accountRequired: "Select an account.",
                 reminderDaysInvalid: "Enter a valid number of reminder days.",
+            },
+        },
+        referenceModals: {
+            common: {
+                cancel: "Cancel",
+                close: "Close",
+                optional: "optional",
+            },
+            category: {
+                eyebrow: "New item",
+                title: "New category",
+                intro: "Create a category without leaving the transaction form.",
+                fields: {
+                    name: "Category name",
+                    description: "Description",
+                },
+                validation: {
+                    nameRequired: "Enter the category name.",
+                },
+                submit: "Create category",
+                submitting: "Creating...",
+                createErrorFallback: "We could not create the category.",
             },
         },
         appPages: {

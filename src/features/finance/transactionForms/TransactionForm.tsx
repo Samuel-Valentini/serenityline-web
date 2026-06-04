@@ -15,6 +15,8 @@ import {
 } from "./movementFormContext";
 import { normalizeMoneyInput } from "./moneyInput";
 
+import { CreateCategoryModal } from "../referenceModals/CreateCategoryModal";
+
 type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
 >[0];
@@ -102,6 +104,8 @@ export function TransactionForm({
         getInitialFormState(),
     );
     const [formError, setFormError] = useState<string | null>(null);
+    const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] =
+        useState(false);
 
     const allowedAccountIds = useMemo(() => {
         if (!isSimulationMovementContext(context)) {
@@ -182,6 +186,15 @@ export function TransactionForm({
                 ),
         [allowedAccountIds, buckets, form.accountId],
     );
+
+    function handleCreateCategoryClick() {
+        if (referenceActions?.onCreateCategory) {
+            referenceActions.onCreateCategory();
+            return;
+        }
+
+        setIsCreateCategoryModalOpen(true);
+    }
 
     function updateField(
         field: keyof TransactionFormState,
@@ -273,330 +286,360 @@ export function TransactionForm({
     };
 
     return (
-        <form className="d-grid gap-3" onSubmit={handleSubmit}>
-            {formError ? (
-                <div className="alert alert-danger" role="alert">
-                    {formError}
-                </div>
-            ) : null}
+        <>
+            <form className="d-grid gap-3" onSubmit={handleSubmit}>
+                {formError ? (
+                    <div className="alert alert-danger" role="alert">
+                        {formError}
+                    </div>
+                ) : null}
 
-            <div>
-                <label
-                    className="form-label"
-                    htmlFor={`${idPrefix}-description`}>
-                    {t("fields.description")}
-                </label>
-                <input
-                    className="form-control"
-                    id={`${idPrefix}-description`}
-                    onChange={(event) =>
-                        updateField(
-                            "transactionDescription",
-                            event.target.value,
-                        )
-                    }
-                    required
-                    type="text"
-                    value={form.transactionDescription}
-                />
-            </div>
-
-            <div>
-                <label className="form-label" htmlFor={`${idPrefix}-amount`}>
-                    {t("fields.amount")}
-                </label>
-                <input
-                    className="form-control"
-                    id={`${idPrefix}-amount`}
-                    inputMode="decimal"
-                    onChange={(event) =>
-                        updateField("transactionAmount", event.target.value)
-                    }
-                    placeholder={t("placeholders.amount")}
-                    required
-                    type="text"
-                    value={form.transactionAmount}
-                />
-            </div>
-
-            <div>
-                <label
-                    className="form-label"
-                    htmlFor={`${idPrefix}-chargeDate`}>
-                    {t("fields.chargeDate")}
-                </label>
-                <input
-                    className="form-control"
-                    id={`${idPrefix}-chargeDate`}
-                    onChange={(event) =>
-                        updateField("transactionChargeDate", event.target.value)
-                    }
-                    required
-                    type="date"
-                    value={form.transactionChargeDate}
-                />
-            </div>
-
-            <div>
-                <label className="form-label" htmlFor={`${idPrefix}-category`}>
-                    {t("fields.category")}
-                </label>
-                <div className="input-group">
-                    <select
-                        className="form-select"
-                        id={`${idPrefix}-category`}
-                        onChange={(event) =>
-                            updateField("categoryId", event.target.value)
-                        }
-                        required
-                        value={form.categoryId}>
-                        <option value="">{t("options.selectCategory")}</option>
-                        {activeCategories.map((category) => (
-                            <option
-                                key={category.categoryId}
-                                value={category.categoryId}>
-                                {category.categoryName}
-                            </option>
-                        ))}
-                    </select>
-
-                    {referenceActions?.onCreateCategory ? (
-                        <button
-                            className="btn btn-outline-primary"
-                            onClick={referenceActions.onCreateCategory}
-                            type="button">
-                            {t("actions.newCategory")}
-                        </button>
-                    ) : null}
-                </div>
-            </div>
-
-            <div>
-                <label className="form-label" htmlFor={`${idPrefix}-account`}>
-                    {t("fields.account")}
-                </label>
-                <div className="input-group">
-                    <select
-                        className="form-select"
-                        id={`${idPrefix}-account`}
-                        onChange={(event) => updateAccount(event.target.value)}
-                        required
-                        value={form.accountId}>
-                        <option value="">{t("options.selectAccount")}</option>
-                        {availableAccounts.map((account) => (
-                            <option
-                                key={account.accountId}
-                                value={account.accountId}>
-                                {account.accountName}
-                            </option>
-                        ))}
-                    </select>
-
-                    {referenceActions?.onCreateAccount ? (
-                        <button
-                            className="btn btn-outline-primary"
-                            onClick={referenceActions.onCreateAccount}
-                            type="button">
-                            {t("actions.newAccount")}
-                        </button>
-                    ) : null}
-                </div>
-            </div>
-
-            <div>
-                <label
-                    className="form-label"
-                    htmlFor={`${idPrefix}-creditCard`}>
-                    {t("fields.creditCard")}{" "}
-                    <span className="text-muted">({t("fields.optional")})</span>
-                </label>
-                <div className="input-group">
-                    <select
-                        className="form-select"
-                        id={`${idPrefix}-creditCard`}
-                        onChange={(event) =>
-                            updateField("creditCardId", event.target.value)
-                        }
-                        value={form.creditCardId}>
-                        <option value="">{t("options.noCreditCard")}</option>
-                        {availableCreditCards.map((creditCard) => (
-                            <option
-                                key={creditCard.creditCardId}
-                                value={creditCard.creditCardId}>
-                                {creditCard.creditCardName}
-                            </option>
-                        ))}
-                    </select>
-
-                    {referenceActions?.onCreateCreditCard ? (
-                        <button
-                            className="btn btn-outline-primary"
-                            onClick={referenceActions.onCreateCreditCard}
-                            type="button">
-                            {t("actions.newCreditCard")}
-                        </button>
-                    ) : null}
-                </div>
-            </div>
-
-            <div>
-                <label className="form-label" htmlFor={`${idPrefix}-bucket`}>
-                    {t("fields.bucket")}{" "}
-                    <span className="text-muted">({t("fields.optional")})</span>
-                </label>
-                <div className="input-group">
-                    <select
-                        className="form-select"
-                        id={`${idPrefix}-bucket`}
-                        onChange={(event) =>
-                            updateField("bucketId", event.target.value)
-                        }
-                        value={form.bucketId}>
-                        <option value="">{t("options.noBucket")}</option>
-                        {availableBuckets.map((bucket) => (
-                            <option
-                                key={bucket.bucketId}
-                                value={bucket.bucketId}>
-                                {bucket.bucketName ??
-                                    t("options.unnamedBucket")}
-                            </option>
-                        ))}
-                    </select>
-
-                    {referenceActions?.onCreateBucket ? (
-                        <button
-                            className="btn btn-outline-primary"
-                            onClick={referenceActions.onCreateBucket}
-                            type="button">
-                            {t("actions.newBucket")}
-                        </button>
-                    ) : null}
-                </div>
-            </div>
-
-            <div className="form-check">
-                <input
-                    checked={form.transactionIsConfirmed}
-                    className="form-check-input"
-                    id={`${idPrefix}-confirmed`}
-                    onChange={(event) =>
-                        updateField(
-                            "transactionIsConfirmed",
-                            event.target.checked,
-                        )
-                    }
-                    type="checkbox"
-                />
-                <label
-                    className="form-check-label"
-                    htmlFor={`${idPrefix}-confirmed`}>
-                    {t("fields.confirmed")}
-                </label>
-            </div>
-
-            <div className="form-check">
-                <input
-                    checked={form.transactionAffectsAccountBalance}
-                    className="form-check-input"
-                    id={`${idPrefix}-affectsAccountBalance`}
-                    onChange={(event) =>
-                        updateField(
-                            "transactionAffectsAccountBalance",
-                            event.target.checked,
-                        )
-                    }
-                    type="checkbox"
-                />
-                <label
-                    className="form-check-label"
-                    htmlFor={`${idPrefix}-affectsAccountBalance`}>
-                    {t("fields.affectsAccountBalance")}
-                </label>
-            </div>
-
-            <div className="form-check">
-                <input
-                    checked={form.transactionAffectsSerenityline}
-                    className="form-check-input"
-                    id={`${idPrefix}-affectsSerenityline`}
-                    onChange={(event) =>
-                        updateField(
-                            "transactionAffectsSerenityline",
-                            event.target.checked,
-                        )
-                    }
-                    type="checkbox"
-                />
-                <label
-                    className="form-check-label"
-                    htmlFor={`${idPrefix}-affectsSerenityline`}>
-                    {t("fields.affectsSerenityline")}
-                </label>
-            </div>
-
-            <div className="form-check">
-                <input
-                    checked={form.transactionReminderEnabled}
-                    className="form-check-input"
-                    id={`${idPrefix}-reminderEnabled`}
-                    onChange={(event) =>
-                        updateField(
-                            "transactionReminderEnabled",
-                            event.target.checked,
-                        )
-                    }
-                    type="checkbox"
-                />
-                <label
-                    className="form-check-label"
-                    htmlFor={`${idPrefix}-reminderEnabled`}>
-                    {t("fields.reminderEnabled")}
-                </label>
-            </div>
-
-            {form.transactionReminderEnabled ? (
                 <div>
                     <label
                         className="form-label"
-                        htmlFor={`${idPrefix}-reminderDaysBefore`}>
-                        {t("fields.reminderDaysBefore")}
+                        htmlFor={`${idPrefix}-description`}>
+                        {t("fields.description")}
                     </label>
                     <input
                         className="form-control"
-                        id={`${idPrefix}-reminderDaysBefore`}
-                        min={0}
+                        id={`${idPrefix}-description`}
                         onChange={(event) =>
                             updateField(
-                                "transactionReminderDaysBefore",
+                                "transactionDescription",
                                 event.target.value,
                             )
                         }
-                        type="number"
-                        value={form.transactionReminderDaysBefore}
+                        required
+                        type="text"
+                        value={form.transactionDescription}
                     />
                 </div>
-            ) : null}
 
-            <div className="d-flex flex-wrap gap-2">
-                <button
-                    className="btn btn-primary"
-                    disabled={isSubmitting}
-                    type="submit">
-                    {isSubmitting
-                        ? (submittingLabel ?? t("actions.submitting"))
-                        : (submitLabel ?? t("actions.submit"))}
-                </button>
+                <div>
+                    <label
+                        className="form-label"
+                        htmlFor={`${idPrefix}-amount`}>
+                        {t("fields.amount")}
+                    </label>
+                    <input
+                        className="form-control"
+                        id={`${idPrefix}-amount`}
+                        inputMode="decimal"
+                        onChange={(event) =>
+                            updateField("transactionAmount", event.target.value)
+                        }
+                        placeholder={t("placeholders.amount")}
+                        required
+                        type="text"
+                        value={form.transactionAmount}
+                    />
+                </div>
 
-                {onCancel ? (
-                    <button
-                        className="btn btn-outline-secondary"
-                        disabled={isSubmitting}
-                        onClick={onCancel}
-                        type="button">
-                        {t("actions.cancel")}
-                    </button>
+                <div>
+                    <label
+                        className="form-label"
+                        htmlFor={`${idPrefix}-chargeDate`}>
+                        {t("fields.chargeDate")}
+                    </label>
+                    <input
+                        className="form-control"
+                        id={`${idPrefix}-chargeDate`}
+                        onChange={(event) =>
+                            updateField(
+                                "transactionChargeDate",
+                                event.target.value,
+                            )
+                        }
+                        required
+                        type="date"
+                        value={form.transactionChargeDate}
+                    />
+                </div>
+
+                <div>
+                    <label
+                        className="form-label"
+                        htmlFor={`${idPrefix}-category`}>
+                        {t("fields.category")}
+                    </label>
+                    <div className="input-group">
+                        <select
+                            className="form-select"
+                            id={`${idPrefix}-category`}
+                            onChange={(event) =>
+                                updateField("categoryId", event.target.value)
+                            }
+                            required
+                            value={form.categoryId}>
+                            <option value="">
+                                {t("options.selectCategory")}
+                            </option>
+                            {activeCategories.map((category) => (
+                                <option
+                                    key={category.categoryId}
+                                    value={category.categoryId}>
+                                    {category.categoryName}
+                                </option>
+                            ))}
+                        </select>
+
+                        <button
+                            className="btn btn-outline-primary"
+                            onClick={handleCreateCategoryClick}
+                            type="button">
+                            {t("actions.newCategory")}
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        className="form-label"
+                        htmlFor={`${idPrefix}-account`}>
+                        {t("fields.account")}
+                    </label>
+                    <div className="input-group">
+                        <select
+                            className="form-select"
+                            id={`${idPrefix}-account`}
+                            onChange={(event) =>
+                                updateAccount(event.target.value)
+                            }
+                            required
+                            value={form.accountId}>
+                            <option value="">
+                                {t("options.selectAccount")}
+                            </option>
+                            {availableAccounts.map((account) => (
+                                <option
+                                    key={account.accountId}
+                                    value={account.accountId}>
+                                    {account.accountName}
+                                </option>
+                            ))}
+                        </select>
+
+                        {referenceActions?.onCreateAccount ? (
+                            <button
+                                className="btn btn-outline-primary"
+                                onClick={referenceActions.onCreateAccount}
+                                type="button">
+                                {t("actions.newAccount")}
+                            </button>
+                        ) : null}
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        className="form-label"
+                        htmlFor={`${idPrefix}-creditCard`}>
+                        {t("fields.creditCard")}{" "}
+                        <span className="text-muted">
+                            ({t("fields.optional")})
+                        </span>
+                    </label>
+                    <div className="input-group">
+                        <select
+                            className="form-select"
+                            id={`${idPrefix}-creditCard`}
+                            onChange={(event) =>
+                                updateField("creditCardId", event.target.value)
+                            }
+                            value={form.creditCardId}>
+                            <option value="">
+                                {t("options.noCreditCard")}
+                            </option>
+                            {availableCreditCards.map((creditCard) => (
+                                <option
+                                    key={creditCard.creditCardId}
+                                    value={creditCard.creditCardId}>
+                                    {creditCard.creditCardName}
+                                </option>
+                            ))}
+                        </select>
+
+                        {referenceActions?.onCreateCreditCard ? (
+                            <button
+                                className="btn btn-outline-primary"
+                                onClick={referenceActions.onCreateCreditCard}
+                                type="button">
+                                {t("actions.newCreditCard")}
+                            </button>
+                        ) : null}
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        className="form-label"
+                        htmlFor={`${idPrefix}-bucket`}>
+                        {t("fields.bucket")}{" "}
+                        <span className="text-muted">
+                            ({t("fields.optional")})
+                        </span>
+                    </label>
+                    <div className="input-group">
+                        <select
+                            className="form-select"
+                            id={`${idPrefix}-bucket`}
+                            onChange={(event) =>
+                                updateField("bucketId", event.target.value)
+                            }
+                            value={form.bucketId}>
+                            <option value="">{t("options.noBucket")}</option>
+                            {availableBuckets.map((bucket) => (
+                                <option
+                                    key={bucket.bucketId}
+                                    value={bucket.bucketId}>
+                                    {bucket.bucketName ??
+                                        t("options.unnamedBucket")}
+                                </option>
+                            ))}
+                        </select>
+
+                        {referenceActions?.onCreateBucket ? (
+                            <button
+                                className="btn btn-outline-primary"
+                                onClick={referenceActions.onCreateBucket}
+                                type="button">
+                                {t("actions.newBucket")}
+                            </button>
+                        ) : null}
+                    </div>
+                </div>
+
+                <div className="form-check">
+                    <input
+                        checked={form.transactionIsConfirmed}
+                        className="form-check-input"
+                        id={`${idPrefix}-confirmed`}
+                        onChange={(event) =>
+                            updateField(
+                                "transactionIsConfirmed",
+                                event.target.checked,
+                            )
+                        }
+                        type="checkbox"
+                    />
+                    <label
+                        className="form-check-label"
+                        htmlFor={`${idPrefix}-confirmed`}>
+                        {t("fields.confirmed")}
+                    </label>
+                </div>
+
+                <div className="form-check">
+                    <input
+                        checked={form.transactionAffectsAccountBalance}
+                        className="form-check-input"
+                        id={`${idPrefix}-affectsAccountBalance`}
+                        onChange={(event) =>
+                            updateField(
+                                "transactionAffectsAccountBalance",
+                                event.target.checked,
+                            )
+                        }
+                        type="checkbox"
+                    />
+                    <label
+                        className="form-check-label"
+                        htmlFor={`${idPrefix}-affectsAccountBalance`}>
+                        {t("fields.affectsAccountBalance")}
+                    </label>
+                </div>
+
+                <div className="form-check">
+                    <input
+                        checked={form.transactionAffectsSerenityline}
+                        className="form-check-input"
+                        id={`${idPrefix}-affectsSerenityline`}
+                        onChange={(event) =>
+                            updateField(
+                                "transactionAffectsSerenityline",
+                                event.target.checked,
+                            )
+                        }
+                        type="checkbox"
+                    />
+                    <label
+                        className="form-check-label"
+                        htmlFor={`${idPrefix}-affectsSerenityline`}>
+                        {t("fields.affectsSerenityline")}
+                    </label>
+                </div>
+
+                <div className="form-check">
+                    <input
+                        checked={form.transactionReminderEnabled}
+                        className="form-check-input"
+                        id={`${idPrefix}-reminderEnabled`}
+                        onChange={(event) =>
+                            updateField(
+                                "transactionReminderEnabled",
+                                event.target.checked,
+                            )
+                        }
+                        type="checkbox"
+                    />
+                    <label
+                        className="form-check-label"
+                        htmlFor={`${idPrefix}-reminderEnabled`}>
+                        {t("fields.reminderEnabled")}
+                    </label>
+                </div>
+
+                {form.transactionReminderEnabled ? (
+                    <div>
+                        <label
+                            className="form-label"
+                            htmlFor={`${idPrefix}-reminderDaysBefore`}>
+                            {t("fields.reminderDaysBefore")}
+                        </label>
+                        <input
+                            className="form-control"
+                            id={`${idPrefix}-reminderDaysBefore`}
+                            min={0}
+                            onChange={(event) =>
+                                updateField(
+                                    "transactionReminderDaysBefore",
+                                    event.target.value,
+                                )
+                            }
+                            type="number"
+                            value={form.transactionReminderDaysBefore}
+                        />
+                    </div>
                 ) : null}
-            </div>
-        </form>
+
+                <div className="d-flex flex-wrap gap-2">
+                    <button
+                        className="btn btn-primary"
+                        disabled={isSubmitting}
+                        type="submit">
+                        {isSubmitting
+                            ? (submittingLabel ?? t("actions.submitting"))
+                            : (submitLabel ?? t("actions.submit"))}
+                    </button>
+
+                    {onCancel ? (
+                        <button
+                            className="btn btn-outline-secondary"
+                            disabled={isSubmitting}
+                            onClick={onCancel}
+                            type="button">
+                            {t("actions.cancel")}
+                        </button>
+                    ) : null}
+                </div>
+            </form>
+            <CreateCategoryModal
+                isOpen={isCreateCategoryModalOpen}
+                onClose={() => setIsCreateCategoryModalOpen(false)}
+                onCreated={(createdCategory) =>
+                    updateField("categoryId", createdCategory.categoryId)
+                }
+            />
+        </>
     );
 }

@@ -11,6 +11,11 @@ import {
 import type { FinanceReferenceData } from "../financeDataTypes";
 import { i18n } from "../../../shared/i18n/i18n";
 import { TransactionForm } from "./TransactionForm";
+import { createCategory } from "../api/financeApi";
+
+vi.mock("../api/financeApi", () => ({
+    createCategory: vi.fn(),
+}));
 
 const account = {
     accountId: "account-id",
@@ -35,6 +40,14 @@ const category = {
     categoryId: "category-id",
     categoryName: "Casa",
     categoryDescription: "Spese legate alla casa",
+    active: true,
+};
+
+const createdCategoryFromModal = {
+    ...category,
+    categoryId: "created-category-from-modal-id",
+    categoryName: "Trasporti",
+    categoryDescription: null,
     active: true,
 };
 
@@ -379,5 +392,46 @@ describe("TransactionForm", () => {
         expect(onCreateAccount).toHaveBeenCalledOnce();
         expect(onCreateCreditCard).toHaveBeenCalledOnce();
         expect(onCreateBucket).toHaveBeenCalledOnce();
+    });
+
+    it("creates a category from the modal and selects it automatically", async () => {
+        vi.mocked(createCategory).mockResolvedValueOnce(
+            createdCategoryFromModal,
+        );
+
+        renderForm();
+
+        fireEvent.click(screen.getByRole("button", { name: "Nuova" }));
+
+        expect(
+            screen.getByRole("dialog", { name: "Nuova categoria" }),
+        ).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText("Nome categoria"), {
+            target: { value: "Trasporti" },
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Crea categoria" }));
+
+        await waitFor(() => {
+            expect(createCategory).toHaveBeenCalledWith({
+                categoryName: "Trasporti",
+                categoryDescription: null,
+            });
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.queryByRole("dialog", { name: "Nuova categoria" }),
+            ).not.toBeInTheDocument();
+        });
+
+        expect(store.getState().financeData.categories).toContainEqual(
+            createdCategoryFromModal,
+        );
+
+        expect(screen.getByLabelText("Categoria")).toHaveValue(
+            "created-category-from-modal-id",
+        );
     });
 });
