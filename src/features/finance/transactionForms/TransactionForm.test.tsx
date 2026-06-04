@@ -11,9 +11,10 @@ import {
 import type { FinanceReferenceData } from "../financeDataTypes";
 import { i18n } from "../../../shared/i18n/i18n";
 import { TransactionForm } from "./TransactionForm";
-import { createCategory } from "../api/financeApi";
+import { createAccount, createCategory } from "../api/financeApi";
 
 vi.mock("../api/financeApi", () => ({
+    createAccount: vi.fn(),
     createCategory: vi.fn(),
 }));
 
@@ -28,6 +29,19 @@ const account = {
     userGroupId: "group-id",
     accountCreatedAt: "2026-01-01T00:00:00Z",
     accountUpdatedAt: "2026-01-01T00:00:00Z",
+};
+
+const createdAccountFromModal = {
+    ...account,
+    accountId: "created-account-from-modal-id",
+    accountName: "Conto nuovo",
+    accountDescription: null,
+    currency: "EUR",
+    issuingInstitution: null,
+    openingBalance: 1250.5,
+    openingBalanceDate: "2026-06-04",
+    accountCreatedAt: "2026-06-04T10:00:00Z",
+    accountUpdatedAt: "2026-06-04T10:00:00Z",
 };
 
 const secondAccount = {
@@ -432,6 +446,59 @@ describe("TransactionForm", () => {
 
         expect(screen.getByLabelText("Categoria")).toHaveValue(
             "created-category-from-modal-id",
+        );
+    });
+
+    it("creates an account from the modal and selects it automatically", async () => {
+        vi.mocked(createAccount).mockResolvedValueOnce(createdAccountFromModal);
+
+        renderForm();
+
+        const accountButtons = screen.getAllByRole("button", { name: "Nuovo" });
+
+        fireEvent.click(accountButtons[0]);
+
+        expect(
+            screen.getByRole("dialog", { name: "Nuovo conto" }),
+        ).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText("Nome conto"), {
+            target: { value: "Conto nuovo" },
+        });
+
+        fireEvent.change(screen.getByLabelText("Saldo iniziale"), {
+            target: { value: "1.250,50" },
+        });
+
+        fireEvent.change(screen.getByLabelText("Data saldo iniziale"), {
+            target: { value: "2026-06-04" },
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Crea conto" }));
+
+        await waitFor(() => {
+            expect(createAccount).toHaveBeenCalledWith({
+                accountName: "Conto nuovo",
+                accountDescription: null,
+                currency: "EUR",
+                issuingInstitution: null,
+                openingBalance: "1250.50",
+                openingBalanceDate: "2026-06-04",
+            });
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.queryByRole("dialog", { name: "Nuovo conto" }),
+            ).not.toBeInTheDocument();
+        });
+
+        expect(store.getState().financeData.accounts).toContainEqual(
+            createdAccountFromModal,
+        );
+
+        expect(screen.getByLabelText("Conto")).toHaveValue(
+            "created-account-from-modal-id",
         );
     });
 });

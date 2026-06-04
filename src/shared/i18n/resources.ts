@@ -486,6 +486,33 @@ export const resources = {
                 createErrorFallback:
                     "Non siamo riusciti a creare la categoria.",
             },
+            account: {
+                eyebrow: "Nuova voce",
+                title: "Nuovo conto",
+                intro: "Crea un conto senza uscire dal form della transazione.",
+                fields: {
+                    name: "Nome conto",
+                    description: "Descrizione",
+                    currency: "Valuta",
+                    issuingInstitution: "Istituto emittente",
+                    openingBalance: "Saldo iniziale",
+                    openingBalanceDate: "Data saldo iniziale",
+                },
+                placeholders: {
+                    openingBalance: "Es. 0 oppure 1.250,50",
+                },
+                validation: {
+                    nameRequired: "Inserisci il nome del conto.",
+                    currencyInvalid: "Seleziona una valuta valida.",
+                    openingBalanceInvalid:
+                        "Inserisci un saldo iniziale valido.",
+                    openingBalanceDateRequired:
+                        "Inserisci la data del saldo iniziale.",
+                },
+                submit: "Crea conto",
+                submitting: "Creazione...",
+                createErrorFallback: "Non siamo riusciti a creare il conto.",
+            },
         },
         appPages: {
             placeholderBadge: "Area MVP",
@@ -1331,6 +1358,32 @@ export const resources = {
                 submit: "Create category",
                 submitting: "Creating...",
                 createErrorFallback: "We could not create the category.",
+            },
+            account: {
+                eyebrow: "New item",
+                title: "New account",
+                intro: "Create an account without leaving the transaction form.",
+                fields: {
+                    name: "Account name",
+                    description: "Description",
+                    currency: "Currency",
+                    issuingInstitution: "Issuing institution",
+                    openingBalance: "Opening balance",
+                    openingBalanceDate: "Opening balance date",
+                },
+                placeholders: {
+                    openingBalance: "E.g. 0 or 1,250.50",
+                },
+                validation: {
+                    nameRequired: "Enter the account name.",
+                    currencyInvalid: "Select a valid currency.",
+                    openingBalanceInvalid: "Enter a valid opening balance.",
+                    openingBalanceDateRequired:
+                        "Enter the opening balance date.",
+                },
+                submit: "Create account",
+                submitting: "Creating...",
+                createErrorFallback: "We could not create the account.",
             },
         },
         appPages: {

@@ -16,6 +16,7 @@ import {
 import { normalizeMoneyInput } from "./moneyInput";
 
 import { CreateCategoryModal } from "../referenceModals/CreateCategoryModal";
+import { CreateAccountModal } from "../referenceModals/CreateAccountModal";
 
 type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -106,6 +107,8 @@ export function TransactionForm({
     const [formError, setFormError] = useState<string | null>(null);
     const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] =
         useState(false);
+    const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] =
+        useState(false);
 
     const allowedAccountIds = useMemo(() => {
         if (!isSimulationMovementContext(context)) {
@@ -194,6 +197,15 @@ export function TransactionForm({
         }
 
         setIsCreateCategoryModalOpen(true);
+    }
+
+    function handleCreateAccountClick() {
+        if (referenceActions?.onCreateAccount) {
+            referenceActions.onCreateAccount();
+            return;
+        }
+
+        setIsCreateAccountModalOpen(true);
     }
 
     function updateField(
@@ -419,14 +431,12 @@ export function TransactionForm({
                             ))}
                         </select>
 
-                        {referenceActions?.onCreateAccount ? (
-                            <button
-                                className="btn btn-outline-primary"
-                                onClick={referenceActions.onCreateAccount}
-                                type="button">
-                                {t("actions.newAccount")}
-                            </button>
-                        ) : null}
+                        <button
+                            className="btn btn-outline-primary"
+                            onClick={handleCreateAccountClick}
+                            type="button">
+                            {t("actions.newAccount")}
+                        </button>
                     </div>
                 </div>
 
@@ -638,6 +648,13 @@ export function TransactionForm({
                 onClose={() => setIsCreateCategoryModalOpen(false)}
                 onCreated={(createdCategory) =>
                     updateField("categoryId", createdCategory.categoryId)
+                }
+            />
+            <CreateAccountModal
+                isOpen={isCreateAccountModalOpen}
+                onClose={() => setIsCreateAccountModalOpen(false)}
+                onCreated={(createdAccount) =>
+                    updateAccount(createdAccount.accountId)
                 }
             />
         </>
