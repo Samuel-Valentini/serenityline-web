@@ -14,6 +14,8 @@ import {
     creditCardDeleted,
     categoryAdded,
     categoryUpdated,
+    bucketAdded,
+    bucketUpdated,
 } from "./financeDataSlice";
 import type { FinanceReferenceData } from "./financeDataTypes";
 
@@ -35,6 +37,17 @@ const category = {
     active: true,
 };
 
+const bucket = {
+    bucketId: "bucket-id",
+    bucketName: "Risparmio",
+    bucketDescription: "Portafoglio per obiettivi di risparmio",
+    accountIds: ["account-id"],
+    userGroupId: "group-id",
+    bucketCreatedAt: "2026-01-01T00:00:00Z",
+    bucketUpdatedAt: "2026-01-01T00:00:00Z",
+    bucketClosedAt: null,
+};
+
 const referenceData: FinanceReferenceData = {
     accounts: [
         {
@@ -52,18 +65,7 @@ const referenceData: FinanceReferenceData = {
     ],
     creditCards: [creditCard],
     categories: [category],
-    buckets: [
-        {
-            bucketId: "bucket-id",
-            bucketName: "Essenziali",
-            bucketDescription: null,
-            accountIds: ["account-id"],
-            userGroupId: "group-id",
-            bucketCreatedAt: "2026-01-01T00:00:00Z",
-            bucketUpdatedAt: "2026-01-01T00:00:00Z",
-            bucketClosedAt: null,
-        },
-    ],
+    buckets: [bucket],
     simulationGroups: [
         {
             simulationGroupId: "simulation-group-id",
@@ -252,41 +254,96 @@ describe("financeDataSlice", () => {
     });
 
     it("adds a category to the finance data state", () => {
-    const newCategory = {
-        ...category,
-        categoryId: "new-category-id",
-        categoryName: "Trasporti",
-        categoryDescription: null,
-    };
+        const newCategory = {
+            ...category,
+            categoryId: "new-category-id",
+            categoryName: "Trasporti",
+            categoryDescription: null,
+        };
 
-    const state = financeDataReducer(
-        {
-            ...initialFinanceDataState,
-            status: "loaded",
-        },
-        categoryAdded(newCategory),
-    );
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                status: "loaded",
+            },
+            categoryAdded(newCategory),
+        );
 
-    expect(state.categories).toEqual([newCategory]);
-});
+        expect(state.categories).toEqual([newCategory]);
+    });
 
-it("updates a category in the finance data state", () => {
-    const updatedCategory = {
-        ...category,
-        categoryName: "Casa aggiornata",
-        categoryDescription: "Descrizione aggiornata",
-        active: false,
-    };
+    it("updates a category in the finance data state", () => {
+        const updatedCategory = {
+            ...category,
+            categoryName: "Casa aggiornata",
+            categoryDescription: "Descrizione aggiornata",
+            active: false,
+        };
 
-    const state = financeDataReducer(
-        {
-            ...initialFinanceDataState,
-            categories: [category],
-            status: "loaded",
-        },
-        categoryUpdated(updatedCategory),
-    );
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                categories: [category],
+                status: "loaded",
+            },
+            categoryUpdated(updatedCategory),
+        );
 
-    expect(state.categories).toEqual([updatedCategory]);
-});
+        expect(state.categories).toEqual([updatedCategory]);
+    });
+
+    it("adds a bucket to the finance data state", () => {
+        const newBucket = {
+            ...bucket,
+            bucketId: "new-bucket-id",
+            bucketName: "Università",
+            bucketDescription: null,
+            accountIds: [],
+            bucketCreatedAt: "2026-06-03T10:00:00Z",
+            bucketUpdatedAt: "2026-06-03T10:00:00Z",
+        };
+
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                status: "loaded",
+            },
+            bucketAdded(newBucket),
+        );
+
+        expect(state.buckets).toEqual([newBucket]);
+    });
+
+    it("updates a bucket in the finance data state", () => {
+        const updatedBucket = {
+            ...bucket,
+            bucketName: "Risparmio aggiornato",
+            bucketDescription: "Descrizione aggiornata",
+            accountIds: ["account-id", "second-account-id"],
+            bucketUpdatedAt: "2026-06-03T10:00:00Z",
+        };
+
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                buckets: [bucket],
+                status: "loaded",
+            },
+            bucketUpdated(updatedBucket),
+        );
+
+        expect(state.buckets).toEqual([updatedBucket]);
+    });
+
+    it("adds a bucket when updating a bucket that is not in finance data yet", () => {
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                status: "loaded",
+            },
+            bucketUpdated(bucket),
+        );
+
+        expect(state.buckets).toEqual([bucket]);
+    });
 });

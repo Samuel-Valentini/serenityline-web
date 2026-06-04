@@ -24,7 +24,7 @@ export const ROUTES = {
         transactions: "/app/transazioni",
         recurringTransactions: "/app/ricorrenti",
         simulations: "/app/simulazioni",
-        portfolios: "/app/portafogli",
+        buckets: "/app/portafogli",
         accounts: "/app/conti",
         creditCards: "/app/carte",
         balances: "/app/saldi",

@@ -33,8 +33,8 @@ const appNavigationItems = [
         labelKey: "nav.simulations",
     },
     {
-        to: ROUTES.app.portfolios,
-        labelKey: "nav.portfolios",
+        to: ROUTES.app.buckets,
+        labelKey: "nav.buckets",
     },
     {
         to: ROUTES.app.accounts,

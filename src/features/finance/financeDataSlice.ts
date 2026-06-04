@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import type {
     AccountResponseDto,
+    BucketResponseDto,
     CategoryResponseDto,
     CreditCardResponseDto,
 } from "./api/financeApiTypes";
@@ -86,6 +87,21 @@ const financeDataSlice = createSlice({
                 state.categories[categoryIndex] = action.payload;
             }
         },
+        bucketAdded(state, action: PayloadAction<BucketResponseDto>) {
+            state.buckets.push(action.payload);
+        },
+        bucketUpdated(state, action: PayloadAction<BucketResponseDto>) {
+            const bucketIndex = state.buckets.findIndex(
+                (bucket) => bucket.bucketId === action.payload.bucketId,
+            );
+
+            if (bucketIndex >= 0) {
+                state.buckets[bucketIndex] = action.payload;
+                return;
+            }
+
+            state.buckets.push(action.payload);
+        },
         financeReferenceDataLoadingFailed(
             state,
             action: PayloadAction<FinanceDataError>,
@@ -107,6 +123,8 @@ export const {
     creditCardDeleted,
     categoryAdded,
     categoryUpdated,
+    bucketAdded,
+    bucketUpdated,
     financeDataCleared,
     financeReferenceDataLoaded,
     financeReferenceDataLoadingFailed,

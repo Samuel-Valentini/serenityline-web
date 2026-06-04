@@ -23,6 +23,7 @@ import { ConfirmEmailChangePage } from "../../pages/auth/ConfirmEmailChangePage"
 import { AccountsPage } from "../../pages/app/AccountsPage";
 import { CreditCardsPage } from "../../pages/app/CreditCardsPage";
 import { CategoriesPage } from "../../pages/app/CategoriesPage";
+import { BucketsPage } from "../../pages/app/BucketsPage";
 
 export function AppRouter() {
     return (
@@ -125,12 +126,7 @@ export function AppRouter() {
                                 <AppPlaceholderPage pageKey="simulations" />
                             }
                         />
-                        <Route
-                            path="portafogli"
-                            element={
-                                <AppPlaceholderPage pageKey="portfolios" />
-                            }
-                        />
+                        <Route path="portafogli" element={<BucketsPage />} />
                         <Route path="conti" element={<AccountsPage />} />
                         <Route path="carte" element={<CreditCardsPage />} />
                         <Route
