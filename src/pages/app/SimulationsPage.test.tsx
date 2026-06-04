@@ -20,6 +20,7 @@ import {
     listRecurringTransactions,
     listTransactions,
     updateTransaction,
+    patchRecurringTransaction,
 } from "../../features/finance/api/financeApi";
 import {
     financeDataCleared,
@@ -41,6 +42,7 @@ vi.mock("../../features/finance/api/financeApi", () => ({
     listRecurringTransactions: vi.fn(),
     listTransactions: vi.fn(),
     updateTransaction: vi.fn(),
+    patchRecurringTransaction: vi.fn(),
 }));
 
 const category = {
@@ -152,6 +154,49 @@ const simulatedTransaction = {
     transactionUpdatedAt: "2026-06-05T10:00:00Z",
 };
 
+const simulatedRecurringTransaction = {
+    recurringTransactionId: "recurring-transaction-id",
+    recurringTransactionAmountIsAdjustable: false,
+    recurringTransactionFirstPaymentDate: "2026-06-04",
+    recurringTransactionIsSimulated: true,
+    simulationGroupId: "simulation-group-id",
+    recurringTransactionReminderEnabled: false,
+    recurringTransactionReminderDaysBefore: 7,
+    recurringTransactionCreatedAt: "2026-06-04T10:00:00Z",
+    recurringTransactionUpdatedAt: "2026-06-04T10:00:00Z",
+
+    recurringTransactionHistoryId: "recurring-transaction-history-id",
+    effectiveFrom: "2026-06-04",
+    effectiveTo: null,
+    dayOfUnit: 4,
+    recurrenceInterval: 1,
+    recurrenceUnit: "MONTH" as const,
+    paymentDateAdjustmentPolicy: "NONE" as const,
+    paymentAmount: -850,
+    recurringTransactionEndDate: null,
+    finalPaymentAmount: null,
+
+    recurringTransactionDetailsHistoryId:
+        "recurring-transaction-details-history-id",
+    recurringTransactionDescription: "Affitto simulato",
+    categoryId: "category-id",
+    financialPriorityId: "financial-priority-id",
+    linkedAccountId: "account-id",
+    linkedCreditCardId: null,
+    linkedBucketId: null,
+    recurringTransactionAffectsAccountBalance: true,
+    recurringtransactionAffectsSerenityline: true,
+    recurringTransactionDetailsEffectiveFrom: "2026-06-04",
+};
+
+const updatedSimulatedRecurringTransaction = {
+    ...simulatedRecurringTransaction,
+    recurringTransactionDescription: "Affitto aggiornato",
+    paymentAmount: -900,
+    recurringTransactionFirstPaymentDate: "2026-07-01",
+    recurringTransactionUpdatedAt: "2026-07-01T10:00:00Z",
+};
+
 const updatedSimulatedTransaction = {
     ...simulatedTransaction,
     transactionDescription: "Spesa aggiornata",
@@ -257,6 +302,56 @@ function changeSimulationTransactionEditField(
 function submitSimulationTransactionEditForm() {
     const descriptionField = document.getElementById(
         "simulation-simulation-group-id-transaction-transaction-id-editForm-description",
+    );
+
+    expect(descriptionField).not.toBeNull();
+
+    const form = descriptionField!.closest("form");
+
+    expect(form).not.toBeNull();
+
+    fireEvent.submit(form!);
+}
+
+async function openSimulatedRecurringTransactionEditForm() {
+    vi.mocked(listRecurringTransactions).mockResolvedValueOnce([
+        simulatedRecurringTransaction,
+    ]);
+    vi.mocked(listTransactions).mockResolvedValueOnce([]);
+
+    renderPage();
+
+    fireEvent.click(
+        screen.getByRole("button", {
+            name: "Visualizza movimenti collegati",
+        }),
+    );
+
+    const recurringDescription = await screen.findByText("Affitto simulato");
+    const recurringRow = recurringDescription.closest("tr");
+
+    expect(recurringRow).not.toBeNull();
+
+    fireEvent.click(
+        within(recurringRow!).getByRole("button", { name: "Modifica" }),
+    );
+}
+
+function changeSimulationRecurringEditField(fieldName: string, value: string) {
+    const field = document.getElementById(
+        `simulation-simulation-group-id-recurringTransaction-recurring-transaction-id-editForm-${fieldName}`,
+    ) as HTMLInputElement | HTMLSelectElement | null;
+
+    expect(field).not.toBeNull();
+
+    fireEvent.change(field!, {
+        target: { value },
+    });
+}
+
+function submitSimulationRecurringEditForm() {
+    const descriptionField = document.getElementById(
+        "simulation-simulation-group-id-recurringTransaction-recurring-transaction-id-editForm-description",
     );
 
     expect(descriptionField).not.toBeNull();
@@ -903,6 +998,114 @@ describe("SimulationsPage", () => {
 
         expect(
             screen.getByText("Modifica transazione simulata"),
+        ).toBeInTheDocument();
+    });
+
+    it("opens the edit form for a simulated recurring transaction", async () => {
+        await openSimulatedRecurringTransactionEditForm();
+
+        expect(
+            screen.getByText("Modifica movimento ricorrente simulato"),
+        ).toBeInTheDocument();
+
+        expect(
+            document.getElementById(
+                "simulation-simulation-group-id-recurringTransaction-recurring-transaction-id-editForm-description",
+            ),
+        ).not.toBeNull();
+
+        expect(
+            screen.queryByLabelText("Attiva promemoria"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("patches a simulated recurring transaction", async () => {
+        vi.mocked(patchRecurringTransaction).mockResolvedValueOnce(
+            updatedSimulatedRecurringTransaction,
+        );
+
+        await openSimulatedRecurringTransactionEditForm();
+
+        changeSimulationRecurringEditField("description", "Affitto aggiornato");
+        changeSimulationRecurringEditField("paymentAmount", "-900,00");
+        changeSimulationRecurringEditField("firstPaymentDate", "2026-07-01");
+        changeSimulationRecurringEditField("recurrenceInterval", "1");
+        changeSimulationRecurringEditField("recurrenceUnit", "MONTH");
+        changeSimulationRecurringEditField("category", "category-id");
+        changeSimulationRecurringEditField(
+            "financialPriority",
+            "financial-priority-id",
+        );
+        changeSimulationRecurringEditField("account", "account-id");
+
+        submitSimulationRecurringEditForm();
+
+        await waitFor(() => {
+            expect(patchRecurringTransaction).toHaveBeenCalledWith(
+                "recurring-transaction-id",
+                expect.objectContaining({
+                    recurringTransactionFirstPaymentDate: "2026-07-01",
+                    recurringTransactionAmountIsAdjustable: false,
+                    recurringTransactionIsSimulated: true,
+                    simulationGroupId: "simulation-group-id",
+                    recurringTransactionReminderEnabled: false,
+                    recurringTransactionReminderDaysBefore: 7,
+                    rule: expect.objectContaining({
+                        effectiveFrom: "2026-07-01",
+                        dayOfUnit: 1,
+                        paymentAmount: "-900.00",
+                        recurrenceInterval: 1,
+                        recurrenceUnit: "MONTH",
+                        paymentDateAdjustmentPolicy: "NONE",
+                        recurringTransactionEndDate: null,
+                        finalPaymentAmount: null,
+                    }),
+                    details: expect.objectContaining({
+                        effectiveFrom: "2026-07-01",
+                        recurringTransactionDescription: "Affitto aggiornato",
+                        categoryId: "category-id",
+                        financialPriorityId: "financial-priority-id",
+                        linkedAccountId: "account-id",
+                        linkedCreditCardId: null,
+                        linkedBucketId: null,
+                        recurringTransactionAffectsAccountBalance: true,
+                        recurringtransactionAffectsSerenityline: true,
+                    }),
+                }),
+            );
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    "Movimento ricorrente simulato aggiornato correttamente.",
+                ),
+            ).toBeInTheDocument();
+        });
+
+        expect(screen.getByText("Affitto aggiornato")).toBeInTheDocument();
+        expect(
+            screen.queryByText("Modifica movimento ricorrente simulato"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("shows an error when simulated recurring transaction update fails", async () => {
+        vi.mocked(patchRecurringTransaction).mockRejectedValueOnce(
+            new Error("Errore aggiornamento ricorrenza"),
+        );
+
+        await openSimulatedRecurringTransactionEditForm();
+
+        changeSimulationRecurringEditField("description", "Affitto aggiornato");
+
+        submitSimulationRecurringEditForm();
+
+        expect(
+            await screen.findByText("Errore aggiornamento ricorrenza"),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Modifica movimento ricorrente simulato"),
         ).toBeInTheDocument();
     });
 });

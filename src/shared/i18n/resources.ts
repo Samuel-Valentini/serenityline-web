@@ -686,6 +686,17 @@ export const resources = {
                 "Transazione simulata aggiornata correttamente.",
             transactionUpdateErrorFallback:
                 "Non è stato possibile aggiornare la transazione simulata. Riprova tra qualche istante.",
+            recurringTransactionUpdateSuccess:
+                "Movimento ricorrente simulato aggiornato correttamente.",
+            recurringTransactionUpdateErrorFallback:
+                "Non è stato possibile aggiornare il movimento ricorrente simulato. Riprova tra qualche istante.",
+            recurringTransactionEditForm: {
+                title: "Modifica movimento ricorrente simulato",
+                subtitle:
+                    "Aggiorna i dati del movimento ricorrente simulato selezionato.",
+                submit: "Salva modifica",
+                submitting: "Salvataggio modifica...",
+            },
             movementEdit: {
                 singleRequestRequired:
                     "Questa modifica genererebbe più movimenti tecnici. Per ora modifica separatamente carta e portafoglio.",
@@ -1817,6 +1828,16 @@ export const resources = {
                 "Simulated transaction updated successfully.",
             transactionUpdateErrorFallback:
                 "We could not update the simulated transaction. Please try again in a moment.",
+            recurringTransactionUpdateSuccess:
+                "Simulated recurring movement updated successfully.",
+            recurringTransactionUpdateErrorFallback:
+                "We could not update the simulated recurring movement. Please try again in a moment.",
+            recurringTransactionEditForm: {
+                title: "Edit simulated recurring movement",
+                subtitle: "Update the selected simulated recurring movement.",
+                submit: "Save changes",
+                submitting: "Saving changes...",
+            },
             movementEdit: {
                 singleRequestRequired:
                     "This edit would generate multiple technical movements. For now, edit card and bucket movements separately.",
