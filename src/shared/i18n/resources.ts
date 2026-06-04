@@ -137,6 +137,131 @@ export const resources = {
                     "Sono disponibili {{count}} priorità per distinguere movimenti critici, essenziali e opzionali.",
             },
         },
+        recurringTransactions: {
+            eyebrow: "Futuro ricorrente",
+            title: "Movimenti ricorrenti",
+            subtitle:
+                "Gestisci gli automatismi che alimentano la proiezione futura di SerenityLine.",
+            referenceDataLoading: "Caricamento dati finanziari...",
+            referenceDataLoadErrorTitle:
+                "Impossibile caricare i dati finanziari.",
+            referenceDataLoadErrorFallback: "Riprova tra qualche istante.",
+            loading: "Caricamento movimenti ricorrenti...",
+            loadErrorFallback:
+                "Non è stato possibile caricare i movimenti ricorrenti. Riprova tra qualche istante.",
+            createSuccess: "Movimento ricorrente creato correttamente.",
+            createErrorFallback:
+                "Non è stato possibile creare il movimento ricorrente. Riprova tra qualche istante.",
+            unknown: {
+                account: "Conto sconosciuto",
+                category: "Categoria sconosciuta",
+                financialPriority: "Priorità sconosciuta",
+            },
+            report: {
+                trendUnavailable: "Trend non disponibile",
+                eyebrow: "Report",
+                title: "Sintesi ricorrenti",
+                subtitle: "Report aggiornato al {{date}}.",
+                empty: "Il report verrà mostrato appena disponibile.",
+                averageMonthlyNetBalance: "Saldo medio mensile netto",
+                annualIncome: "Entrate annue",
+                annualExpenses: "Uscite annue",
+                annualNetBalance: "Saldo annuo netto",
+                recurringTitle: "Flusso ricorrente",
+                recurringSubtitle:
+                    "Sintesi delle entrate e uscite ricorrenti, su base mensile e annuale.",
+                averageMonthlyIncome: "Entrate medie mensili",
+                averageMonthlyExpenses: "Uscite medie mensili",
+
+                extremesTitle: "Punti critici della proiezione",
+                extremesSubtitle: "Analisi del periodo dal {{from}} al {{to}}.",
+                serenityline: "SerenityLine",
+                accountBalance: "Saldo conto",
+                minimum: "Minimo",
+                maximum: "Massimo",
+
+                yearEndForecastTitle: "Previsioni di fine anno",
+                yearEndForecastSubtitle:
+                    "Proiezione dei prossimi {{years}} anni per saldo conto e SerenityLine.",
+                forecastYear: "Anno",
+                forecastDate: "Data",
+                currency: "Valuta",
+                endOfYearAccountBalance: "Saldo conto fine anno",
+                endOfYearSerenityline: "SerenityLine fine anno",
+
+                emptySection: "Nessun dato disponibile per questa sezione.",
+
+                trendDirections: {
+                    UP: "Trend in crescita",
+                    DOWN: "Trend in calo",
+                    FLAT: "Trend stabile",
+                    MIXED: "Trend variabile",
+                },
+
+                temporalPositions: {
+                    PAST: "Passato",
+                    TODAY: "Oggi",
+                    FUTURE: "Futuro",
+                },
+
+                extremeClassifications: {
+                    IN_RANGE_EXTREME: "Estremo nel periodo analizzato",
+                    RANGE_START_BOUNDARY: "Valore iniziale del periodo",
+                    RANGE_END_BOUNDARY: "Valore finale del periodo",
+                    MONOTONIC_TREND_WITHIN_HORIZON:
+                        "Trend monotono entro l'orizzonte analizzato",
+                },
+            },
+            priorities: {
+                eyebrow: "Classificazione",
+                title: "Priorità finanziarie",
+                subtitle:
+                    "Le priorità aiutano SerenityLine a distinguere ciò che è critico, essenziale, opzionale o legato al benessere.",
+            },
+            form: {
+                eyebrow: "Nuova ricorrenza",
+                title: "Aggiungi movimento ricorrente",
+                subtitle:
+                    "Crea entrate o uscite che si ripetono nel tempo e alimentano la proiezione.",
+                submit: "Salva movimento ricorrente",
+                submitting: "Salvataggio ricorrente...",
+            },
+            list: {
+                eyebrow: "Ricorrenze attive",
+                title: "Lista movimenti ricorrenti",
+                count: "{{count}} ricorrenti",
+                empty: "Non hai ancora creato movimenti ricorrenti.",
+            },
+            table: {
+                description: "Descrizione",
+                amount: "Importo",
+                frequency: "Frequenza",
+                firstPayment: "Prima data",
+            },
+            actions: {
+                showForm: "Nuovo ricorrente",
+                hideForm: "Chiudi",
+            },
+            recurrenceEvery: "Ogni {{interval}} {{unit}}",
+            recurrenceUnits: {
+                DAY: {
+                    singular: "Giornaliero",
+                    plural: "giorni",
+                },
+                WEEK: {
+                    singular: "Settimanale",
+                    plural: "settimane",
+                },
+                MONTH: {
+                    singular: "Mensile",
+                    plural: "mesi",
+                },
+                YEAR: {
+                    singular: "Annuale",
+                    plural: "anni",
+                },
+            },
+        },
         accounts: {
             eyebrow: "Base finanziaria",
             title: "Conti",
@@ -1296,6 +1421,131 @@ export const resources = {
                 priorities: "Financial priorities",
                 prioritiesText:
                     "{{count}} priorities are available to distinguish critical, essential and optional movements.",
+            },
+        },
+
+        recurringTransactions: {
+            eyebrow: "Recurring future",
+            title: "Recurring movements",
+            subtitle:
+                "Manage the automations that feed SerenityLine's future projection.",
+            referenceDataLoading: "Loading financial data...",
+            referenceDataLoadErrorTitle: "Could not load financial data.",
+            referenceDataLoadErrorFallback: "Please try again in a moment.",
+            loading: "Loading recurring movements...",
+            loadErrorFallback:
+                "We could not load recurring movements. Please try again in a moment.",
+            createSuccess: "Recurring movement created successfully.",
+            createErrorFallback:
+                "We could not create the recurring movement. Please try again in a moment.",
+            unknown: {
+                account: "Unknown account",
+                category: "Unknown category",
+                financialPriority: "Unknown priority",
+            },
+            report: {
+                trendUnavailable: "Trend unavailable",
+                eyebrow: "Report",
+                title: "Recurring summary",
+                subtitle: "Report updated on {{date}}.",
+                empty: "The report will be shown as soon as it is available.",
+                averageMonthlyNetBalance: "Average monthly net balance",
+                annualIncome: "Annual income",
+                annualExpenses: "Annual expenses",
+                annualNetBalance: "Annual net balance",
+                recurringTitle: "Recurring flow",
+                recurringSubtitle:
+                    "Summary of recurring income and expenses, on a monthly and annual basis.",
+                averageMonthlyIncome: "Average monthly income",
+                averageMonthlyExpenses: "Average monthly expenses",
+
+                extremesTitle: "Projection critical points",
+                extremesSubtitle: "Analysis period from {{from}} to {{to}}.",
+                serenityline: "SerenityLine",
+                accountBalance: "Account balance",
+                minimum: "Minimum",
+                maximum: "Maximum",
+
+                yearEndForecastTitle: "Year-end forecasts",
+                yearEndForecastSubtitle:
+                    "Projection for the next {{years}} years for account balance and SerenityLine.",
+                forecastYear: "Year",
+                forecastDate: "Date",
+                currency: "Currency",
+                endOfYearAccountBalance: "Year-end account balance",
+                endOfYearSerenityline: "Year-end SerenityLine",
+
+                emptySection: "No data available for this section.",
+
+                trendDirections: {
+                    UP: "Upward trend",
+                    DOWN: "Downward trend",
+                    FLAT: "Flat trend",
+                    MIXED: "Mixed trend",
+                },
+
+                temporalPositions: {
+                    PAST: "Past",
+                    TODAY: "Today",
+                    FUTURE: "Future",
+                },
+
+                extremeClassifications: {
+                    IN_RANGE_EXTREME: "Extreme within the analysed period",
+                    RANGE_START_BOUNDARY: "Initial value of the period",
+                    RANGE_END_BOUNDARY: "Final value of the period",
+                    MONOTONIC_TREND_WITHIN_HORIZON:
+                        "Monotonic trend within the analysed horizon",
+                },
+            },
+            priorities: {
+                eyebrow: "Classification",
+                title: "Financial priorities",
+                subtitle:
+                    "Priorities help SerenityLine distinguish what is critical, essential, optional or related to wellbeing.",
+            },
+            form: {
+                eyebrow: "New recurrence",
+                title: "Add recurring movement",
+                subtitle:
+                    "Create income or expenses that repeat over time and feed the projection.",
+                submit: "Save recurring movement",
+                submitting: "Saving recurring movement...",
+            },
+            list: {
+                eyebrow: "Active recurrences",
+                title: "Recurring movement list",
+                count: "{{count}} recurring",
+                empty: "You have not created recurring movements yet.",
+            },
+            table: {
+                description: "Description",
+                amount: "Amount",
+                frequency: "Frequency",
+                firstPayment: "First date",
+            },
+            actions: {
+                showForm: "New recurring",
+                hideForm: "Close",
+            },
+            recurrenceEvery: "Every {{interval}} {{unit}}",
+            recurrenceUnits: {
+                DAY: {
+                    singular: "Daily",
+                    plural: "days",
+                },
+                WEEK: {
+                    singular: "Weekly",
+                    plural: "weeks",
+                },
+                MONTH: {
+                    singular: "Monthly",
+                    plural: "months",
+                },
+                YEAR: {
+                    singular: "Yearly",
+                    plural: "years",
+                },
             },
         },
         accounts: {

@@ -455,7 +455,7 @@ export type FinanceReportPointDto = {
     value: MoneyAmount;
     temporalPosition: FinanceReportTemporalPosition;
     classification: FinanceReportExtremeClassification;
-    trend: FinanceReportTrendDto;
+    trend: FinanceReportTrendDto | null;
 };
 
 export type FinanceReportRangeDto = {

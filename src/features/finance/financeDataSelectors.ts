@@ -1,4 +1,5 @@
 import type { RootState } from "../../app/store/store";
+import { createSelector } from "@reduxjs/toolkit";
 
 export const selectFinanceDataStatus = (state: RootState) =>
     state.financeData.status;
@@ -14,8 +15,10 @@ export const selectCreditCards = (state: RootState) =>
 export const selectCategories = (state: RootState) =>
     state.financeData.categories;
 
-export const selectActiveCategories = (state: RootState) =>
-    state.financeData.categories.filter((category) => category.active);
+export const selectActiveCategories = createSelector(
+    [selectCategories],
+    (categories) => categories.filter((category) => category.active),
+);
 
 export const selectBuckets = (state: RootState) => state.financeData.buckets;
 

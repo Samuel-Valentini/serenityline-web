@@ -25,6 +25,7 @@ import { CreditCardsPage } from "../../pages/app/CreditCardsPage";
 import { CategoriesPage } from "../../pages/app/CategoriesPage";
 import { BucketsPage } from "../../pages/app/BucketsPage";
 import { SimulationsPage } from "../../pages/app/SimulationsPage";
+import { RecurringTransactionsPage } from "../../pages/app/RecurringTransactionsPage";
 
 export function AppRouter() {
     return (
@@ -117,9 +118,7 @@ export function AppRouter() {
                         />
                         <Route
                             path="ricorrenti"
-                            element={
-                                <AppPlaceholderPage pageKey="recurringTransactions" />
-                            }
+                            element={<RecurringTransactionsPage />}
                         />
                         <Route
                             path="simulazioni"
