@@ -33,7 +33,7 @@ type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
 >[0];
 
-type TransactionFormState = {
+export type TransactionFormState = {
     transactionDescription: string;
     transactionAmount: string;
     transactionChargeDate: string;
@@ -55,6 +55,7 @@ export type TransactionFormReferenceActions = {
 
 export type TransactionFormProps = {
     context: FinanceMovementFormContext;
+    initialValues?: Partial<TransactionFormState>;
     isSubmitting?: boolean;
     submitLabel?: string;
     submittingLabel?: string;
@@ -94,6 +95,7 @@ function isBucketClosed(bucketClosedAt: string | null) {
 export function TransactionForm({
     context,
     idPrefix = "transactionForm",
+    initialValues,
     isSubmitting = false,
     referenceActions,
     submitLabel,
@@ -108,9 +110,10 @@ export function TransactionForm({
     const categories = useAppSelector(selectCategories);
     const creditCards = useAppSelector(selectCreditCards);
 
-    const [form, setForm] = useState<TransactionFormState>(() =>
-        getInitialFormState(),
-    );
+    const [form, setForm] = useState<TransactionFormState>(() => ({
+        ...getInitialFormState(),
+        ...initialValues,
+    }));
     const [formError, setFormError] = useState<string | null>(null);
     const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] =
         useState(false);

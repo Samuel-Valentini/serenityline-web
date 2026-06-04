@@ -17,6 +17,9 @@ import {
     restoreSimulationGroup,
     unlinkSimulationGroupAccount,
     updateSimulationGroup,
+    listRecurringTransactions,
+    listTransactions,
+    updateTransaction,
 } from "../../features/finance/api/financeApi";
 import {
     financeDataCleared,
@@ -35,6 +38,9 @@ vi.mock("../../features/finance/api/financeApi", () => ({
     restoreSimulationGroup: vi.fn(),
     unlinkSimulationGroupAccount: vi.fn(),
     updateSimulationGroup: vi.fn(),
+    listRecurringTransactions: vi.fn(),
+    listTransactions: vi.fn(),
+    updateTransaction: vi.fn(),
 }));
 
 const category = {
@@ -122,6 +128,38 @@ const createdSimulationGroup = {
     accountIds: ["account-id"],
 };
 
+const simulatedTransaction = {
+    transactionId: "transaction-id",
+    transactionDescription: "Spesa simulata",
+    transactionAmount: -50,
+    transactionAffectsAccountBalance: true,
+    transactionAffectsSerenityline: true,
+    categoryId: "category-id",
+    transactionChargeDate: "2026-06-05",
+    transactionIsConfirmed: false,
+    accountId: "account-id",
+    creditCardId: null,
+    bucketId: null,
+    transactionIsSimulated: true,
+    simulationGroupId: "simulation-group-id",
+    transactionIsUserEntered: true,
+    recurringTransactionId: null,
+    recurringTransactionLogicalDate: null,
+    recurringTransactionConfirmedAt: null,
+    transactionReminderEnabled: false,
+    transactionReminderDaysBefore: 7,
+    transactionCreatedAt: "2026-06-05T10:00:00Z",
+    transactionUpdatedAt: "2026-06-05T10:00:00Z",
+};
+
+const updatedSimulatedTransaction = {
+    ...simulatedTransaction,
+    transactionDescription: "Spesa aggiornata",
+    transactionAmount: -75,
+    transactionChargeDate: "2026-06-06",
+    transactionUpdatedAt: "2026-06-06T10:00:00Z",
+};
+
 const referenceData: FinanceReferenceData = {
     accounts: [account, secondAccount],
     creditCards: [creditCard],
@@ -177,6 +215,57 @@ function renderPage() {
             <SimulationsPage />
         </AppProviders>,
     );
+}
+
+async function openSimulatedTransactionEditForm() {
+    vi.mocked(listRecurringTransactions).mockResolvedValueOnce([]);
+    vi.mocked(listTransactions).mockResolvedValueOnce([simulatedTransaction]);
+
+    renderPage();
+
+    fireEvent.click(
+        screen.getByRole("button", {
+            name: "Visualizza movimenti collegati",
+        }),
+    );
+
+    const transactionDescription = await screen.findByText("Spesa simulata");
+    const transactionRow = transactionDescription.closest("tr");
+
+    expect(transactionRow).not.toBeNull();
+
+    fireEvent.click(
+        within(transactionRow!).getByRole("button", { name: "Modifica" }),
+    );
+}
+
+function changeSimulationTransactionEditField(
+    fieldName: string,
+    value: string,
+) {
+    const field = document.getElementById(
+        `simulation-simulation-group-id-transaction-transaction-id-editForm-${fieldName}`,
+    ) as HTMLInputElement | HTMLSelectElement | null;
+
+    expect(field).not.toBeNull();
+
+    fireEvent.change(field!, {
+        target: { value },
+    });
+}
+
+function submitSimulationTransactionEditForm() {
+    const descriptionField = document.getElementById(
+        "simulation-simulation-group-id-transaction-transaction-id-editForm-description",
+    );
+
+    expect(descriptionField).not.toBeNull();
+
+    const form = descriptionField!.closest("form");
+
+    expect(form).not.toBeNull();
+
+    fireEvent.submit(form!);
 }
 
 describe("SimulationsPage", () => {
@@ -721,6 +810,99 @@ describe("SimulationsPage", () => {
 
         expect(
             screen.getByText("Nuovo movimento ricorrente simulato"),
+        ).toBeInTheDocument();
+    });
+
+    it("opens the edit form for a simulated transaction", async () => {
+        await openSimulatedTransactionEditForm();
+
+        expect(
+            screen.getByText("Modifica transazione simulata"),
+        ).toBeInTheDocument();
+
+        expect(
+            document.getElementById(
+                "simulation-simulation-group-id-transaction-transaction-id-editForm-description",
+            ),
+        ).not.toBeNull();
+
+        expect(
+            screen.queryByLabelText("Transazione già confermata"),
+        ).not.toBeInTheDocument();
+
+        expect(
+            screen.queryByLabelText("Attiva promemoria"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("updates a simulated transaction", async () => {
+        vi.mocked(updateTransaction).mockResolvedValueOnce(
+            updatedSimulatedTransaction,
+        );
+
+        await openSimulatedTransactionEditForm();
+
+        changeSimulationTransactionEditField("description", "Spesa aggiornata");
+        changeSimulationTransactionEditField("amount", "-75,00");
+        changeSimulationTransactionEditField("chargeDate", "2026-06-06");
+        changeSimulationTransactionEditField("category", "category-id");
+        changeSimulationTransactionEditField("account", "account-id");
+
+        submitSimulationTransactionEditForm();
+
+        await waitFor(() => {
+            expect(updateTransaction).toHaveBeenCalledWith(
+                "transaction-id",
+                expect.objectContaining({
+                    transactionDescription: "Spesa aggiornata",
+                    transactionAmount: "-75.00",
+                    transactionAffectsAccountBalance: true,
+                    transactionAffectsSerenityline: true,
+                    categoryId: "category-id",
+                    transactionChargeDate: "2026-06-06",
+                    transactionIsConfirmed: false,
+                    accountId: "account-id",
+                    creditCardId: null,
+                    bucketId: null,
+                    transactionIsSimulated: true,
+                    simulationGroupId: "simulation-group-id",
+                    transactionReminderEnabled: false,
+                    transactionReminderDaysBefore: 7,
+                }),
+            );
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    "Transazione simulata aggiornata correttamente.",
+                ),
+            ).toBeInTheDocument();
+        });
+
+        expect(screen.getByText("Spesa aggiornata")).toBeInTheDocument();
+        expect(
+            screen.queryByText("Modifica transazione simulata"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("shows an error when simulated transaction update fails", async () => {
+        vi.mocked(updateTransaction).mockRejectedValueOnce(
+            new Error("Errore aggiornamento transazione"),
+        );
+
+        await openSimulatedTransactionEditForm();
+
+        changeSimulationTransactionEditField("description", "Spesa aggiornata");
+
+        submitSimulationTransactionEditForm();
+
+        expect(
+            await screen.findByText("Errore aggiornamento transazione"),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Modifica transazione simulata"),
         ).toBeInTheDocument();
     });
 });

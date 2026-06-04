@@ -36,7 +36,7 @@ type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
 >[0];
 
-type RecurringTransactionFormState = {
+export type RecurringTransactionFormState = {
     recurringTransactionDescription: string;
     paymentAmount: string;
     recurringTransactionAmountIsAdjustable: boolean;
@@ -64,6 +64,7 @@ export type RecurringTransactionFormReferenceActions = {
 
 export type RecurringTransactionFormProps = {
     context: FinanceMovementFormContext;
+    initialValues?: Partial<RecurringTransactionFormState>;
     isSubmitting?: boolean;
     submitLabel?: string;
     submittingLabel?: string;
@@ -111,6 +112,7 @@ function isBucketClosed(bucketClosedAt: string | null) {
 export function RecurringTransactionForm({
     context,
     idPrefix = "recurringTransactionForm",
+    initialValues,
     isSubmitting = false,
     referenceActions,
     submitLabel,
@@ -126,9 +128,10 @@ export function RecurringTransactionForm({
     const creditCards = useAppSelector(selectCreditCards);
     const financialPriorities = useAppSelector(selectFinancialPriorities);
 
-    const [form, setForm] = useState<RecurringTransactionFormState>(() =>
-        getInitialFormState(),
-    );
+    const [form, setForm] = useState<RecurringTransactionFormState>(() => ({
+        ...getInitialFormState(),
+        ...initialValues,
+    }));
     const [formError, setFormError] = useState<string | null>(null);
 
     const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] =

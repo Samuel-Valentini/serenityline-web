@@ -13,6 +13,7 @@ import {
     restoreSimulationGroup,
     unlinkSimulationGroupAccount,
     updateSimulationGroup,
+    updateTransaction,
 } from "../../features/finance/api/financeApi";
 import type {
     AccountResponseDto,
@@ -24,6 +25,7 @@ import type {
     SimulationGroupUpdateRequestDto,
     TransactionCreateRequestDto,
     TransactionResponseDto,
+    TransactionUpdateRequestDto,
 } from "../../features/finance/api/financeApiTypes";
 import {
     selectAccounts,
@@ -40,9 +42,15 @@ import {
     simulationGroupUpdated,
 } from "../../features/finance/financeDataSlice";
 import { ApiError } from "../../shared/api";
-import { TransactionForm } from "../../features/finance/transactionForms/TransactionForm";
+import {
+    TransactionForm,
+    type TransactionFormState,
+} from "../../features/finance/transactionForms/TransactionForm";
 import { RecurringTransactionForm } from "../../features/finance/transactionForms/RecurringTransactionForm";
-import { formatMoneyAmountForDisplay } from "../../features/finance/transactionForms/moneyInput";
+import {
+    formatMoneyAmountForDisplay,
+    moneyAmountToFormValue,
+} from "../../features/finance/transactionForms/moneyInput";
 
 type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -166,6 +174,17 @@ export function SimulationsPage() {
     const [movementsBySimulationGroupId, setMovementsBySimulationGroupId] =
         useState<Record<string, SimulationGroupMovementsState>>({});
 
+    const [editingTransactionId, setEditingTransactionId] = useState<
+        string | null
+    >(null);
+
+    const [transactionUpdateSubmittingId, setTransactionUpdateSubmittingId] =
+        useState<string | null>(null);
+
+    const [transactionUpdateError, setTransactionUpdateError] = useState<
+        string | null
+    >(null);
+
     const creditCards = useAppSelector(selectCreditCards);
     const categories = useAppSelector(selectCategories);
     const buckets = useAppSelector(selectBuckets);
@@ -195,6 +214,28 @@ export function SimulationsPage() {
     const [accountChangingKey, setAccountChangingKey] = useState<string | null>(
         null,
     );
+
+    function getTransactionInitialValues(
+        transaction: TransactionResponseDto,
+    ): Partial<TransactionFormState> {
+        return {
+            transactionDescription: transaction.transactionDescription,
+            transactionAmount: moneyAmountToFormValue(
+                transaction.transactionAmount,
+                displayLanguage,
+            ),
+            transactionChargeDate: transaction.transactionChargeDate,
+            categoryId: transaction.categoryId,
+            accountId: transaction.accountId,
+            creditCardId: transaction.creditCardId ?? "",
+            bucketId: transaction.bucketId ?? "",
+            transactionIsConfirmed: transaction.transactionIsConfirmed,
+            transactionReminderEnabled: transaction.transactionReminderEnabled,
+            transactionReminderDaysBefore: String(
+                transaction.transactionReminderDaysBefore,
+            ),
+        };
+    }
 
     const displayLanguage = i18n.resolvedLanguage ?? i18n.language;
 
@@ -323,6 +364,8 @@ export function SimulationsPage() {
     function startEditingSimulationGroup(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setEditingTransactionId(null);
+        setTransactionUpdateError(null);
         setMovementsSimulationGroupId(null);
         setTransactionFormError(null);
         setRecurringTransactionFormError(null);
@@ -351,6 +394,8 @@ export function SimulationsPage() {
     function startManagingSimulationGroupAccounts(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setEditingTransactionId(null);
+        setTransactionUpdateError(null);
         setMovementsSimulationGroupId(null);
         setTransactionFormError(null);
         setRecurringTransactionFormError(null);
@@ -379,6 +424,8 @@ export function SimulationsPage() {
     function startAddingTransaction(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setEditingTransactionId(null);
+        setTransactionUpdateError(null);
         setMovementsSimulationGroupId(null);
         setEditingSimulationGroupId(null);
         setManagingAccountsSimulationGroupId(null);
@@ -398,6 +445,8 @@ export function SimulationsPage() {
     function startAddingRecurringTransaction(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setEditingTransactionId(null);
+        setTransactionUpdateError(null);
         setMovementsSimulationGroupId(null);
         setEditingSimulationGroupId(null);
         setManagingAccountsSimulationGroupId(null);
@@ -430,6 +479,8 @@ export function SimulationsPage() {
             return;
         }
 
+        setEditingTransactionId(null);
+        setTransactionUpdateError(null);
         setEditingSimulationGroupId(null);
         setManagingAccountsSimulationGroupId(null);
         setTransactionFormSimulationGroupId(null);
@@ -552,6 +603,95 @@ export function SimulationsPage() {
             );
         } finally {
             setTransactionSubmittingSimulationGroupId(null);
+        }
+    }
+
+    function startEditingTransaction(transaction: TransactionResponseDto) {
+        setEditingTransactionId(transaction.transactionId);
+        setTransactionUpdateError(null);
+        setSuccessMessage(null);
+    }
+
+    function cancelEditingTransaction() {
+        setEditingTransactionId(null);
+        setTransactionUpdateError(null);
+    }
+
+    async function handleUpdateSimulationTransaction(
+        transaction: TransactionResponseDto,
+        requests: TransactionCreateRequestDto[],
+    ) {
+        if (requests.length !== 1) {
+            setTransactionUpdateError(t("movementEdit.singleRequestRequired"));
+            return;
+        }
+
+        const request = requests[0];
+
+        const updateRequest: TransactionUpdateRequestDto = {
+            transactionDescription: request.transactionDescription,
+            transactionAmount: request.transactionAmount,
+            transactionAffectsAccountBalance:
+                request.transactionAffectsAccountBalance ??
+                transaction.transactionAffectsAccountBalance,
+            transactionAffectsSerenityline:
+                request.transactionAffectsSerenityline ??
+                transaction.transactionAffectsSerenityline,
+            categoryId: request.categoryId,
+            transactionChargeDate: request.transactionChargeDate,
+            transactionIsConfirmed: false,
+            accountId: request.accountId,
+            creditCardId: request.creditCardId ?? null,
+            bucketId: request.bucketId ?? null,
+            transactionIsSimulated: true,
+            simulationGroupId: transaction.simulationGroupId,
+            transactionReminderEnabled: false,
+            transactionReminderDaysBefore: 7,
+        };
+
+        setTransactionUpdateSubmittingId(transaction.transactionId);
+        setTransactionUpdateError(null);
+        setSuccessMessage(null);
+
+        try {
+            const updatedTransaction = await updateTransaction(
+                transaction.transactionId,
+                updateRequest,
+            );
+
+            if (transaction.simulationGroupId) {
+                setMovementsBySimulationGroupId((currentState) => {
+                    const currentMovements =
+                        currentState[transaction.simulationGroupId!];
+
+                    if (!currentMovements) {
+                        return currentState;
+                    }
+
+                    return {
+                        ...currentState,
+                        [transaction.simulationGroupId!]: {
+                            ...currentMovements,
+                            transactions: currentMovements.transactions.map(
+                                (currentTransaction) =>
+                                    currentTransaction.transactionId ===
+                                    updatedTransaction.transactionId
+                                        ? updatedTransaction
+                                        : currentTransaction,
+                            ),
+                        },
+                    };
+                });
+            }
+
+            setEditingTransactionId(null);
+            setSuccessMessage(t("transactionUpdateSuccess"));
+        } catch (error) {
+            setTransactionUpdateError(
+                getErrorMessage(error, t("transactionUpdateErrorFallback")),
+            );
+        } finally {
+            setTransactionUpdateSubmittingId(null);
         }
     }
 
@@ -1558,63 +1698,147 @@ export function SimulationsPage() {
                                                                                         {movementsState.transactions.map(
                                                                                             (
                                                                                                 transaction,
-                                                                                            ) => (
-                                                                                                <tr
-                                                                                                    key={
-                                                                                                        transaction.transactionId
-                                                                                                    }>
-                                                                                                    <td>
-                                                                                                        <strong>
-                                                                                                            {
-                                                                                                                transaction.transactionDescription
-                                                                                                            }
-                                                                                                        </strong>
-                                                                                                        <div className="text-muted small">
-                                                                                                            {getCategoryName(
-                                                                                                                transaction.categoryId,
-                                                                                                            )}{" "}
-                                                                                                            ·{" "}
-                                                                                                            {getAccountName(
-                                                                                                                transaction.accountId,
-                                                                                                            )}
-                                                                                                            {getCreditCardName(
-                                                                                                                transaction.creditCardId,
-                                                                                                            )
-                                                                                                                ? ` · ${getCreditCardName(
-                                                                                                                      transaction.creditCardId,
-                                                                                                                  )}`
-                                                                                                                : ""}
-                                                                                                            {getBucketName(
-                                                                                                                transaction.bucketId,
-                                                                                                            )
-                                                                                                                ? ` · ${getBucketName(
-                                                                                                                      transaction.bucketId,
-                                                                                                                  )}`
-                                                                                                                : ""}
-                                                                                                        </div>
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        {formatMovementMoneyAmount(
-                                                                                                            transaction.transactionAmount,
-                                                                                                            transaction.accountId,
-                                                                                                        )}
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        {formatIsoDateForDisplay(
-                                                                                                            transaction.transactionChargeDate,
-                                                                                                        )}
-                                                                                                    </td>
-                                                                                                    <td className="text-end">
-                                                                                                        <button
-                                                                                                            className="btn btn-sm btn-outline-primary"
-                                                                                                            type="button">
-                                                                                                            {t(
-                                                                                                                "actions.edit",
-                                                                                                            )}
-                                                                                                        </button>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                            ),
+                                                                                            ) => {
+                                                                                                const isEditingTransaction =
+                                                                                                    editingTransactionId ===
+                                                                                                    transaction.transactionId;
+
+                                                                                                const isUpdatingTransaction =
+                                                                                                    transactionUpdateSubmittingId ===
+                                                                                                    transaction.transactionId;
+
+                                                                                                return (
+                                                                                                    <Fragment
+                                                                                                        key={
+                                                                                                            transaction.transactionId
+                                                                                                        }>
+                                                                                                        <tr>
+                                                                                                            <td>
+                                                                                                                <strong>
+                                                                                                                    {
+                                                                                                                        transaction.transactionDescription
+                                                                                                                    }
+                                                                                                                </strong>
+                                                                                                                <div className="text-muted small">
+                                                                                                                    {getCategoryName(
+                                                                                                                        transaction.categoryId,
+                                                                                                                    )}{" "}
+                                                                                                                    ·{" "}
+                                                                                                                    {getAccountName(
+                                                                                                                        transaction.accountId,
+                                                                                                                    )}
+                                                                                                                    {getCreditCardName(
+                                                                                                                        transaction.creditCardId,
+                                                                                                                    )
+                                                                                                                        ? ` · ${getCreditCardName(
+                                                                                                                              transaction.creditCardId,
+                                                                                                                          )}`
+                                                                                                                        : ""}
+                                                                                                                    {getBucketName(
+                                                                                                                        transaction.bucketId,
+                                                                                                                    )
+                                                                                                                        ? ` · ${getBucketName(transaction.bucketId)}`
+                                                                                                                        : ""}
+                                                                                                                </div>
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                {formatMovementMoneyAmount(
+                                                                                                                    transaction.transactionAmount,
+                                                                                                                    transaction.accountId,
+                                                                                                                )}
+                                                                                                            </td>
+                                                                                                            <td>
+                                                                                                                {formatIsoDateForDisplay(
+                                                                                                                    transaction.transactionChargeDate,
+                                                                                                                )}
+                                                                                                            </td>
+                                                                                                            <td className="text-end">
+                                                                                                                <button
+                                                                                                                    className="btn btn-sm btn-outline-primary"
+                                                                                                                    onClick={() =>
+                                                                                                                        startEditingTransaction(
+                                                                                                                            transaction,
+                                                                                                                        )
+                                                                                                                    }
+                                                                                                                    type="button">
+                                                                                                                    {t(
+                                                                                                                        "actions.edit",
+                                                                                                                    )}
+                                                                                                                </button>
+                                                                                                            </td>
+                                                                                                        </tr>
+
+                                                                                                        {isEditingTransaction ? (
+                                                                                                            <tr>
+                                                                                                                <td
+                                                                                                                    colSpan={
+                                                                                                                        4
+                                                                                                                    }>
+                                                                                                                    <div className="border rounded p-3">
+                                                                                                                        <div className="mb-3">
+                                                                                                                            <h5 className="h6 mb-1">
+                                                                                                                                {t(
+                                                                                                                                    "transactionEditForm.title",
+                                                                                                                                )}
+                                                                                                                            </h5>
+                                                                                                                            <p className="text-muted mb-0">
+                                                                                                                                {t(
+                                                                                                                                    "transactionEditForm.subtitle",
+                                                                                                                                )}
+                                                                                                                            </p>
+                                                                                                                        </div>
+
+                                                                                                                        {transactionUpdateError ? (
+                                                                                                                            <div
+                                                                                                                                className="alert alert-danger"
+                                                                                                                                role="alert">
+                                                                                                                                {
+                                                                                                                                    transactionUpdateError
+                                                                                                                                }
+                                                                                                                            </div>
+                                                                                                                        ) : null}
+
+                                                                                                                        <TransactionForm
+                                                                                                                            context={{
+                                                                                                                                type: "simulation",
+                                                                                                                                simulationGroupId:
+                                                                                                                                    transaction.simulationGroupId ??
+                                                                                                                                    "",
+                                                                                                                                allowedAccountIds:
+                                                                                                                                    simulationGroup.accountIds,
+                                                                                                                            }}
+                                                                                                                            idPrefix={`simulation-${simulationGroup.simulationGroupId}-transaction-${transaction.transactionId}-editForm`}
+                                                                                                                            initialValues={getTransactionInitialValues(
+                                                                                                                                transaction,
+                                                                                                                            )}
+                                                                                                                            isSubmitting={
+                                                                                                                                isUpdatingTransaction
+                                                                                                                            }
+                                                                                                                            onCancel={
+                                                                                                                                cancelEditingTransaction
+                                                                                                                            }
+                                                                                                                            onSubmit={(
+                                                                                                                                requests,
+                                                                                                                            ) =>
+                                                                                                                                handleUpdateSimulationTransaction(
+                                                                                                                                    transaction,
+                                                                                                                                    requests,
+                                                                                                                                )
+                                                                                                                            }
+                                                                                                                            submitLabel={t(
+                                                                                                                                "transactionEditForm.submit",
+                                                                                                                            )}
+                                                                                                                            submittingLabel={t(
+                                                                                                                                "transactionEditForm.submitting",
+                                                                                                                            )}
+                                                                                                                        />
+                                                                                                                    </div>
+                                                                                                                </td>
+                                                                                                            </tr>
+                                                                                                        ) : null}
+                                                                                                    </Fragment>
+                                                                                                );
+                                                                                            },
                                                                                         )}
                                                                                     </tbody>
                                                                                 </table>

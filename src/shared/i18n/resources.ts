@@ -682,6 +682,20 @@ export const resources = {
                 "Movimento ricorrente simulato creato correttamente.",
             recurringTransactionCreateErrorFallback:
                 "Non è stato possibile creare il movimento ricorrente simulato. Riprova tra qualche istante.",
+            transactionUpdateSuccess:
+                "Transazione simulata aggiornata correttamente.",
+            transactionUpdateErrorFallback:
+                "Non è stato possibile aggiornare la transazione simulata. Riprova tra qualche istante.",
+            movementEdit: {
+                singleRequestRequired:
+                    "Questa modifica genererebbe più movimenti tecnici. Per ora modifica separatamente carta e portafoglio.",
+            },
+            transactionEditForm: {
+                title: "Modifica transazione simulata",
+                subtitle: "Aggiorna i dati del movimento simulato selezionato.",
+                submit: "Salva modifica",
+                submitting: "Salvataggio modifica...",
+            },
             transactionForm: {
                 title: "Nuovo movimento simulato",
                 subtitle:
@@ -1799,6 +1813,20 @@ export const resources = {
                 "Simulated recurring movement created successfully.",
             recurringTransactionCreateErrorFallback:
                 "We could not create the simulated recurring movement. Please try again in a moment.",
+            transactionUpdateSuccess:
+                "Simulated transaction updated successfully.",
+            transactionUpdateErrorFallback:
+                "We could not update the simulated transaction. Please try again in a moment.",
+            movementEdit: {
+                singleRequestRequired:
+                    "This edit would generate multiple technical movements. For now, edit card and bucket movements separately.",
+            },
+            transactionEditForm: {
+                title: "Edit simulated transaction",
+                subtitle: "Update the selected simulated movement.",
+                submit: "Save changes",
+                submitting: "Saving changes...",
+            },
             transactionForm: {
                 title: "New simulated movement",
                 subtitle:

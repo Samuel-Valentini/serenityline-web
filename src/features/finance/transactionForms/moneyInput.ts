@@ -35,12 +35,19 @@ export function isValidMoneyInput(value: string, language: string) {
     return normalizeMoneyInput(value, language) !== null;
 }
 
-export function moneyAmountToFormValue(value: number | null | undefined) {
+export function moneyAmountToFormValue(
+    value: number | null | undefined,
+    language = "en",
+) {
     if (value == null) {
         return "";
     }
 
-    return String(value);
+    const stringValue = String(value);
+
+    return usesCommaDecimalSeparator(language)
+        ? stringValue.replace(".", ",")
+        : stringValue;
 }
 
 export function formatMoneyAmountForDisplay(
