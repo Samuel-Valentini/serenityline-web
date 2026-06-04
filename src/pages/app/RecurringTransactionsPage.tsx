@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
@@ -6,12 +6,14 @@ import {
     createRecurringTransaction,
     getFinanceReportSummary,
     listRecurringTransactions,
+    patchRecurringTransaction,
 } from "../../features/finance/api/financeApi";
 import type {
     RecurrenceUnit,
     RecurringTransactionCreateRequestDto,
     RecurringTransactionResponseDto,
     FinanceReportPointDto,
+    RecurringTransactionPatchRequestDto,
 } from "../../features/finance/api/financeApiTypes";
 import {
     selectAccounts,
@@ -22,8 +24,14 @@ import {
     selectFinancialPriorities,
 } from "../../features/finance/financeDataSelectors";
 import { financeReportSummaryLoaded } from "../../features/finance/financeDataSlice";
-import { RecurringTransactionForm } from "../../features/finance/transactionForms/RecurringTransactionForm";
-import { formatMoneyAmountForDisplay } from "../../features/finance/transactionForms/moneyInput";
+import {
+    RecurringTransactionForm,
+    type RecurringTransactionFormState,
+} from "../../features/finance/transactionForms/RecurringTransactionForm";
+import {
+    formatMoneyAmountForDisplay,
+    moneyAmountToFormValue,
+} from "../../features/finance/transactionForms/moneyInput";
 import { ApiError } from "../../shared/api";
 
 type PageStatus = "idle" | "loading" | "loaded" | "failed";
@@ -70,6 +78,18 @@ export function RecurringTransactionsPage() {
     const [isCreateSubmitting, setIsCreateSubmitting] = useState(false);
     const [createError, setCreateError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [editingRecurringTransactionId, setEditingRecurringTransactionId] =
+        useState<string | null>(null);
+
+    const [
+        recurringTransactionUpdateSubmittingId,
+        setRecurringTransactionUpdateSubmittingId,
+    ] = useState<string | null>(null);
+
+    const [
+        recurringTransactionUpdateError,
+        setRecurringTransactionUpdateError,
+    ] = useState<string | null>(null);
 
     const displayLanguage = i18n.resolvedLanguage || i18n.language || "it";
 
@@ -130,6 +150,71 @@ export function RecurringTransactionsPage() {
             isMounted = false;
         };
     }, [dispatch, t]);
+
+    function deriveDayOfUnit(date: string, recurrenceUnit: RecurrenceUnit) {
+        const [year, month, day] = date.split("-").map(Number);
+        const utcDate = new Date(Date.UTC(year, month - 1, day));
+
+        if (recurrenceUnit === "DAY") {
+            return 1;
+        }
+
+        if (recurrenceUnit === "WEEK") {
+            const dayOfWeek = utcDate.getUTCDay();
+
+            return dayOfWeek === 0 ? 7 : dayOfWeek;
+        }
+
+        if (recurrenceUnit === "MONTH") {
+            return day;
+        }
+
+        const startOfYear = new Date(Date.UTC(year, 0, 1));
+
+        return (
+            Math.floor(
+                (utcDate.getTime() - startOfYear.getTime()) /
+                    (24 * 60 * 60 * 1000),
+            ) + 1
+        );
+    }
+
+    function getRecurringTransactionInitialValues(
+        recurringTransaction: RecurringTransactionResponseDto,
+    ): Partial<RecurringTransactionFormState> {
+        return {
+            recurringTransactionDescription:
+                recurringTransaction.recurringTransactionDescription,
+            paymentAmount: moneyAmountToFormValue(
+                recurringTransaction.paymentAmount,
+                displayLanguage,
+            ),
+            recurringTransactionAmountIsAdjustable:
+                recurringTransaction.recurringTransactionAmountIsAdjustable,
+            recurringTransactionFirstPaymentDate:
+                recurringTransaction.recurringTransactionFirstPaymentDate,
+            recurrenceInterval: String(recurringTransaction.recurrenceInterval),
+            recurrenceUnit: recurringTransaction.recurrenceUnit,
+            paymentDateAdjustmentPolicy:
+                recurringTransaction.paymentDateAdjustmentPolicy,
+            recurringTransactionEndDate:
+                recurringTransaction.recurringTransactionEndDate ?? "",
+            finalPaymentAmount: moneyAmountToFormValue(
+                recurringTransaction.finalPaymentAmount,
+                displayLanguage,
+            ),
+            categoryId: recurringTransaction.categoryId,
+            financialPriorityId: recurringTransaction.financialPriorityId,
+            linkedAccountId: recurringTransaction.linkedAccountId,
+            linkedCreditCardId: recurringTransaction.linkedCreditCardId ?? "",
+            linkedBucketId: recurringTransaction.linkedBucketId ?? "",
+            recurringTransactionReminderEnabled:
+                recurringTransaction.recurringTransactionReminderEnabled,
+            recurringTransactionReminderDaysBefore: String(
+                recurringTransaction.recurringTransactionReminderDaysBefore,
+            ),
+        };
+    }
 
     function getAccountName(accountId: string) {
         return (
@@ -273,6 +358,118 @@ export function RecurringTransactionsPage() {
             setCreateError(getErrorMessage(error, t("createErrorFallback")));
         } finally {
             setIsCreateSubmitting(false);
+        }
+    }
+
+    function startEditingRecurringTransaction(
+        recurringTransaction: RecurringTransactionResponseDto,
+    ) {
+        setEditingRecurringTransactionId(
+            recurringTransaction.recurringTransactionId,
+        );
+        setRecurringTransactionUpdateError(null);
+        setCreateError(null);
+        setSuccessMessage(null);
+        setIsCreateFormVisible(false);
+    }
+
+    function cancelEditingRecurringTransaction() {
+        setEditingRecurringTransactionId(null);
+        setRecurringTransactionUpdateError(null);
+    }
+
+    async function handleUpdateRecurringTransaction(
+        recurringTransaction: RecurringTransactionResponseDto,
+        requests: RecurringTransactionCreateRequestDto[],
+    ) {
+        if (requests.length !== 1) {
+            setRecurringTransactionUpdateError(t("edit.singleRequestRequired"));
+            return;
+        }
+
+        const request = requests[0];
+        const effectiveFrom = request.recurringTransactionFirstPaymentDate;
+
+        const patchRequest: RecurringTransactionPatchRequestDto = {
+            recurringTransactionFirstPaymentDate:
+                request.recurringTransactionFirstPaymentDate,
+            recurringTransactionAmountIsAdjustable:
+                request.recurringTransactionAmountIsAdjustable ?? false,
+            recurringTransactionIsSimulated:
+                request.recurringTransactionIsSimulated ??
+                recurringTransaction.recurringTransactionIsSimulated,
+            simulationGroupId:
+                request.simulationGroupId ??
+                recurringTransaction.simulationGroupId,
+            recurringTransactionReminderEnabled:
+                request.recurringTransactionReminderEnabled ?? false,
+            recurringTransactionReminderDaysBefore:
+                request.recurringTransactionReminderDaysBefore ?? 7,
+            rule: {
+                effectiveFrom,
+                dayOfUnit: deriveDayOfUnit(
+                    effectiveFrom,
+                    request.recurrenceUnit,
+                ),
+                paymentAmount: request.paymentAmount,
+                recurrenceInterval: request.recurrenceInterval,
+                recurrenceUnit: request.recurrenceUnit,
+                paymentDateAdjustmentPolicy:
+                    request.paymentDateAdjustmentPolicy ?? "NONE",
+                recurringTransactionEndDate:
+                    request.recurringTransactionEndDate ?? null,
+                finalPaymentAmount: request.finalPaymentAmount ?? null,
+            },
+            details: {
+                effectiveFrom,
+                recurringTransactionDescription:
+                    request.recurringTransactionDescription,
+                categoryId: request.categoryId,
+                financialPriorityId: request.financialPriorityId,
+                linkedAccountId: request.linkedAccountId,
+                linkedCreditCardId: request.linkedCreditCardId ?? null,
+                linkedBucketId: request.linkedBucketId ?? null,
+                recurringTransactionAffectsAccountBalance:
+                    request.recurringTransactionAffectsAccountBalance ??
+                    recurringTransaction.recurringTransactionAffectsAccountBalance,
+                recurringtransactionAffectsSerenityline:
+                    request.recurringtransactionAffectsSerenityline ??
+                    recurringTransaction.recurringtransactionAffectsSerenityline,
+            },
+        };
+
+        setRecurringTransactionUpdateSubmittingId(
+            recurringTransaction.recurringTransactionId,
+        );
+        setRecurringTransactionUpdateError(null);
+        setSuccessMessage(null);
+
+        try {
+            const updatedRecurringTransaction = await patchRecurringTransaction(
+                recurringTransaction.recurringTransactionId,
+                patchRequest,
+            );
+
+            setRecurringTransactions((currentRecurringTransactions) =>
+                currentRecurringTransactions.map(
+                    (currentRecurringTransaction) =>
+                        currentRecurringTransaction.recurringTransactionId ===
+                        updatedRecurringTransaction.recurringTransactionId
+                            ? updatedRecurringTransaction
+                            : currentRecurringTransaction,
+                ),
+            );
+
+            setEditingRecurringTransactionId(null);
+            setSuccessMessage(t("edit.success"));
+
+            void refreshFinanceReportSummary();
+        } catch (error) {
+            setRecurringTransactionUpdateError(
+                getErrorMessage(error, t("edit.errorFallback")),
+            );
+        } finally {
+            setRecurringTransactionUpdateSubmittingId(null);
         }
     }
 
@@ -684,11 +881,15 @@ export function RecurringTransactionsPage() {
 
                             <button
                                 className="btn btn-outline-primary btn-sm"
-                                onClick={() =>
+                                onClick={() => {
+                                    setEditingRecurringTransactionId(null);
+                                    setRecurringTransactionUpdateError(null);
+                                    setCreateError(null);
+                                    setSuccessMessage(null);
                                     setIsCreateFormVisible(
                                         (currentValue) => !currentValue,
-                                    )
-                                }
+                                    );
+                                }}
                                 type="button">
                                 {isCreateFormVisible
                                     ? t("actions.hideForm")
@@ -754,49 +955,143 @@ export function RecurringTransactionsPage() {
                                     </thead>
                                     <tbody>
                                         {sortedRecurringTransactions.map(
-                                            (recurringTransaction) => (
-                                                <tr
-                                                    key={
-                                                        recurringTransaction.recurringTransactionId
-                                                    }>
-                                                    <td>
-                                                        <strong>
-                                                            {
-                                                                recurringTransaction.recurringTransactionDescription
-                                                            }
-                                                        </strong>
-                                                        <div className="text-muted small">
-                                                            {getCategoryName(
-                                                                recurringTransaction.categoryId,
-                                                            )}{" "}
-                                                            ·{" "}
-                                                            {getFinancialPriorityName(
-                                                                recurringTransaction.financialPriorityId,
-                                                            )}{" "}
-                                                            ·{" "}
-                                                            {getAccountName(
-                                                                recurringTransaction.linkedAccountId,
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        {formatRecurringMoneyAmount(
-                                                            recurringTransaction,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {formatRecurrenceFrequency(
-                                                            recurringTransaction.recurrenceInterval,
-                                                            recurringTransaction.recurrenceUnit,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {formatIsoDateForDisplay(
-                                                            recurringTransaction.recurringTransactionFirstPaymentDate,
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ),
+                                            (recurringTransaction) => {
+                                                const isEditingRecurringTransaction =
+                                                    editingRecurringTransactionId ===
+                                                    recurringTransaction.recurringTransactionId;
+
+                                                const isUpdatingRecurringTransaction =
+                                                    recurringTransactionUpdateSubmittingId ===
+                                                    recurringTransaction.recurringTransactionId;
+
+                                                return (
+                                                    <Fragment
+                                                        key={
+                                                            recurringTransaction.recurringTransactionId
+                                                        }>
+                                                        <tr>
+                                                            <td>
+                                                                <strong>
+                                                                    {
+                                                                        recurringTransaction.recurringTransactionDescription
+                                                                    }
+                                                                </strong>
+                                                                <div className="text-muted small">
+                                                                    {getAccountName(
+                                                                        recurringTransaction.linkedAccountId,
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                {formatRecurringMoneyAmount(
+                                                                    recurringTransaction,
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                {formatRecurrenceFrequency(
+                                                                    recurringTransaction.recurrenceInterval,
+                                                                    recurringTransaction.recurrenceUnit,
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                {formatIsoDateForDisplay(
+                                                                    recurringTransaction.recurringTransactionFirstPaymentDate,
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                        <tr className="w-100">
+                                                            <td
+                                                                colSpan={1}
+                                                                className="text-center">
+                                                                <button
+                                                                    className="btn btn-sm btn-outline-primary"
+                                                                    onClick={() =>
+                                                                        startEditingRecurringTransaction(
+                                                                            recurringTransaction,
+                                                                        )
+                                                                    }
+                                                                    type="button">
+                                                                    {t(
+                                                                        "actions.edit",
+                                                                    )}
+                                                                </button>
+                                                            </td>
+                                                            <td colSpan={3}>
+                                                                <div className="text-muted small text-center">
+                                                                    {getCategoryName(
+                                                                        recurringTransaction.categoryId,
+                                                                    )}{" "}
+                                                                    ·{" "}
+                                                                    {getFinancialPriorityName(
+                                                                        recurringTransaction.financialPriorityId,
+                                                                    )}{" "}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+
+                                                        {isEditingRecurringTransaction ? (
+                                                            <tr>
+                                                                <td colSpan={5}>
+                                                                    <div className="border rounded p-3">
+                                                                        <div className="mb-3">
+                                                                            <h3 className="h6 mb-1">
+                                                                                {t(
+                                                                                    "edit.title",
+                                                                                )}
+                                                                            </h3>
+                                                                            <p className="text-muted mb-0">
+                                                                                {t(
+                                                                                    "edit.subtitle",
+                                                                                )}
+                                                                            </p>
+                                                                        </div>
+
+                                                                        {recurringTransactionUpdateError ? (
+                                                                            <div
+                                                                                className="alert alert-danger"
+                                                                                role="alert">
+                                                                                {
+                                                                                    recurringTransactionUpdateError
+                                                                                }
+                                                                            </div>
+                                                                        ) : null}
+
+                                                                        <RecurringTransactionForm
+                                                                            context={{
+                                                                                type: "standard",
+                                                                            }}
+                                                                            idPrefix={`recurringTransaction-${recurringTransaction.recurringTransactionId}-editForm`}
+                                                                            initialValues={getRecurringTransactionInitialValues(
+                                                                                recurringTransaction,
+                                                                            )}
+                                                                            isSubmitting={
+                                                                                isUpdatingRecurringTransaction
+                                                                            }
+                                                                            onCancel={
+                                                                                cancelEditingRecurringTransaction
+                                                                            }
+                                                                            onSubmit={(
+                                                                                requests,
+                                                                            ) =>
+                                                                                handleUpdateRecurringTransaction(
+                                                                                    recurringTransaction,
+                                                                                    requests,
+                                                                                )
+                                                                            }
+                                                                            submitLabel={t(
+                                                                                "edit.submit",
+                                                                            )}
+                                                                            submittingLabel={t(
+                                                                                "edit.submitting",
+                                                                            )}
+                                                                        />
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ) : null}
+                                                    </Fragment>
+                                                );
+                                            },
                                         )}
                                     </tbody>
                                 </table>

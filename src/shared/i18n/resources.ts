@@ -157,6 +157,18 @@ export const resources = {
                 category: "Categoria sconosciuta",
                 financialPriority: "Priorità sconosciuta",
             },
+            edit: {
+                title: "Modifica movimento ricorrente",
+                subtitle:
+                    "Aggiorna i dati del movimento ricorrente selezionato.",
+                submit: "Salva modifica",
+                submitting: "Salvataggio modifica...",
+                success: "Movimento ricorrente aggiornato correttamente.",
+                errorFallback:
+                    "Non è stato possibile aggiornare il movimento ricorrente. Riprova tra qualche istante.",
+                singleRequestRequired:
+                    "Questa modifica genererebbe più movimenti tecnici. Per ora modifica separatamente carta e portafoglio.",
+            },
             report: {
                 trendUnavailable: "Trend non disponibile",
                 eyebrow: "Report",
@@ -237,10 +249,12 @@ export const resources = {
                 amount: "Importo",
                 frequency: "Frequenza",
                 firstPayment: "Prima data",
+                actions: "Azioni",
             },
             actions: {
                 showForm: "Nuovo ricorrente",
                 hideForm: "Chiudi",
+                edit: "Modifica",
             },
             recurrenceEvery: "Ogni {{interval}} {{unit}}",
             recurrenceUnits: {
@@ -1443,6 +1457,17 @@ export const resources = {
                 category: "Unknown category",
                 financialPriority: "Unknown priority",
             },
+            edit: {
+                title: "Edit recurring movement",
+                subtitle: "Update the selected recurring movement.",
+                submit: "Save changes",
+                submitting: "Saving changes...",
+                success: "Recurring movement updated successfully.",
+                errorFallback:
+                    "We could not update the recurring movement. Please try again in a moment.",
+                singleRequestRequired:
+                    "This edit would generate multiple technical movements. For now, edit card and portfolio movements separately.",
+            },
             report: {
                 trendUnavailable: "Trend unavailable",
                 eyebrow: "Report",
@@ -1523,10 +1548,12 @@ export const resources = {
                 amount: "Amount",
                 frequency: "Frequency",
                 firstPayment: "First date",
+                actions: "Actions",
             },
             actions: {
                 showForm: "New recurring",
                 hideForm: "Close",
+                edit: "Edit",
             },
             recurrenceEvery: "Every {{interval}} {{unit}}",
             recurrenceUnits: {
