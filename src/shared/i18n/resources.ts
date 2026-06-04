@@ -418,6 +418,52 @@ export const resources = {
             reopenErrorFallback:
                 "Non siamo riusciti a riaprire il portafoglio.",
         },
+        transactionForms: {
+            fields: {
+                description: "Descrizione",
+                amount: "Importo",
+                chargeDate: "Data addebito",
+                category: "Categoria",
+                account: "Conto",
+                creditCard: "Carta",
+                bucket: "Portafoglio",
+                confirmed: "Transazione già confermata",
+                affectsAccountBalance: "Impatta il saldo del conto",
+                affectsSerenityline: "Impatta la proiezione SerenityLine",
+                reminderEnabled: "Attiva promemoria",
+                reminderDaysBefore: "Giorni di anticipo del promemoria",
+                optional: "opzionale",
+            },
+            placeholders: {
+                amount: "Es. 250,50",
+            },
+            options: {
+                selectCategory: "Seleziona categoria",
+                selectAccount: "Seleziona conto",
+                noCreditCard: "Nessuna carta",
+                noBucket: "Nessun portafoglio",
+                unnamedBucket: "Portafoglio senza nome",
+            },
+            actions: {
+                submit: "Salva transazione",
+                submitting: "Salvataggio...",
+                cancel: "Annulla",
+                newCategory: "Nuova",
+                newAccount: "Nuovo",
+                newCreditCard: "Nuova",
+                newBucket: "Nuovo",
+            },
+            validation: {
+                descriptionRequired:
+                    "Inserisci la descrizione della transazione.",
+                amountInvalid: "Inserisci un importo valido.",
+                chargeDateRequired: "Inserisci la data di addebito.",
+                categoryRequired: "Seleziona una categoria.",
+                accountRequired: "Seleziona un conto.",
+                reminderDaysInvalid:
+                    "Inserisci un numero di giorni di promemoria valido.",
+            },
+        },
         appPages: {
             placeholderBadge: "Area MVP",
             serenityline: {
@@ -1197,6 +1243,50 @@ export const resources = {
             reopenSuccess: "Bucket reopened successfully.",
             closeErrorFallback: "We could not close the bucket.",
             reopenErrorFallback: "We could not reopen the bucket.",
+        },
+        transactionForms: {
+            fields: {
+                description: "Description",
+                amount: "Amount",
+                chargeDate: "Charge date",
+                category: "Category",
+                account: "Account",
+                creditCard: "Card",
+                bucket: "Bucket",
+                confirmed: "Transaction already confirmed",
+                affectsAccountBalance: "Affects account balance",
+                affectsSerenityline: "Affects SerenityLine projection",
+                reminderEnabled: "Enable reminder",
+                reminderDaysBefore: "Reminder days before",
+                optional: "optional",
+            },
+            placeholders: {
+                amount: "E.g. 250.50",
+            },
+            options: {
+                selectCategory: "Select category",
+                selectAccount: "Select account",
+                noCreditCard: "No card",
+                noBucket: "No bucket",
+                unnamedBucket: "Unnamed bucket",
+            },
+            actions: {
+                submit: "Save transaction",
+                submitting: "Saving...",
+                cancel: "Cancel",
+                newCategory: "New",
+                newAccount: "New",
+                newCreditCard: "New",
+                newBucket: "New",
+            },
+            validation: {
+                descriptionRequired: "Enter the transaction description.",
+                amountInvalid: "Enter a valid amount.",
+                chargeDateRequired: "Enter the charge date.",
+                categoryRequired: "Select a category.",
+                accountRequired: "Select an account.",
+                reminderDaysInvalid: "Enter a valid number of reminder days.",
+            },
         },
         appPages: {
             placeholderBadge: "MVP area",
