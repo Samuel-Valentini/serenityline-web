@@ -52,14 +52,7 @@ const category = {
     active: true,
 };
 
-const referenceData: FinanceReferenceData = {
-    accounts: [account],
-    creditCards: [],
-    categories: [category],
-    buckets: [],
-    simulationGroups: [],
-    financialPriorities: [],
-};
+
 
 const createdTransaction = {
     transactionId: "transaction-id",
@@ -114,6 +107,37 @@ const updatedSearchedTransaction = {
     transactionDescription: "Spesa farmacia aggiornata",
     transactionAmount: -45,
     transactionUpdatedAt: "2026-06-04T11:00:00Z",
+};
+
+const creditCard = {
+    creditCardId: "credit-card-id",
+    creditCardName: "Carta principale",
+    creditCardDescription: "Carta per spese mensili",
+    creditCardChargeDay: 15,
+    accountId: "account-id",
+    userGroupId: "group-id",
+    creditCardCreatedAt: "2026-01-01T00:00:00Z",
+    creditCardUpdatedAt: "2026-01-01T00:00:00Z",
+};
+
+const bucket = {
+    bucketId: "bucket-id",
+    bucketName: "Risparmio",
+    bucketDescription: "Portafoglio per obiettivi di risparmio",
+    accountIds: ["account-id"],
+    userGroupId: "group-id",
+    bucketCreatedAt: "2026-01-01T00:00:00Z",
+    bucketUpdatedAt: "2026-01-01T00:00:00Z",
+    bucketClosedAt: null,
+};
+
+const referenceData: FinanceReferenceData = {
+    accounts: [account],
+    creditCards: [creditCard],
+    categories: [category],
+    buckets: [bucket],
+    simulationGroups: [],
+    financialPriorities: [],
 };
 
 function renderPage() {
@@ -326,5 +350,105 @@ describe("TransactionsPage", () => {
         expect(
             await screen.findByText("Spesa farmacia aggiornata"),
         ).toBeInTheDocument();
+    });
+
+    it("blocks editing when the update would generate multiple technical movements", async () => {
+        vi.mocked(createTransaction).mockResolvedValue(createdTransaction);
+
+        renderPage();
+
+        fireEvent.change(screen.getByLabelText("Descrizione"), {
+            target: { value: "Affitto" },
+        });
+        fireEvent.change(screen.getByLabelText("Importo"), {
+            target: { value: "-850,00" },
+        });
+        fireEvent.change(screen.getByLabelText("Data addebito"), {
+            target: { value: "2026-06-04" },
+        });
+        fireEvent.change(screen.getByLabelText("Categoria"), {
+            target: { value: "category-id" },
+        });
+        fireEvent.change(screen.getByLabelText("Conto"), {
+            target: { value: "account-id" },
+        });
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Salva transazione" }),
+        );
+
+        expect(await screen.findByText("Affitto")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Modifica" }));
+
+        const editFormCell = screen
+            .getByRole("heading", { name: "Modifica transazione" })
+            .closest("td");
+
+        expect(editFormCell).not.toBeNull();
+
+        fireEvent.change(within(editFormCell!).getByLabelText(/Carta/i), {
+            target: { value: "credit-card-id" },
+        });
+        fireEvent.change(within(editFormCell!).getByLabelText(/Portafoglio/i), {
+            target: { value: "bucket-id" },
+        });
+
+        fireEvent.click(
+            within(editFormCell!).getByRole("button", {
+                name: "Salva modifiche",
+            }),
+        );
+
+        expect(
+            await screen.findByText(
+                "Questa modifica genererebbe più movimenti tecnici. Per ora modifica separatamente carta e portafoglio.",
+            ),
+        ).toBeInTheDocument();
+
+        expect(updateTransaction).not.toHaveBeenCalled();
+    });
+
+    it("shows a validation error when search date range is incomplete", async () => {
+        renderPage();
+
+        fireEvent.change(screen.getByLabelText("Dal"), {
+            target: { value: "" },
+        });
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Visualizza transazioni" }),
+        );
+
+        expect(
+            await screen.findByText(
+                "Inserisci sia la data iniziale sia la data finale.",
+            ),
+        ).toBeInTheDocument();
+
+        expect(listTransactions).not.toHaveBeenCalled();
+    });
+
+    it("shows a validation error when search start date is after end date", async () => {
+        renderPage();
+
+        fireEvent.change(screen.getByLabelText("Dal"), {
+            target: { value: "2026-06-30" },
+        });
+        fireEvent.change(screen.getByLabelText("Al"), {
+            target: { value: "2026-06-01" },
+        });
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Visualizza transazioni" }),
+        );
+
+        expect(
+            await screen.findByText(
+                "La data iniziale non può essere successiva alla data finale.",
+            ),
+        ).toBeInTheDocument();
+
+        expect(listTransactions).not.toHaveBeenCalled();
     });
 });
