@@ -26,6 +26,7 @@ import { CategoriesPage } from "../../pages/app/CategoriesPage";
 import { BucketsPage } from "../../pages/app/BucketsPage";
 import { SimulationsPage } from "../../pages/app/SimulationsPage";
 import { RecurringTransactionsPage } from "../../pages/app/RecurringTransactionsPage";
+import { TransactionsPage } from "../../pages/app/TransactionsPage";
 
 export function AppRouter() {
     return (
@@ -112,9 +113,7 @@ export function AppRouter() {
                         />
                         <Route
                             path="transazioni"
-                            element={
-                                <AppPlaceholderPage pageKey="transactions" />
-                            }
+                            element={<TransactionsPage />}
                         />
                         <Route
                             path="ricorrenti"

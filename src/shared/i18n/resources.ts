@@ -276,6 +276,61 @@ export const resources = {
                 },
             },
         },
+        transactions: {
+            eyebrow: "Movimenti stabili",
+            title: "Transazioni",
+            subtitle:
+                "Inserisci, verifica e correggi i movimenti che compongono la tua storia finanziaria e le tue previsioni.",
+            referenceDataLoading: "Caricamento dati finanziari...",
+            referenceDataLoadErrorTitle:
+                "Impossibile caricare i dati finanziari.",
+            referenceDataLoadErrorFallback: "Riprova tra qualche istante.",
+            emptyValue: "—",
+            unknown: {
+                account: "Conto sconosciuto",
+                category: "Categoria sconosciuta",
+                creditCard: "Carta sconosciuta",
+                bucket: "Portafoglio sconosciuto",
+            },
+            create: {
+                eyebrow: "Nuovo movimento",
+                title: "Inserisci una transazione",
+                subtitle:
+                    "Registra un'entrata o un'uscita una tantum. Gli importi vengono inviati al backend come stringhe decimali.",
+                submit: "Salva transazione",
+                submitting: "Salvataggio...",
+                success: "Movimento salvato correttamente.",
+                errorFallback:
+                    "Non è stato possibile salvare la transazione. Riprova tra qualche istante.",
+            },
+            session: {
+                eyebrow: "Sessione corrente",
+                title: "Inserite in questa sessione",
+                subtitle:
+                    "Qui trovi i movimenti creati mentre resti su questa pagina.",
+                empty: "Non hai ancora inserito transazioni in questa sessione.",
+                table: {
+                    description: "Descrizione",
+                    amount: "Importo",
+                    date: "Data",
+                    account: "Conto",
+                    category: "Categoria",
+                    creditCard: "Carta",
+                    bucket: "Portafoglio",
+                    status: "Stato",
+                    actions: "Azioni",
+                },
+                status: {
+                    confirmed: "Confermata",
+                    planned: "Prevista",
+                },
+                actions: {
+                    edit: "Modifica",
+                    editComingSoon:
+                        "La modifica delle transazioni arriva nel prossimo blocco.",
+                },
+            },
+        },
         accounts: {
             eyebrow: "Base finanziaria",
             title: "Conti",
@@ -1572,6 +1627,60 @@ export const resources = {
                 YEAR: {
                     singular: "Yearly",
                     plural: "years",
+                },
+            },
+        },
+        transactions: {
+            eyebrow: "Stable movements",
+            title: "Transactions",
+            subtitle:
+                "Create, review and correct the movements that make up your financial history and forecasts.",
+            referenceDataLoading: "Loading finance data...",
+            referenceDataLoadErrorTitle: "Unable to load finance data.",
+            referenceDataLoadErrorFallback: "Please try again in a moment.",
+            emptyValue: "—",
+            unknown: {
+                account: "Unknown account",
+                category: "Unknown category",
+                creditCard: "Unknown card",
+                bucket: "Unknown bucket",
+            },
+            create: {
+                eyebrow: "New movement",
+                title: "Add a transaction",
+                subtitle:
+                    "Record a one-off income or expense. Amounts are sent to the backend as decimal strings.",
+                submit: "Save transaction",
+                submitting: "Saving...",
+                success: "Movement saved successfully.",
+                errorFallback:
+                    "We could not save the transaction. Please try again in a moment.",
+            },
+            session: {
+                eyebrow: "Current session",
+                title: "Added in this session",
+                subtitle:
+                    "Here you can see the movements created while staying on this page.",
+                empty: "You have not added any transactions in this session yet.",
+                table: {
+                    description: "Description",
+                    amount: "Amount",
+                    date: "Date",
+                    account: "Account",
+                    category: "Category",
+                    creditCard: "Card",
+                    bucket: "Bucket",
+                    status: "Status",
+                    actions: "Actions",
+                },
+                status: {
+                    confirmed: "Confirmed",
+                    planned: "Planned",
+                },
+                actions: {
+                    edit: "Edit",
+                    editComingSoon:
+                        "Transaction editing will be added in the next block.",
                 },
             },
         },
