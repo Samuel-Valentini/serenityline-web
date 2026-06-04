@@ -6,6 +6,7 @@ import type {
     CategoryResponseDto,
     CreditCardResponseDto,
     SimulationGroupResponseDto,
+    FinanceReportSummaryResponseDto,
 } from "./api/financeApiTypes";
 
 import type {
@@ -23,6 +24,7 @@ export const initialFinanceDataState: FinanceDataState = {
     buckets: [],
     simulationGroups: [],
     financialPriorities: [],
+    financeReportSummary: null,
 };
 
 const financeDataSlice = createSlice({
@@ -136,6 +138,12 @@ const financeDataSlice = createSlice({
         financeDataCleared() {
             return initialFinanceDataState;
         },
+        financeReportSummaryLoaded(
+            state,
+            action: PayloadAction<FinanceReportSummaryResponseDto>,
+        ) {
+            state.financeReportSummary = action.payload;
+        },
     },
 });
 
@@ -155,6 +163,7 @@ export const {
     financeReferenceDataLoaded,
     financeReferenceDataLoadingFailed,
     financeReferenceDataLoadingStarted,
+    financeReportSummaryLoaded,
 } = financeDataSlice.actions;
 
 export const financeDataReducer = financeDataSlice.reducer;

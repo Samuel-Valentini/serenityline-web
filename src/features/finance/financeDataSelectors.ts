@@ -30,3 +30,6 @@ export const selectIsFinanceDataLoading = (state: RootState) =>
 
 export const selectHasLoadedFinanceData = (state: RootState) =>
     state.financeData.status === "loaded";
+
+export const selectFinanceReportSummary = (state: RootState) =>
+    state.financeData.financeReportSummary;

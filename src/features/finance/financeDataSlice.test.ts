@@ -18,8 +18,10 @@ import {
     bucketUpdated,
     simulationGroupAdded,
     simulationGroupUpdated,
+    financeReportSummaryLoaded,
 } from "./financeDataSlice";
 import type { FinanceReferenceData } from "./financeDataTypes";
+import type { FinanceReportSummaryResponseDto } from "./api/financeApiTypes";
 
 const creditCard = {
     creditCardId: "credit-card-id",
@@ -402,5 +404,27 @@ describe("financeDataSlice", () => {
         );
 
         expect(state.simulationGroups).toEqual([simulationGroup]);
+    });
+
+    it("stores finance report summary", () => {
+        const reportSummary: FinanceReportSummaryResponseDto = {
+            asOfDate: "2026-06-04",
+            projectionMode: "PROJECTED_PLANNING",
+            extremesRange: {
+                from: "2026-06-04",
+                to: "2031-06-04",
+            },
+            yearEndForecastYears: 5,
+            recurringByCurrency: [],
+            extremesByCurrency: [],
+            yearEndForecasts: [],
+        } as const;
+
+        const state = financeDataReducer(
+            initialFinanceDataState,
+            financeReportSummaryLoaded(reportSummary),
+        );
+
+        expect(state.financeReportSummary).toEqual(reportSummary);
     });
 });

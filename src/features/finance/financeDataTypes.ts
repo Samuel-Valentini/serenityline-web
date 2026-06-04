@@ -5,6 +5,7 @@ import type {
     FinancialPriorityResponseDto,
     SimulationGroupResponseDto,
     CreditCardResponseDto,
+    FinanceReportSummaryResponseDto,
 } from "./api/financeApiTypes";
 
 export type FinanceDataStatus = "idle" | "loading" | "loaded" | "failed";
@@ -26,4 +27,5 @@ export type FinanceReferenceData = {
 export type FinanceDataState = FinanceReferenceData & {
     status: FinanceDataStatus;
     error: FinanceDataError | null;
+    financeReportSummary: FinanceReportSummaryResponseDto | null;
 };
