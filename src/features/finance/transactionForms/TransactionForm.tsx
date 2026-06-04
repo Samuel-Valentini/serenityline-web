@@ -120,6 +120,8 @@ export function TransactionForm({
         useState(false);
     const [isCreateBucketModalOpen, setIsCreateBucketModalOpen] =
         useState(false);
+    const isSimulated = isSimulationMovementContext(context);
+    const showStandardTransactionOptions = !isSimulated;
 
     const allowedAccountIds = useMemo(() => {
         if (!isSimulationMovementContext(context)) {
@@ -342,20 +344,23 @@ export function TransactionForm({
             return;
         }
 
-        const isSimulated = isSimulationMovementContext(context);
-
         const baseRequest: TransactionBaseRequest = {
             transactionDescription,
             categoryId: form.categoryId,
             transactionChargeDate: form.transactionChargeDate,
-            transactionIsConfirmed: form.transactionIsConfirmed,
+            transactionIsConfirmed: isSimulated
+                ? false
+                : form.transactionIsConfirmed,
             accountId: form.accountId,
             transactionIsSimulated: isSimulated,
             simulationGroupId: isSimulated ? context.simulationGroupId : null,
-            transactionReminderEnabled: form.transactionReminderEnabled,
-            transactionReminderDaysBefore: form.transactionReminderEnabled
-                ? reminderDaysBefore
-                : 7,
+            transactionReminderEnabled: isSimulated
+                ? false
+                : form.transactionReminderEnabled,
+            transactionReminderDaysBefore:
+                !isSimulated && form.transactionReminderEnabled
+                    ? reminderDaysBefore
+                    : 7,
         };
 
         const requests = buildTransactionRequests({
@@ -597,48 +602,51 @@ export function TransactionForm({
                         {t("twoMovementsHint")}
                     </div>
                 ) : null}
+                {showStandardTransactionOptions ? (
+                    <div className="form-check">
+                        <input
+                            checked={form.transactionIsConfirmed}
+                            className="form-check-input"
+                            id={`${idPrefix}-confirmed`}
+                            onChange={(event) =>
+                                updateField(
+                                    "transactionIsConfirmed",
+                                    event.target.checked,
+                                )
+                            }
+                            type="checkbox"
+                        />
+                        <label
+                            className="form-check-label"
+                            htmlFor={`${idPrefix}-confirmed`}>
+                            {t("fields.confirmed")}
+                        </label>
+                    </div>
+                ) : null}
+                {showStandardTransactionOptions ? (
+                    <div className="form-check">
+                        <input
+                            checked={form.transactionReminderEnabled}
+                            className="form-check-input"
+                            id={`${idPrefix}-reminderEnabled`}
+                            onChange={(event) =>
+                                updateField(
+                                    "transactionReminderEnabled",
+                                    event.target.checked,
+                                )
+                            }
+                            type="checkbox"
+                        />
+                        <label
+                            className="form-check-label"
+                            htmlFor={`${idPrefix}-reminderEnabled`}>
+                            {t("fields.reminderEnabled")}
+                        </label>
+                    </div>
+                ) : null}
 
-                <div className="form-check">
-                    <input
-                        checked={form.transactionIsConfirmed}
-                        className="form-check-input"
-                        id={`${idPrefix}-confirmed`}
-                        onChange={(event) =>
-                            updateField(
-                                "transactionIsConfirmed",
-                                event.target.checked,
-                            )
-                        }
-                        type="checkbox"
-                    />
-                    <label
-                        className="form-check-label"
-                        htmlFor={`${idPrefix}-confirmed`}>
-                        {t("fields.confirmed")}
-                    </label>
-                </div>
-
-                <div className="form-check">
-                    <input
-                        checked={form.transactionReminderEnabled}
-                        className="form-check-input"
-                        id={`${idPrefix}-reminderEnabled`}
-                        onChange={(event) =>
-                            updateField(
-                                "transactionReminderEnabled",
-                                event.target.checked,
-                            )
-                        }
-                        type="checkbox"
-                    />
-                    <label
-                        className="form-check-label"
-                        htmlFor={`${idPrefix}-reminderEnabled`}>
-                        {t("fields.reminderEnabled")}
-                    </label>
-                </div>
-
-                {form.transactionReminderEnabled ? (
+                {showStandardTransactionOptions &&
+                form.transactionReminderEnabled ? (
                     <div>
                         <label
                             className="form-label"

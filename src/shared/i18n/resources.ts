@@ -469,7 +469,8 @@ export const resources = {
                 fields: {
                     description: "Descrizione",
                     paymentAmount: "Importo pagamento",
-                    amountIsAdjustable: "Importo modificabile nel tempo",
+                    amountIsAdjustable:
+                        "Potresti modificare questo importo se volessi?",
                     firstPaymentDate: "Prima data pagamento",
                     recurrenceInterval: "Ogni",
                     recurrenceUnit: "Unità ricorrenza",
@@ -673,6 +674,28 @@ export const resources = {
             accountUnlinkSuccess: "Conto scollegato dalla simulazione.",
             accountUnlinkErrorFallback:
                 "Non è stato possibile scollegare il conto. Riprova tra qualche istante.",
+            transactionCreateSuccess:
+                "Movimento simulato creato correttamente.",
+            transactionCreateErrorFallback:
+                "Non è stato possibile creare il movimento simulato. Riprova tra qualche istante.",
+            recurringTransactionCreateSuccess:
+                "Movimento ricorrente simulato creato correttamente.",
+            recurringTransactionCreateErrorFallback:
+                "Non è stato possibile creare il movimento ricorrente simulato. Riprova tra qualche istante.",
+            transactionForm: {
+                title: "Nuovo movimento simulato",
+                subtitle:
+                    "Il movimento verrà aggiunto allo scenario “{{name}}”.",
+                submit: "Salva movimento simulato",
+                submitting: "Salvataggio movimento...",
+            },
+            recurringTransactionForm: {
+                title: "Nuovo movimento ricorrente simulato",
+                subtitle:
+                    "Il movimento ricorrente verrà aggiunto allo scenario “{{name}}”.",
+                submit: "Salva ricorrente simulato",
+                submitting: "Salvataggio ricorrente...",
+            },
             fields: {
                 name: "Nome simulazione",
                 description: "Descrizione",
@@ -691,6 +714,8 @@ export const resources = {
                 restoring: "Ripristino...",
                 manageAccounts: "Gestisci conti",
                 done: "Fine",
+                addTransaction: "Aggiungi movimento",
+                addRecurringTransaction: "Aggiungi ricorrente",
             },
             validation: {
                 nameRequired: "Inserisci un nome per la simulazione.",
@@ -1536,7 +1561,8 @@ export const resources = {
                 fields: {
                     description: "Description",
                     paymentAmount: "Payment amount",
-                    amountIsAdjustable: "Amount can change over time",
+                    amountIsAdjustable:
+                        "Could you change this amount if you wanted?",
                     firstPaymentDate: "First payment date",
                     recurrenceInterval: "Every",
                     recurrenceUnit: "Recurrence unit",
@@ -1733,6 +1759,28 @@ export const resources = {
             accountUnlinkSuccess: "Account unlinked from the simulation.",
             accountUnlinkErrorFallback:
                 "We could not unlink the account. Please try again in a moment.",
+            transactionCreateSuccess:
+                "Simulated movement created successfully.",
+            transactionCreateErrorFallback:
+                "We could not create the simulated movement. Please try again in a moment.",
+            recurringTransactionCreateSuccess:
+                "Simulated recurring movement created successfully.",
+            recurringTransactionCreateErrorFallback:
+                "We could not create the simulated recurring movement. Please try again in a moment.",
+            transactionForm: {
+                title: "New simulated movement",
+                subtitle:
+                    "The movement will be added to the “{{name}}” scenario.",
+                submit: "Save simulated movement",
+                submitting: "Saving movement...",
+            },
+            recurringTransactionForm: {
+                title: "New simulated recurring movement",
+                subtitle:
+                    "The recurring movement will be added to the “{{name}}” scenario.",
+                submit: "Save simulated recurring movement",
+                submitting: "Saving recurring movement...",
+            },
             fields: {
                 name: "Simulation name",
                 description: "Description",
@@ -1751,6 +1799,8 @@ export const resources = {
                 restoring: "Restoring...",
                 manageAccounts: "Manage accounts",
                 done: "Done",
+                addTransaction: "Add movement",
+                addRecurringTransaction: "Add recurring movement",
             },
             validation: {
                 nameRequired: "Enter a simulation name.",

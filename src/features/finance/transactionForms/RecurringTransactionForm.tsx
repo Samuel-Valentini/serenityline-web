@@ -139,6 +139,8 @@ export function RecurringTransactionForm({
         useState(false);
     const [isCreateBucketModalOpen, setIsCreateBucketModalOpen] =
         useState(false);
+    const isSimulated = isSimulationMovementContext(context);
+    const showStandardRecurringOptions = !isSimulated;
 
     const allowedAccountIds = useMemo(() => {
         if (!isSimulationMovementContext(context)) {
@@ -401,8 +403,6 @@ export function RecurringTransactionForm({
             return;
         }
 
-        const isSimulated = isSimulationMovementContext(context);
-
         const baseRequest: RecurringTransactionBaseRequest = {
             recurringTransactionDescription,
             recurringTransactionAmountIsAdjustable:
@@ -419,10 +419,11 @@ export function RecurringTransactionForm({
             linkedAccountId: form.linkedAccountId,
             recurringTransactionIsSimulated: isSimulated,
             simulationGroupId: isSimulated ? context.simulationGroupId : null,
-            recurringTransactionReminderEnabled:
-                form.recurringTransactionReminderEnabled,
+            recurringTransactionReminderEnabled: isSimulated
+                ? false
+                : form.recurringTransactionReminderEnabled,
             recurringTransactionReminderDaysBefore:
-                form.recurringTransactionReminderEnabled
+                !isSimulated && form.recurringTransactionReminderEnabled
                     ? reminderDaysBefore
                     : 7,
         };
@@ -865,28 +866,30 @@ export function RecurringTransactionForm({
                         value={form.finalPaymentAmount}
                     />
                 </div>
+                {showStandardRecurringOptions ? (
+                    <div className="form-check">
+                        <input
+                            checked={form.recurringTransactionReminderEnabled}
+                            className="form-check-input"
+                            id={`${idPrefix}-reminderEnabled`}
+                            onChange={(event) =>
+                                updateField(
+                                    "recurringTransactionReminderEnabled",
+                                    event.target.checked,
+                                )
+                            }
+                            type="checkbox"
+                        />
+                        <label
+                            className="form-check-label"
+                            htmlFor={`${idPrefix}-reminderEnabled`}>
+                            {t("recurring.fields.reminderEnabled")}
+                        </label>
+                    </div>
+                ) : null}
 
-                <div className="form-check">
-                    <input
-                        checked={form.recurringTransactionReminderEnabled}
-                        className="form-check-input"
-                        id={`${idPrefix}-reminderEnabled`}
-                        onChange={(event) =>
-                            updateField(
-                                "recurringTransactionReminderEnabled",
-                                event.target.checked,
-                            )
-                        }
-                        type="checkbox"
-                    />
-                    <label
-                        className="form-check-label"
-                        htmlFor={`${idPrefix}-reminderEnabled`}>
-                        {t("recurring.fields.reminderEnabled")}
-                    </label>
-                </div>
-
-                {form.recurringTransactionReminderEnabled ? (
+                {showStandardRecurringOptions &&
+                form.recurringTransactionReminderEnabled ? (
                     <div>
                         <label
                             className="form-label"

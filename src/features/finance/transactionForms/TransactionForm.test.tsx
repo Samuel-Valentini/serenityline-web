@@ -262,6 +262,9 @@ describe("TransactionForm", () => {
                     simulationGroupId: "simulation-group-id",
                     accountId: "account-id",
                     categoryId: "category-id",
+                    transactionIsConfirmed: false,
+                    transactionReminderEnabled: false,
+                    transactionReminderDaysBefore: 7,
                 }),
             ]);
         });
@@ -685,5 +688,22 @@ describe("TransactionForm", () => {
                 }),
             ]);
         });
+    });
+    it("hides confirmed and reminder options in simulation context", () => {
+        renderForm({
+            context: {
+                type: "simulation",
+                simulationGroupId: "simulation-group-id",
+                allowedAccountIds: ["account-id"],
+            },
+        });
+
+        expect(
+            screen.queryByLabelText("Transazione già confermata"),
+        ).not.toBeInTheDocument();
+
+        expect(
+            screen.queryByLabelText("Attiva promemoria"),
+        ).not.toBeInTheDocument();
     });
 });

@@ -1,10 +1,12 @@
-import { type ComponentProps, useMemo, useState } from "react";
+import { Fragment, type ComponentProps, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 import {
     archiveSimulationGroup,
+    createRecurringTransaction,
     createSimulationGroup,
+    createTransaction,
     linkSimulationGroupAccount,
     restoreSimulationGroup,
     unlinkSimulationGroupAccount,
@@ -12,9 +14,11 @@ import {
 } from "../../features/finance/api/financeApi";
 import type {
     AccountResponseDto,
+    RecurringTransactionCreateRequestDto,
     SimulationGroupCreateRequestDto,
     SimulationGroupResponseDto,
     SimulationGroupUpdateRequestDto,
+    TransactionCreateRequestDto,
 } from "../../features/finance/api/financeApiTypes";
 import {
     selectAccounts,
@@ -27,6 +31,8 @@ import {
     simulationGroupUpdated,
 } from "../../features/finance/financeDataSlice";
 import { ApiError } from "../../shared/api";
+import { TransactionForm } from "../../features/finance/transactionForms/TransactionForm";
+import { RecurringTransactionForm } from "../../features/finance/transactionForms/RecurringTransactionForm";
 
 type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -113,6 +119,29 @@ export function SimulationsPage() {
         statusChangingSimulationGroupId,
         setStatusChangingSimulationGroupId,
     ] = useState<string | null>(null);
+    const [
+        transactionFormSimulationGroupId,
+        setTransactionFormSimulationGroupId,
+    ] = useState<string | null>(null);
+    const [
+        transactionSubmittingSimulationGroupId,
+        setTransactionSubmittingSimulationGroupId,
+    ] = useState<string | null>(null);
+    const [transactionFormError, setTransactionFormError] = useState<
+        string | null
+    >(null);
+    const [
+        recurringTransactionFormSimulationGroupId,
+        setRecurringTransactionFormSimulationGroupId,
+    ] = useState<string | null>(null);
+
+    const [
+        recurringTransactionSubmittingSimulationGroupId,
+        setRecurringTransactionSubmittingSimulationGroupId,
+    ] = useState<string | null>(null);
+
+    const [recurringTransactionFormError, setRecurringTransactionFormError] =
+        useState<string | null>(null);
 
     const sortedSimulationGroups = useMemo(
         () =>
@@ -169,7 +198,11 @@ export function SimulationsPage() {
     function startEditingSimulationGroup(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setTransactionFormError(null);
+        setRecurringTransactionFormError(null);
         setManagingAccountsSimulationGroupId(null);
+        setTransactionFormSimulationGroupId(null);
+        setRecurringTransactionFormSimulationGroupId(null);
         setEditingSimulationGroupId(simulationGroup.simulationGroupId);
         setEditForm({
             simulationGroupName: simulationGroup.simulationGroupName,
@@ -192,6 +225,10 @@ export function SimulationsPage() {
     function startManagingSimulationGroupAccounts(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setTransactionFormError(null);
+        setRecurringTransactionFormError(null);
+        setTransactionFormSimulationGroupId(null);
+        setRecurringTransactionFormSimulationGroupId(null);
         setEditingSimulationGroupId(null);
         setManagingAccountsSimulationGroupId(simulationGroup.simulationGroupId);
         setEditError(null);
@@ -210,6 +247,109 @@ export function SimulationsPage() {
         }));
         setEditError(null);
         setSuccessMessage(null);
+    }
+
+    function startAddingTransaction(
+        simulationGroup: SimulationGroupResponseDto,
+    ) {
+        setEditingSimulationGroupId(null);
+        setManagingAccountsSimulationGroupId(null);
+        setRecurringTransactionFormSimulationGroupId(null);
+        setTransactionFormSimulationGroupId(simulationGroup.simulationGroupId);
+        setTransactionFormError(null);
+        setRecurringTransactionFormError(null);
+        setEditError(null);
+        setSuccessMessage(null);
+    }
+
+    function cancelAddingTransaction() {
+        setTransactionFormSimulationGroupId(null);
+        setTransactionFormError(null);
+    }
+
+    function startAddingRecurringTransaction(
+        simulationGroup: SimulationGroupResponseDto,
+    ) {
+        setEditingSimulationGroupId(null);
+        setManagingAccountsSimulationGroupId(null);
+        setTransactionFormSimulationGroupId(null);
+        setRecurringTransactionFormSimulationGroupId(
+            simulationGroup.simulationGroupId,
+        );
+        setTransactionFormError(null);
+        setRecurringTransactionFormError(null);
+        setEditError(null);
+        setSuccessMessage(null);
+    }
+
+    function cancelAddingRecurringTransaction() {
+        setRecurringTransactionFormSimulationGroupId(null);
+        setRecurringTransactionFormError(null);
+    }
+
+    async function handleCreateSimulationRecurringTransactions(
+        simulationGroup: SimulationGroupResponseDto,
+        requests: RecurringTransactionCreateRequestDto[],
+    ) {
+        if (simulationGroup.accountIds.length === 0) {
+            setRecurringTransactionFormError(t("validation.accountRequired"));
+            return;
+        }
+
+        setRecurringTransactionSubmittingSimulationGroupId(
+            simulationGroup.simulationGroupId,
+        );
+        setRecurringTransactionFormError(null);
+        setSuccessMessage(null);
+
+        try {
+            for (const request of requests) {
+                await createRecurringTransaction(request);
+            }
+
+            setRecurringTransactionFormSimulationGroupId(null);
+            setSuccessMessage(t("recurringTransactionCreateSuccess"));
+        } catch (error) {
+            setRecurringTransactionFormError(
+                getErrorMessage(
+                    error,
+                    t("recurringTransactionCreateErrorFallback"),
+                ),
+            );
+        } finally {
+            setRecurringTransactionSubmittingSimulationGroupId(null);
+        }
+    }
+
+    async function handleCreateSimulationTransactions(
+        simulationGroup: SimulationGroupResponseDto,
+        requests: TransactionCreateRequestDto[],
+    ) {
+        if (simulationGroup.accountIds.length === 0) {
+            setTransactionFormError(t("validation.accountRequired"));
+            return;
+        }
+
+        setTransactionSubmittingSimulationGroupId(
+            simulationGroup.simulationGroupId,
+        );
+        setTransactionFormError(null);
+        setSuccessMessage(null);
+
+        try {
+            for (const request of requests) {
+                await createTransaction(request);
+            }
+
+            setTransactionFormSimulationGroupId(null);
+            setSuccessMessage(t("transactionCreateSuccess"));
+        } catch (error) {
+            setTransactionFormError(
+                getErrorMessage(error, t("transactionCreateErrorFallback")),
+            );
+        } finally {
+            setTransactionSubmittingSimulationGroupId(null);
+        }
     }
 
     async function handleUpdateSimulationGroup(simulationGroupId: string) {
@@ -575,253 +715,317 @@ export function SimulationsPage() {
                                             const isManagingAccounts =
                                                 managingAccountsSimulationGroupId ===
                                                 simulationGroup.simulationGroupId;
+                                            const isAddingTransaction =
+                                                transactionFormSimulationGroupId ===
+                                                simulationGroup.simulationGroupId;
+                                            const isSubmittingTransaction =
+                                                transactionSubmittingSimulationGroupId ===
+                                                simulationGroup.simulationGroupId;
+                                            const isAddingRecurringTransaction =
+                                                recurringTransactionFormSimulationGroupId ===
+                                                simulationGroup.simulationGroupId;
+
+                                            const isSubmittingRecurringTransaction =
+                                                recurringTransactionSubmittingSimulationGroupId ===
+                                                simulationGroup.simulationGroupId;
 
                                             return (
-                                                <tr
+                                                <Fragment
                                                     key={
                                                         simulationGroup.simulationGroupId
                                                     }>
-                                                    <td>
-                                                        {isEditing ? (
-                                                            <div className="d-grid gap-2">
-                                                                <input
-                                                                    aria-label={t(
-                                                                        "fields.name",
-                                                                    )}
-                                                                    className="form-control"
-                                                                    onChange={(
-                                                                        event,
-                                                                    ) =>
-                                                                        updateEditField(
-                                                                            "simulationGroupName",
-                                                                            event
-                                                                                .target
-                                                                                .value,
-                                                                        )
-                                                                    }
-                                                                    type="text"
-                                                                    value={
-                                                                        editForm.simulationGroupName
-                                                                    }
-                                                                />
-
-                                                                <textarea
-                                                                    aria-label={t(
-                                                                        "fields.description",
-                                                                    )}
-                                                                    className="form-control"
-                                                                    onChange={(
-                                                                        event,
-                                                                    ) =>
-                                                                        updateEditField(
-                                                                            "simulationGroupDescription",
-                                                                            event
-                                                                                .target
-                                                                                .value,
-                                                                        )
-                                                                    }
-                                                                    rows={2}
-                                                                    value={
-                                                                        editForm.simulationGroupDescription
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            <>
-                                                                <strong>
-                                                                    {
-                                                                        simulationGroup.simulationGroupName
-                                                                    }
-                                                                </strong>
-                                                                {simulationGroup.simulationGroupDescription ? (
-                                                                    <p className="text-muted mb-0">
-                                                                        {
-                                                                            simulationGroup.simulationGroupDescription
-                                                                        }
-                                                                    </p>
-                                                                ) : null}
-                                                            </>
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {isManagingAccounts ? (
-                                                            <fieldset className="mb-0">
-                                                                <legend className="visually-hidden">
-                                                                    {t(
-                                                                        "fields.accounts",
-                                                                    )}
-                                                                </legend>
-
+                                                    <tr>
+                                                        <td>
+                                                            {isEditing ? (
                                                                 <div className="d-grid gap-2">
-                                                                    {accounts.map(
+                                                                    <input
+                                                                        aria-label={t(
+                                                                            "fields.name",
+                                                                        )}
+                                                                        className="form-control"
+                                                                        onChange={(
+                                                                            event,
+                                                                        ) =>
+                                                                            updateEditField(
+                                                                                "simulationGroupName",
+                                                                                event
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                        type="text"
+                                                                        value={
+                                                                            editForm.simulationGroupName
+                                                                        }
+                                                                    />
+
+                                                                    <textarea
+                                                                        aria-label={t(
+                                                                            "fields.description",
+                                                                        )}
+                                                                        className="form-control"
+                                                                        onChange={(
+                                                                            event,
+                                                                        ) =>
+                                                                            updateEditField(
+                                                                                "simulationGroupDescription",
+                                                                                event
+                                                                                    .target
+                                                                                    .value,
+                                                                            )
+                                                                        }
+                                                                        rows={2}
+                                                                        value={
+                                                                            editForm.simulationGroupDescription
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <strong>
+                                                                        {
+                                                                            simulationGroup.simulationGroupName
+                                                                        }
+                                                                    </strong>
+                                                                    {simulationGroup.simulationGroupDescription ? (
+                                                                        <p className="text-muted mb-0">
+                                                                            {
+                                                                                simulationGroup.simulationGroupDescription
+                                                                            }
+                                                                        </p>
+                                                                    ) : null}
+                                                                </>
+                                                            )}
+                                                        </td>
+                                                        <td>
+                                                            {isManagingAccounts ? (
+                                                                <fieldset className="mb-0">
+                                                                    <legend className="visually-hidden">
+                                                                        {t(
+                                                                            "fields.accounts",
+                                                                        )}
+                                                                    </legend>
+
+                                                                    <div className="d-grid gap-2">
+                                                                        {accounts.map(
+                                                                            (
+                                                                                account,
+                                                                            ) => {
+                                                                                const checkboxId = `simulation-${simulationGroup.simulationGroupId}-account-${account.accountId}`;
+                                                                                const isLinked =
+                                                                                    simulationGroup.accountIds.includes(
+                                                                                        account.accountId,
+                                                                                    );
+
+                                                                                return (
+                                                                                    <div
+                                                                                        className="form-check"
+                                                                                        key={
+                                                                                            account.accountId
+                                                                                        }>
+                                                                                        <input
+                                                                                            checked={
+                                                                                                isLinked
+                                                                                            }
+                                                                                            className="form-check-input"
+                                                                                            disabled={
+                                                                                                accountChangingKey !==
+                                                                                                null
+                                                                                            }
+                                                                                            id={
+                                                                                                checkboxId
+                                                                                            }
+                                                                                            onChange={() =>
+                                                                                                handleToggleSimulationGroupAccount(
+                                                                                                    simulationGroup,
+                                                                                                    account.accountId,
+                                                                                                )
+                                                                                            }
+                                                                                            type="checkbox"
+                                                                                        />
+                                                                                        <label
+                                                                                            className="form-check-label"
+                                                                                            htmlFor={
+                                                                                                checkboxId
+                                                                                            }>
+                                                                                            {
+                                                                                                account.accountName
+                                                                                            }
+                                                                                        </label>
+                                                                                    </div>
+                                                                                );
+                                                                            },
+                                                                        )}
+                                                                    </div>
+                                                                </fieldset>
+                                                            ) : linkedAccounts.length >
+                                                              0 ? (
+                                                                linkedAccounts
+                                                                    .map(
                                                                         (
                                                                             account,
-                                                                        ) => {
-                                                                            const checkboxId = `simulation-${simulationGroup.simulationGroupId}-account-${account.accountId}`;
-                                                                            const isLinked =
-                                                                                simulationGroup.accountIds.includes(
-                                                                                    account.accountId,
-                                                                                );
+                                                                        ) =>
+                                                                            account.accountName,
+                                                                    )
+                                                                    .join(", ")
+                                                            ) : (
+                                                                "—"
+                                                            )}
+                                                        </td>
+                                                        <td>
+                                                            <span
+                                                                className={
+                                                                    isArchived
+                                                                        ? "badge text-bg-secondary"
+                                                                        : "badge text-bg-success"
+                                                                }>
+                                                                {isArchived
+                                                                    ? t(
+                                                                          "status.archived",
+                                                                      )
+                                                                    : t(
+                                                                          "status.active",
+                                                                      )}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            {isEditing ? (
+                                                                <div className="d-flex flex-wrap gap-2">
+                                                                    <button
+                                                                        className="btn btn-sm btn-primary"
+                                                                        disabled={
+                                                                            isUpdating
+                                                                        }
+                                                                        onClick={() =>
+                                                                            handleUpdateSimulationGroup(
+                                                                                simulationGroup.simulationGroupId,
+                                                                            )
+                                                                        }
+                                                                        type="button">
+                                                                        {isUpdating
+                                                                            ? t(
+                                                                                  "actions.saving",
+                                                                              )
+                                                                            : t(
+                                                                                  "actions.save",
+                                                                              )}
+                                                                    </button>
 
-                                                                            return (
-                                                                                <div
-                                                                                    className="form-check"
-                                                                                    key={
-                                                                                        account.accountId
-                                                                                    }>
-                                                                                    <input
-                                                                                        checked={
-                                                                                            isLinked
-                                                                                        }
-                                                                                        className="form-check-input"
-                                                                                        disabled={
-                                                                                            accountChangingKey !==
-                                                                                            null
-                                                                                        }
-                                                                                        id={
-                                                                                            checkboxId
-                                                                                        }
-                                                                                        onChange={() =>
-                                                                                            handleToggleSimulationGroupAccount(
-                                                                                                simulationGroup,
-                                                                                                account.accountId,
-                                                                                            )
-                                                                                        }
-                                                                                        type="checkbox"
-                                                                                    />
-                                                                                    <label
-                                                                                        className="form-check-label"
-                                                                                        htmlFor={
-                                                                                            checkboxId
-                                                                                        }>
-                                                                                        {
-                                                                                            account.accountName
-                                                                                        }
-                                                                                    </label>
-                                                                                </div>
-                                                                            );
-                                                                        },
-                                                                    )}
+                                                                    <button
+                                                                        className="btn btn-sm btn-outline-secondary"
+                                                                        disabled={
+                                                                            isUpdating
+                                                                        }
+                                                                        onClick={
+                                                                            cancelEditingSimulationGroup
+                                                                        }
+                                                                        type="button">
+                                                                        {t(
+                                                                            "actions.cancel",
+                                                                        )}
+                                                                    </button>
                                                                 </div>
-                                                            </fieldset>
-                                                        ) : linkedAccounts.length >
-                                                          0 ? (
-                                                            linkedAccounts
-                                                                .map(
-                                                                    (account) =>
-                                                                        account.accountName,
-                                                                )
-                                                                .join(", ")
-                                                        ) : (
-                                                            "—"
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        <span
-                                                            className={
-                                                                isArchived
-                                                                    ? "badge text-bg-secondary"
-                                                                    : "badge text-bg-success"
-                                                            }>
-                                                            {isArchived
-                                                                ? t(
-                                                                      "status.archived",
-                                                                  )
-                                                                : t(
-                                                                      "status.active",
-                                                                  )}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        {isEditing ? (
-                                                            <div className="d-flex flex-wrap gap-2">
-                                                                <button
-                                                                    className="btn btn-sm btn-primary"
-                                                                    disabled={
-                                                                        isUpdating
-                                                                    }
-                                                                    onClick={() =>
-                                                                        handleUpdateSimulationGroup(
-                                                                            simulationGroup.simulationGroupId,
-                                                                        )
-                                                                    }
-                                                                    type="button">
-                                                                    {isUpdating
-                                                                        ? t(
-                                                                              "actions.saving",
-                                                                          )
-                                                                        : t(
-                                                                              "actions.save",
-                                                                          )}
-                                                                </button>
-
+                                                            ) : isManagingAccounts ? (
                                                                 <button
                                                                     className="btn btn-sm btn-outline-secondary"
                                                                     disabled={
-                                                                        isUpdating
+                                                                        accountChangingKey !==
+                                                                        null
                                                                     }
                                                                     onClick={
-                                                                        cancelEditingSimulationGroup
+                                                                        stopManagingSimulationGroupAccounts
                                                                     }
                                                                     type="button">
                                                                     {t(
-                                                                        "actions.cancel",
+                                                                        "actions.done",
                                                                     )}
                                                                 </button>
-                                                            </div>
-                                                        ) : isManagingAccounts ? (
-                                                            <button
-                                                                className="btn btn-sm btn-outline-secondary"
-                                                                disabled={
-                                                                    accountChangingKey !==
-                                                                    null
-                                                                }
-                                                                onClick={
-                                                                    stopManagingSimulationGroupAccounts
-                                                                }
-                                                                type="button">
-                                                                {t(
-                                                                    "actions.done",
-                                                                )}
-                                                            </button>
-                                                        ) : (
-                                                            <div className="d-flex flex-wrap gap-2">
-                                                                {!isArchived ? (
-                                                                    <>
+                                                            ) : (
+                                                                <div className="d-flex flex-wrap gap-2">
+                                                                    {!isArchived ? (
+                                                                        <>
+                                                                            <button
+                                                                                className="btn btn-sm btn-outline-primary"
+                                                                                onClick={() =>
+                                                                                    startEditingSimulationGroup(
+                                                                                        simulationGroup,
+                                                                                    )
+                                                                                }
+                                                                                type="button">
+                                                                                {t(
+                                                                                    "actions.edit",
+                                                                                )}
+                                                                            </button>
+
+                                                                            <button
+                                                                                className="btn btn-sm btn-outline-primary"
+                                                                                onClick={() =>
+                                                                                    startManagingSimulationGroupAccounts(
+                                                                                        simulationGroup,
+                                                                                    )
+                                                                                }
+                                                                                type="button">
+                                                                                {t(
+                                                                                    "actions.manageAccounts",
+                                                                                )}
+                                                                            </button>
+
+                                                                            <button
+                                                                                className="btn btn-sm btn-outline-secondary"
+                                                                                disabled={
+                                                                                    statusChangingSimulationGroupId ===
+                                                                                    simulationGroup.simulationGroupId
+                                                                                }
+                                                                                onClick={() =>
+                                                                                    handleArchiveSimulationGroup(
+                                                                                        simulationGroup.simulationGroupId,
+                                                                                    )
+                                                                                }
+                                                                                type="button">
+                                                                                {statusChangingSimulationGroupId ===
+                                                                                simulationGroup.simulationGroupId
+                                                                                    ? t(
+                                                                                          "actions.archiving",
+                                                                                      )
+                                                                                    : t(
+                                                                                          "actions.archive",
+                                                                                      )}
+                                                                            </button>
+
+                                                                            <button
+                                                                                className="btn btn-sm btn-outline-primary"
+                                                                                onClick={() =>
+                                                                                    startAddingTransaction(
+                                                                                        simulationGroup,
+                                                                                    )
+                                                                                }
+                                                                                type="button">
+                                                                                {t(
+                                                                                    "actions.addTransaction",
+                                                                                )}
+                                                                            </button>
+                                                                            <button
+                                                                                className="btn btn-sm btn-outline-primary"
+                                                                                onClick={() =>
+                                                                                    startAddingRecurringTransaction(
+                                                                                        simulationGroup,
+                                                                                    )
+                                                                                }
+                                                                                type="button">
+                                                                                {t(
+                                                                                    "actions.addRecurringTransaction",
+                                                                                )}
+                                                                            </button>
+                                                                        </>
+                                                                    ) : (
                                                                         <button
                                                                             className="btn btn-sm btn-outline-primary"
-                                                                            onClick={() =>
-                                                                                startEditingSimulationGroup(
-                                                                                    simulationGroup,
-                                                                                )
-                                                                            }
-                                                                            type="button">
-                                                                            {t(
-                                                                                "actions.edit",
-                                                                            )}
-                                                                        </button>
-
-                                                                        <button
-                                                                            className="btn btn-sm btn-outline-primary"
-                                                                            onClick={() =>
-                                                                                startManagingSimulationGroupAccounts(
-                                                                                    simulationGroup,
-                                                                                )
-                                                                            }
-                                                                            type="button">
-                                                                            {t(
-                                                                                "actions.manageAccounts",
-                                                                            )}
-                                                                        </button>
-
-                                                                        <button
-                                                                            className="btn btn-sm btn-outline-secondary"
                                                                             disabled={
                                                                                 statusChangingSimulationGroupId ===
                                                                                 simulationGroup.simulationGroupId
                                                                             }
                                                                             onClick={() =>
-                                                                                handleArchiveSimulationGroup(
+                                                                                handleRestoreSimulationGroup(
                                                                                     simulationGroup.simulationGroupId,
                                                                                 )
                                                                             }
@@ -829,40 +1033,146 @@ export function SimulationsPage() {
                                                                             {statusChangingSimulationGroupId ===
                                                                             simulationGroup.simulationGroupId
                                                                                 ? t(
-                                                                                      "actions.archiving",
+                                                                                      "actions.restoring",
                                                                                   )
                                                                                 : t(
-                                                                                      "actions.archive",
+                                                                                      "actions.restore",
                                                                                   )}
                                                                         </button>
-                                                                    </>
-                                                                ) : (
-                                                                    <button
-                                                                        className="btn btn-sm btn-outline-primary"
-                                                                        disabled={
-                                                                            statusChangingSimulationGroupId ===
-                                                                            simulationGroup.simulationGroupId
-                                                                        }
-                                                                        onClick={() =>
-                                                                            handleRestoreSimulationGroup(
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                    {isAddingTransaction ? (
+                                                        <tr>
+                                                            <td colSpan={4}>
+                                                                <div className="border rounded p-3">
+                                                                    <div className="mb-3">
+                                                                        <h3 className="h6 mb-1">
+                                                                            {t(
+                                                                                "transactionForm.title",
+                                                                            )}
+                                                                        </h3>
+                                                                        <p className="text-muted mb-0">
+                                                                            {t(
+                                                                                "transactionForm.subtitle",
+                                                                                {
+                                                                                    name: simulationGroup.simulationGroupName,
+                                                                                },
+                                                                            )}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    {transactionFormError ? (
+                                                                        <div
+                                                                            className="alert alert-danger"
+                                                                            role="alert">
+                                                                            {
+                                                                                transactionFormError
+                                                                            }
+                                                                        </div>
+                                                                    ) : null}
+
+                                                                    <TransactionForm
+                                                                        context={{
+                                                                            type: "simulation",
+                                                                            simulationGroupId:
                                                                                 simulationGroup.simulationGroupId,
+                                                                            allowedAccountIds:
+                                                                                simulationGroup.accountIds,
+                                                                        }}
+                                                                        idPrefix={`simulation-${simulationGroup.simulationGroupId}-transactionForm`}
+                                                                        isSubmitting={
+                                                                            isSubmittingTransaction
+                                                                        }
+                                                                        onCancel={
+                                                                            cancelAddingTransaction
+                                                                        }
+                                                                        onSubmit={(
+                                                                            requests,
+                                                                        ) =>
+                                                                            handleCreateSimulationTransactions(
+                                                                                simulationGroup,
+                                                                                requests,
                                                                             )
                                                                         }
-                                                                        type="button">
-                                                                        {statusChangingSimulationGroupId ===
-                                                                        simulationGroup.simulationGroupId
-                                                                            ? t(
-                                                                                  "actions.restoring",
-                                                                              )
-                                                                            : t(
-                                                                                  "actions.restore",
-                                                                              )}
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                </tr>
+                                                                        submitLabel={t(
+                                                                            "transactionForm.submit",
+                                                                        )}
+                                                                        submittingLabel={t(
+                                                                            "transactionForm.submitting",
+                                                                        )}
+                                                                    />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ) : null}
+                                                    {isAddingRecurringTransaction ? (
+                                                        <tr>
+                                                            <td colSpan={4}>
+                                                                <div className="border rounded p-3">
+                                                                    <div className="mb-3">
+                                                                        <h3 className="h6 mb-1">
+                                                                            {t(
+                                                                                "recurringTransactionForm.title",
+                                                                            )}
+                                                                        </h3>
+                                                                        <p className="text-muted mb-0">
+                                                                            {t(
+                                                                                "recurringTransactionForm.subtitle",
+                                                                                {
+                                                                                    name: simulationGroup.simulationGroupName,
+                                                                                },
+                                                                            )}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    {recurringTransactionFormError ? (
+                                                                        <div
+                                                                            className="alert alert-danger"
+                                                                            role="alert">
+                                                                            {
+                                                                                recurringTransactionFormError
+                                                                            }
+                                                                        </div>
+                                                                    ) : null}
+
+                                                                    <RecurringTransactionForm
+                                                                        context={{
+                                                                            type: "simulation",
+                                                                            simulationGroupId:
+                                                                                simulationGroup.simulationGroupId,
+                                                                            allowedAccountIds:
+                                                                                simulationGroup.accountIds,
+                                                                        }}
+                                                                        idPrefix={`simulation-${simulationGroup.simulationGroupId}-recurringTransactionForm`}
+                                                                        isSubmitting={
+                                                                            isSubmittingRecurringTransaction
+                                                                        }
+                                                                        onCancel={
+                                                                            cancelAddingRecurringTransaction
+                                                                        }
+                                                                        onSubmit={(
+                                                                            requests,
+                                                                        ) =>
+                                                                            handleCreateSimulationRecurringTransactions(
+                                                                                simulationGroup,
+                                                                                requests,
+                                                                            )
+                                                                        }
+                                                                        submitLabel={t(
+                                                                            "recurringTransactionForm.submit",
+                                                                        )}
+                                                                        submittingLabel={t(
+                                                                            "recurringTransactionForm.submitting",
+                                                                        )}
+                                                                    />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ) : null}
+                                                </Fragment>
                                             );
                                         },
                                     )}

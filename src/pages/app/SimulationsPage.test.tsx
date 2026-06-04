@@ -11,6 +11,7 @@ import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
 import {
     archiveSimulationGroup,
+    createRecurringTransaction,
     createSimulationGroup,
     linkSimulationGroupAccount,
     restoreSimulationGroup,
@@ -27,12 +28,51 @@ import { SimulationsPage } from "./SimulationsPage";
 
 vi.mock("../../features/finance/api/financeApi", () => ({
     archiveSimulationGroup: vi.fn(),
+    createRecurringTransaction: vi.fn(),
     createSimulationGroup: vi.fn(),
+    createTransaction: vi.fn(),
     linkSimulationGroupAccount: vi.fn(),
     restoreSimulationGroup: vi.fn(),
     unlinkSimulationGroupAccount: vi.fn(),
     updateSimulationGroup: vi.fn(),
 }));
+
+const category = {
+    categoryId: "category-id",
+    categoryName: "Casa",
+    categoryDescription: "Spese legate alla casa",
+    active: true,
+};
+
+const creditCard = {
+    creditCardId: "credit-card-id",
+    creditCardName: "Carta principale",
+    creditCardDescription: "Carta per spese mensili",
+    creditCardChargeDay: 15,
+    accountId: "account-id",
+    userGroupId: "group-id",
+    creditCardCreatedAt: "2026-01-01T00:00:00Z",
+    creditCardUpdatedAt: "2026-01-01T00:00:00Z",
+};
+
+const bucket = {
+    bucketId: "bucket-id",
+    bucketName: "Risparmio",
+    bucketDescription: "Portafoglio per obiettivi",
+    accountIds: ["account-id"],
+    userGroupId: "group-id",
+    bucketCreatedAt: "2026-01-01T00:00:00Z",
+    bucketUpdatedAt: "2026-01-01T00:00:00Z",
+    bucketClosedAt: null,
+};
+
+const financialPriority = {
+    financialPriorityId: "financial-priority-id",
+    financialPriorityCode: "ESSENTIAL" as const,
+    financialPriorityDisplayName: "Essenziale",
+    financialPriorityDescription: "Spese indispensabili.",
+    financialPriorityRanking: 60,
+};
 
 const account = {
     accountId: "account-id",
@@ -84,12 +124,52 @@ const createdSimulationGroup = {
 
 const referenceData: FinanceReferenceData = {
     accounts: [account, secondAccount],
-    creditCards: [],
-    categories: [],
-    buckets: [],
+    creditCards: [creditCard],
+    categories: [category],
+    buckets: [bucket],
     simulationGroups: [archivedSimulationGroup, simulationGroup],
-    financialPriorities: [],
+    financialPriorities: [financialPriority],
 };
+
+function submitSimulationRecurringForm() {
+    const descriptionField = document.getElementById(
+        "simulation-simulation-group-id-recurringTransactionForm-description",
+    );
+
+    expect(descriptionField).not.toBeNull();
+
+    const form = descriptionField!.closest("form");
+
+    expect(form).not.toBeNull();
+
+    fireEvent.submit(form!);
+}
+
+function changeSimulationRecurringField(fieldName: string, value: string) {
+    const field = document.getElementById(
+        `simulation-simulation-group-id-recurringTransactionForm-${fieldName}`,
+    ) as HTMLInputElement | HTMLSelectElement | null;
+
+    expect(field).not.toBeNull();
+
+    fireEvent.change(field!, {
+        target: { value },
+    });
+}
+
+function fillRequiredSimulationRecurringFields() {
+    changeSimulationRecurringField("description", "Affitto simulato");
+    changeSimulationRecurringField("paymentAmount", "850,00");
+    changeSimulationRecurringField("firstPaymentDate", "2026-06-04");
+    changeSimulationRecurringField("recurrenceInterval", "1");
+    changeSimulationRecurringField("recurrenceUnit", "MONTH");
+    changeSimulationRecurringField("category", "category-id");
+    changeSimulationRecurringField(
+        "financialPriority",
+        "financial-priority-id",
+    );
+    changeSimulationRecurringField("account", "account-id");
+}
 
 function renderPage() {
     render(
@@ -495,6 +575,152 @@ describe("SimulationsPage", () => {
 
         expect(
             screen.getByRole("button", { name: "Gestisci conti" }),
+        ).toBeInTheDocument();
+    });
+
+    it("opens the simulated recurring transaction form for an active simulation group", () => {
+        renderPage();
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Aggiungi ricorrente" }),
+        );
+
+        expect(
+            screen.getByText("Nuovo movimento ricorrente simulato"),
+        ).toBeInTheDocument();
+
+        expect(
+            document.getElementById(
+                "simulation-simulation-group-id-recurringTransactionForm-description",
+            ),
+        ).not.toBeNull();
+
+        expect(
+            screen.queryByLabelText("Attiva promemoria"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("creates a simulated recurring transaction", async () => {
+        vi.mocked(createRecurringTransaction).mockResolvedValueOnce(
+            {} as Awaited<ReturnType<typeof createRecurringTransaction>>,
+        );
+
+        renderPage();
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Aggiungi ricorrente" }),
+        );
+
+        fillRequiredSimulationRecurringFields();
+        submitSimulationRecurringForm();
+
+        await waitFor(() => {
+            expect(createRecurringTransaction).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    recurringTransactionDescription: "Affitto simulato",
+                    paymentAmount: "850.00",
+                    recurringTransactionFirstPaymentDate: "2026-06-04",
+                    recurrenceInterval: 1,
+                    recurrenceUnit: "MONTH",
+                    paymentDateAdjustmentPolicy: "NONE",
+                    categoryId: "category-id",
+                    financialPriorityId: "financial-priority-id",
+                    linkedAccountId: "account-id",
+                    recurringTransactionIsSimulated: true,
+                    simulationGroupId: "simulation-group-id",
+                    recurringTransactionReminderEnabled: false,
+                    recurringTransactionReminderDaysBefore: 7,
+                }),
+            );
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    "Movimento ricorrente simulato creato correttamente.",
+                ),
+            ).toBeInTheDocument();
+        });
+
+        expect(
+            screen.queryByText("Nuovo movimento ricorrente simulato"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("creates two simulated recurring transactions when credit card and bucket are selected", async () => {
+        vi.mocked(createRecurringTransaction)
+            .mockResolvedValueOnce(
+                {} as Awaited<ReturnType<typeof createRecurringTransaction>>,
+            )
+            .mockResolvedValueOnce(
+                {} as Awaited<ReturnType<typeof createRecurringTransaction>>,
+            );
+
+        renderPage();
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Aggiungi ricorrente" }),
+        );
+
+        fillRequiredSimulationRecurringFields();
+        changeSimulationRecurringField("paymentAmount", "-120,00");
+        changeSimulationRecurringField("creditCard", "credit-card-id");
+        changeSimulationRecurringField("bucket", "bucket-id");
+
+        submitSimulationRecurringForm();
+
+        await waitFor(() => {
+            expect(createRecurringTransaction).toHaveBeenCalledTimes(2);
+        });
+
+        expect(createRecurringTransaction).toHaveBeenNthCalledWith(
+            1,
+            expect.objectContaining({
+                paymentAmount: "-120.00",
+                linkedCreditCardId: null,
+                linkedBucketId: "bucket-id",
+                recurringTransactionAffectsAccountBalance: true,
+                recurringtransactionAffectsSerenityline: false,
+                recurringTransactionIsSimulated: true,
+                simulationGroupId: "simulation-group-id",
+            }),
+        );
+
+        expect(createRecurringTransaction).toHaveBeenNthCalledWith(
+            2,
+            expect.objectContaining({
+                paymentAmount: "-120.00",
+                linkedCreditCardId: "credit-card-id",
+                linkedBucketId: null,
+                recurringTransactionAffectsAccountBalance: false,
+                recurringtransactionAffectsSerenityline: true,
+                recurringTransactionIsSimulated: true,
+                simulationGroupId: "simulation-group-id",
+            }),
+        );
+    });
+
+    it("shows an error when simulated recurring transaction creation fails", async () => {
+        vi.mocked(createRecurringTransaction).mockRejectedValueOnce(
+            new Error("Errore ricorrenza simulata"),
+        );
+
+        renderPage();
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Aggiungi ricorrente" }),
+        );
+
+        fillRequiredSimulationRecurringFields();
+
+        submitSimulationRecurringForm();
+
+        expect(
+            await screen.findByText("Errore ricorrenza simulata"),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Nuovo movimento ricorrente simulato"),
         ).toBeInTheDocument();
     });
 });
