@@ -607,6 +607,13 @@ h6 {
     min-height: 8rem;
 }
 
+.sl-calendar-edge-loader {
+    padding: 0.75rem 1rem;
+    text-align: center;
+    color: var(--sl-color-text-muted);
+    background: rgba(255, 255, 255, 0.6);
+}
+
 @media (max-width: 767.98px) {
     .sl-calendar-filter-heading {
         flex-direction: column;

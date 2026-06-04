@@ -109,6 +109,16 @@ const technicalCreditCardMovement = {
     userEntered: false,
 };
 
+const nextRangeMovement = {
+    ...persistedMovement,
+    transactionId: "next-range-transaction-id",
+    logicalDate: "2027-01-15",
+    chargeDate: "2027-01-15",
+    description: "Movimento futuro",
+    amount: -75,
+    confirmed: false,
+};
+
 function renderPage() {
     render(
         <AppProviders enableAuthBootstrap={false}>
@@ -230,5 +240,41 @@ describe("CalendarPage", () => {
         expect(screen.getByText("Affitto previsto")).toBeInTheDocument();
 
         expect(listCalendarMovements).toHaveBeenCalledTimes(1);
+    });
+
+    it("loads the next calendar range before reaching the bottom of the scroll window", async () => {
+        vi.mocked(listCalendarMovements)
+            .mockResolvedValueOnce([persistedMovement])
+            .mockResolvedValueOnce([nextRangeMovement]);
+
+        renderPage();
+
+        expect(await screen.findByText("Stipendio")).toBeInTheDocument();
+
+        const calendarWindow = screen.getByLabelText(
+            "Finestra scorrevole del calendario finanziario",
+        );
+
+        Object.defineProperty(calendarWindow, "scrollHeight", {
+            configurable: true,
+            value: 2_000,
+        });
+        Object.defineProperty(calendarWindow, "clientHeight", {
+            configurable: true,
+            value: 500,
+        });
+        Object.defineProperty(calendarWindow, "scrollTop", {
+            configurable: true,
+            value: 1_200,
+            writable: true,
+        });
+
+        fireEvent.scroll(calendarWindow);
+
+        await waitFor(() => {
+            expect(listCalendarMovements).toHaveBeenCalledTimes(2);
+        });
+
+        expect(await screen.findByText("Movimento futuro")).toBeInTheDocument();
     });
 });

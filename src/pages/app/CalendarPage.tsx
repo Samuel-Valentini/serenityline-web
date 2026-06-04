@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { useAppSelector } from "../../app/store/hooks";
 import type { FinanceCalendarMovementResponseDto } from "../../features/finance/api/financeApiTypes";
 import {
+    addDaysToIsoDate,
     getFinanceCalendarMovementKey,
     getInitialFinanceCalendarRange,
     getTodayIsoDate,
@@ -61,6 +62,10 @@ function isTechnicalCreditCardMovement(
 
 type CalendarConfirmedFilter = "all" | "confirmed" | "unconfirmed";
 
+const PREVIOUS_RANGE_DAYS = 90;
+const NEXT_RANGE_DAYS = 180;
+const SCROLL_LOAD_THRESHOLD_PX = 900;
+
 function getSelectedValues(options: HTMLCollectionOf<HTMLOptionElement>) {
     return Array.from(options, (option) => option.value);
 }
@@ -105,6 +110,9 @@ export function CalendarPage() {
     const hasRequestedInitialRangeRef = useRef(false);
     const hasScrolledToTodayRef = useRef(false);
     const todayMovementRef = useRef<HTMLTableRowElement | null>(null);
+    const calendarWindowRef = useRef<HTMLDivElement | null>(null);
+    const [isLoadingPreviousRange, setIsLoadingPreviousRange] = useState(false);
+    const [isLoadingNextRange, setIsLoadingNextRange] = useState(false);
 
     const accountsById = useMemo(
         () => new Map(accounts.map((account) => [account.accountId, account])),
@@ -217,9 +225,14 @@ export function CalendarPage() {
         }
 
         const animationFrameId = window.requestAnimationFrame(() => {
-            todayMovementRef.current?.scrollIntoView({
-                block: "center",
-            });
+            if (
+                typeof todayMovementRef.current?.scrollIntoView === "function"
+            ) {
+                todayMovementRef.current.scrollIntoView({
+                    block: "center",
+                });
+            }
+
             hasScrolledToTodayRef.current = true;
         });
 
@@ -298,6 +311,102 @@ export function CalendarPage() {
         setSelectedAccountIds([]);
         setSelectedBucketIds([]);
         setConfirmedFilter("all");
+    }
+
+    function getPreviousRange() {
+        if (!loadedFrom) {
+            return null;
+        }
+
+        return {
+            from: addDaysToIsoDate(loadedFrom, -PREVIOUS_RANGE_DAYS),
+            to: addDaysToIsoDate(loadedFrom, -1),
+        };
+    }
+
+    function getNextRange() {
+        if (!loadedTo) {
+            return null;
+        }
+
+        return {
+            from: addDaysToIsoDate(loadedTo, 1),
+            to: addDaysToIsoDate(loadedTo, NEXT_RANGE_DAYS),
+        };
+    }
+
+    async function loadPreviousCalendarRange() {
+        if (isLoadingPreviousRange || !loadedFrom) {
+            return;
+        }
+
+        const previousRange = getPreviousRange();
+
+        if (!previousRange) {
+            return;
+        }
+
+        const calendarWindow = calendarWindowRef.current;
+        const previousScrollHeight = calendarWindow?.scrollHeight ?? 0;
+
+        setIsLoadingPreviousRange(true);
+
+        try {
+            await loadRange(previousRange);
+
+            window.requestAnimationFrame(() => {
+                if (!calendarWindow) {
+                    return;
+                }
+
+                const newScrollHeight = calendarWindow.scrollHeight;
+                calendarWindow.scrollTop +=
+                    newScrollHeight - previousScrollHeight;
+            });
+        } finally {
+            setIsLoadingPreviousRange(false);
+        }
+    }
+
+    async function loadNextCalendarRange() {
+        if (isLoadingNextRange || !loadedTo) {
+            return;
+        }
+
+        const nextRange = getNextRange();
+
+        if (!nextRange) {
+            return;
+        }
+
+        setIsLoadingNextRange(true);
+
+        try {
+            await loadRange(nextRange);
+        } finally {
+            setIsLoadingNextRange(false);
+        }
+    }
+
+    function handleCalendarWindowScroll(event: React.UIEvent<HTMLDivElement>) {
+        const calendarWindow = event.currentTarget;
+        const thresholdPx = Math.max(
+            SCROLL_LOAD_THRESHOLD_PX,
+            calendarWindow.clientHeight * 1.5,
+        );
+
+        const distanceFromBottom =
+            calendarWindow.scrollHeight -
+            calendarWindow.scrollTop -
+            calendarWindow.clientHeight;
+
+        if (calendarWindow.scrollTop < thresholdPx) {
+            void loadPreviousCalendarRange();
+        }
+
+        if (distanceFromBottom < thresholdPx) {
+            void loadNextCalendarRange();
+        }
     }
 
     return (
@@ -570,7 +679,16 @@ export function CalendarPage() {
                     <div
                         aria-label={t("timeline.windowLabel")}
                         className="sl-calendar-window mt-3"
+                        onScroll={handleCalendarWindowScroll}
+                        ref={calendarWindowRef}
                         tabIndex={0}>
+                        {isLoadingPreviousRange ? (
+                            <div
+                                className="sl-calendar-edge-loader"
+                                role="status">
+                                {t("timeline.loadingPrevious")}
+                            </div>
+                        ) : null}
                         <table className="table align-middle sl-calendar-table">
                             <thead>
                                 <tr>
@@ -668,6 +786,13 @@ export function CalendarPage() {
                                 })}
                             </tbody>
                         </table>
+                        {isLoadingNextRange ? (
+                            <div
+                                className="sl-calendar-edge-loader"
+                                role="status">
+                                {t("timeline.loadingNext")}
+                            </div>
+                        ) : null}
                     </div>
                 ) : null}
             </article>

@@ -167,6 +167,8 @@ export const resources = {
                 refresh: "Aggiorna calendario",
                 refreshing: "Aggiornamento...",
                 windowLabel: "Finestra scorrevole del calendario finanziario",
+                loadingPrevious: "Caricamento movimenti precedenti...",
+                loadingNext: "Caricamento movimenti successivi...",
             },
             filters: {
                 title: "Filtri vista",
@@ -1588,6 +1590,8 @@ export const resources = {
                 refresh: "Refresh calendar",
                 refreshing: "Refreshing...",
                 windowLabel: "Scrollable financial calendar window",
+                loadingPrevious: "Loading previous movements...",
+                loadingNext: "Loading next movements...",
             },
             filters: {
                 title: "View filters",

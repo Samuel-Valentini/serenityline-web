@@ -18,6 +18,7 @@ type FinanceCalendarCacheEntry = {
     loadedFrom: IsoDate | null;
     loadedTo: IsoDate | null;
     loadedRangeKeys: Set<string>;
+    pendingRangeKeys: Set<string>;
     updatedAt: number | null;
 };
 
@@ -43,6 +44,7 @@ function createEmptyCacheEntry(): FinanceCalendarCacheEntry {
         loadedFrom: null,
         loadedTo: null,
         loadedRangeKeys: new Set<string>(),
+        pendingRangeKeys: new Set<string>(),
         updatedAt: null,
     };
 }
@@ -173,6 +175,51 @@ export function clearFinanceCalendarCacheForTests() {
     calendarCache.clear();
 }
 
+function addLoadingRangeKey(
+    loadingRangeKeys: Record<string, string[]>,
+    cacheKey: string,
+    rangeKey: string,
+) {
+    const currentRangeKeys = loadingRangeKeys[cacheKey] ?? [];
+
+    if (currentRangeKeys.includes(rangeKey)) {
+        return loadingRangeKeys;
+    }
+
+    return {
+        ...loadingRangeKeys,
+        [cacheKey]: [...currentRangeKeys, rangeKey],
+    };
+}
+
+function removeLoadingRangeKey(
+    loadingRangeKeys: Record<string, string[]>,
+    cacheKey: string,
+    rangeKey: string,
+) {
+    const currentRangeKeys = loadingRangeKeys[cacheKey] ?? [];
+    const nextRangeKeys = currentRangeKeys.filter(
+        (currentRangeKey) => currentRangeKey !== rangeKey,
+    );
+
+    if (nextRangeKeys.length === currentRangeKeys.length) {
+        return loadingRangeKeys;
+    }
+
+    if (nextRangeKeys.length === 0) {
+        const remainingLoadingRangeKeys = { ...loadingRangeKeys };
+
+        delete remainingLoadingRangeKeys[cacheKey];
+
+        return remainingLoadingRangeKeys;
+    }
+
+    return {
+        ...loadingRangeKeys,
+        [cacheKey]: nextRangeKeys,
+    };
+}
+
 export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
     const simulationGroupIdsKey = useMemo(
         () => getCacheKey(simulationGroupIds),
@@ -185,10 +232,9 @@ export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
     );
 
     const [, setCacheRevision] = useState(0);
-    const [loadingState, setLoadingState] = useState<{
-        cacheKey: string;
-        rangeKey: string;
-    } | null>(null);
+    const [loadingRangeKeys, setLoadingRangeKeys] = useState<
+        Record<string, string[]>
+    >({});
     const [errorState, setErrorState] = useState<{
         cacheKey: string;
         error: unknown;
@@ -206,14 +252,23 @@ export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
             const rangeKey = getRangeKey(range);
             const cacheEntry = getCacheEntry(simulationGroupIdsKey);
 
-            if (!options.force && cacheEntry.loadedRangeKeys.has(rangeKey)) {
+            if (
+                !options.force &&
+                (cacheEntry.loadedRangeKeys.has(rangeKey) ||
+                    cacheEntry.pendingRangeKeys.has(rangeKey))
+            ) {
                 return;
             }
 
-            setLoadingState({
-                cacheKey: simulationGroupIdsKey,
-                rangeKey,
-            });
+            cacheEntry.pendingRangeKeys.add(rangeKey);
+
+            setLoadingRangeKeys((currentLoadingRangeKeys) =>
+                addLoadingRangeKey(
+                    currentLoadingRangeKeys,
+                    simulationGroupIdsKey,
+                    rangeKey,
+                ),
+            );
             setErrorState(null);
 
             try {
@@ -235,6 +290,7 @@ export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
                     entryToUpdate.loadedFrom = null;
                     entryToUpdate.loadedTo = null;
                     entryToUpdate.loadedRangeKeys.clear();
+                    entryToUpdate.pendingRangeKeys.clear();
                     entryToUpdate.updatedAt = null;
                 }
 
@@ -260,17 +316,16 @@ export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
                     error: caughtError,
                 });
             } finally {
-                setLoadingState((currentLoadingState) => {
-                    if (
-                        currentLoadingState?.cacheKey ===
-                            simulationGroupIdsKey &&
-                        currentLoadingState.rangeKey === rangeKey
-                    ) {
-                        return null;
-                    }
+                const entryToUpdate = getCacheEntry(simulationGroupIdsKey);
+                entryToUpdate.pendingRangeKeys.delete(rangeKey);
 
-                    return currentLoadingState;
-                });
+                setLoadingRangeKeys((currentLoadingRangeKeys) =>
+                    removeLoadingRangeKey(
+                        currentLoadingRangeKeys,
+                        simulationGroupIdsKey,
+                        rangeKey,
+                    ),
+                );
             }
         },
         [normalizedSimulationGroupIds, simulationGroupIdsKey],
@@ -291,7 +346,7 @@ export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
         loadedFrom: snapshot.loadedFrom,
         loadedTo: snapshot.loadedTo,
         updatedAt: snapshot.updatedAt,
-        isLoading: loadingState?.cacheKey === simulationGroupIdsKey,
+        isLoading: (loadingRangeKeys[simulationGroupIdsKey] ?? []).length > 0,
         error,
         loadRange,
         refreshRange,
