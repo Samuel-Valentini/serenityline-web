@@ -428,8 +428,6 @@ export const resources = {
                 creditCard: "Carta",
                 bucket: "Portafoglio",
                 confirmed: "Transazione già confermata",
-                affectsAccountBalance: "Impatta il saldo del conto",
-                affectsSerenityline: "Impatta la proiezione SerenityLine",
                 reminderEnabled: "Attiva promemoria",
                 reminderDaysBefore: "Giorni di anticipo del promemoria",
                 optional: "opzionale",
@@ -462,6 +460,83 @@ export const resources = {
                 accountRequired: "Seleziona un conto.",
                 reminderDaysInvalid:
                     "Inserisci un numero di giorni di promemoria valido.",
+            },
+            recurring: {
+                fields: {
+                    description: "Descrizione",
+                    paymentAmount: "Importo pagamento",
+                    amountIsAdjustable: "Importo modificabile nel tempo",
+                    firstPaymentDate: "Prima data pagamento",
+                    recurrenceInterval: "Ogni",
+                    recurrenceUnit: "Unità ricorrenza",
+                    paymentDateAdjustmentPolicy:
+                        "Gestione giorno non lavorativo",
+                    category: "Categoria",
+                    financialPriority: "Priorità finanziaria",
+                    account: "Conto collegato",
+                    creditCard: "Carta collegata",
+                    bucket: "Portafoglio collegato",
+                    endDate: "Data fine",
+                    finalPaymentAmount: "Importo rata finale",
+                    reminderEnabled: "Attiva promemoria",
+                    reminderDaysBefore: "Giorni di anticipo del promemoria",
+                },
+                placeholders: {
+                    amount: "Es. 250,50",
+                },
+                options: {
+                    selectCategory: "Seleziona categoria",
+                    selectFinancialPriority: "Seleziona priorità",
+                    selectAccount: "Seleziona conto",
+                    noCreditCard: "Nessuna carta",
+                    noBucket: "Nessun portafoglio",
+                    unnamedBucket: "Portafoglio senza nome",
+                },
+                recurrenceUnits: {
+                    singular: {
+                        day: "Giorno",
+                        week: "Settimana",
+                        month: "Mese",
+                        year: "Anno",
+                    },
+                    plural: {
+                        day: "Giorni",
+                        week: "Settimane",
+                        month: "Mesi",
+                        year: "Anni",
+                    },
+                },
+                paymentDatePolicies: {
+                    none: "Nessun aggiustamento",
+                    previous: "Giorno lavorativo precedente",
+                    next: "Giorno lavorativo successivo",
+                },
+                actions: {
+                    submit: "Salva ricorrenza",
+                    submitting: "Salvataggio...",
+                },
+                validation: {
+                    descriptionRequired:
+                        "Inserisci la descrizione della ricorrenza.",
+                    paymentAmountInvalid:
+                        "Inserisci un importo pagamento valido.",
+                    firstPaymentDateRequired:
+                        "Inserisci la prima data pagamento.",
+                    recurrenceIntervalInvalid:
+                        "Inserisci un intervallo di ricorrenza valido.",
+                    categoryRequired: "Seleziona una categoria.",
+                    financialPriorityRequired:
+                        "Seleziona una priorità finanziaria.",
+                    accountRequired: "Seleziona un conto collegato.",
+                    finalPaymentAmountInvalid:
+                        "Inserisci un importo rata finale valido.",
+                    reminderDaysInvalid:
+                        "Inserisci un numero di giorni di promemoria valido.",
+                },
+                bucketAmountSignHint:
+                    "Con un portafoglio collegato, usa + per trasferire al portafoglio e - per pagare usando il portafoglio.",
+                twoMovementsHint:
+                    "Questa ricorrenza genererà 2 movimenti: uno legato al portafoglio e uno legato alla carta di credito.",
             },
         },
         referenceModals: {
@@ -1346,8 +1421,6 @@ export const resources = {
                 creditCard: "Card",
                 bucket: "Bucket",
                 confirmed: "Transaction already confirmed",
-                affectsAccountBalance: "Affects account balance",
-                affectsSerenityline: "Affects SerenityLine projection",
                 reminderEnabled: "Enable reminder",
                 reminderDaysBefore: "Reminder days before",
                 optional: "optional",
@@ -1378,6 +1451,79 @@ export const resources = {
                 categoryRequired: "Select a category.",
                 accountRequired: "Select an account.",
                 reminderDaysInvalid: "Enter a valid number of reminder days.",
+            },
+            recurring: {
+                fields: {
+                    description: "Description",
+                    paymentAmount: "Payment amount",
+                    amountIsAdjustable: "Amount can change over time",
+                    firstPaymentDate: "First payment date",
+                    recurrenceInterval: "Every",
+                    recurrenceUnit: "Recurrence unit",
+                    paymentDateAdjustmentPolicy: "Non-business day handling",
+                    category: "Category",
+                    financialPriority: "Financial priority",
+                    account: "Linked account",
+                    creditCard: "Linked card",
+                    bucket: "Linked bucket",
+                    endDate: "End date",
+                    finalPaymentAmount: "Final payment amount",
+                    reminderEnabled: "Enable reminder",
+                    reminderDaysBefore: "Reminder days before",
+                },
+                placeholders: {
+                    amount: "E.g. 250.50",
+                },
+                options: {
+                    selectCategory: "Select category",
+                    selectFinancialPriority: "Select priority",
+                    selectAccount: "Select account",
+                    noCreditCard: "No card",
+                    noBucket: "No bucket",
+                    unnamedBucket: "Unnamed bucket",
+                },
+                recurrenceUnits: {
+                    singular: {
+                        day: "Day",
+                        week: "Week",
+                        month: "Month",
+                        year: "Year",
+                    },
+                    plural: {
+                        day: "Days",
+                        week: "Weeks",
+                        month: "Months",
+                        year: "Years",
+                    },
+                },
+                paymentDatePolicies: {
+                    none: "No adjustment",
+                    previous: "Previous business day",
+                    next: "Next business day",
+                },
+                actions: {
+                    submit: "Save recurring transaction",
+                    submitting: "Saving...",
+                },
+                validation: {
+                    descriptionRequired:
+                        "Enter the recurring transaction description.",
+                    paymentAmountInvalid: "Enter a valid payment amount.",
+                    firstPaymentDateRequired: "Enter the first payment date.",
+                    recurrenceIntervalInvalid:
+                        "Enter a valid recurrence interval.",
+                    categoryRequired: "Select a category.",
+                    financialPriorityRequired: "Select a financial priority.",
+                    accountRequired: "Select a linked account.",
+                    finalPaymentAmountInvalid:
+                        "Enter a valid final payment amount.",
+                    reminderDaysInvalid:
+                        "Enter a valid number of reminder days.",
+                },
+                bucketAmountSignHint:
+                    "With a linked bucket, use + to transfer money to the bucket and - to pay using the bucket.",
+                twoMovementsHint:
+                    "This recurring transaction will generate 2 movements: one linked to the bucket and one linked to the credit card.",
             },
         },
         referenceModals: {

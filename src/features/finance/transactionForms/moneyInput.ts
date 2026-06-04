@@ -1,6 +1,6 @@
 import type { MoneyAmountInput } from "../api/financeApiTypes";
 
-const MONEY_AMOUNT_PATTERN = /^-?\d+(\.\d+)?$/;
+const MONEY_AMOUNT_PATTERN = /^[+-]?\d+(\.\d+)?$/;
 
 function usesCommaDecimalSeparator(language: string) {
     return language.toLowerCase().startsWith("it");
@@ -24,7 +24,11 @@ export function normalizeMoneyInput(
         return null;
     }
 
-    return normalizedValue;
+    return (
+        normalizedValue.startsWith("+")
+            ? normalizedValue.slice(1)
+            : normalizedValue
+    ) as MoneyAmountInput;
 }
 
 export function isValidMoneyInput(value: string, language: string) {
