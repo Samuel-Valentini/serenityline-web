@@ -701,6 +701,36 @@ export const resources = {
                 description: "Descrizione",
                 accounts: "Conti collegati",
             },
+            movements: {
+                title: "Movimenti collegati",
+                subtitle:
+                    "Movimenti simulati collegati allo scenario “{{name}}”.",
+                loading: "Caricamento movimenti...",
+                empty: "Non ci sono ancora movimenti collegati a questo scenario.",
+                loadErrorFallback:
+                    "Non è stato possibile caricare i movimenti collegati. Riprova tra qualche istante.",
+                recurringTitle: "Movimenti ricorrenti",
+                transactionsTitle: "Transazioni",
+                recurringFrequency: "Ogni {{interval}} {{unit}}",
+                recurrenceUnits: {
+                    DAY: {
+                        singular: "Giornaliero",
+                        plural: "giorni",
+                    },
+                    WEEK: {
+                        singular: "Settimanale",
+                        plural: "settimane",
+                    },
+                    MONTH: {
+                        singular: "Mensile",
+                        plural: "mesi",
+                    },
+                    YEAR: {
+                        singular: "Annuale",
+                        plural: "anni",
+                    },
+                },
+            },
             actions: {
                 create: "Crea simulazione",
                 creating: "Creazione in corso...",
@@ -716,6 +746,8 @@ export const resources = {
                 done: "Fine",
                 addTransaction: "Aggiungi movimento",
                 addRecurringTransaction: "Aggiungi ricorrente",
+                showMovements: "Visualizza movimenti collegati",
+                hideMovements: "Nascondi movimenti collegati",
             },
             validation: {
                 nameRequired: "Inserisci un nome per la simulazione.",
@@ -1781,6 +1813,36 @@ export const resources = {
                 submit: "Save simulated recurring movement",
                 submitting: "Saving recurring movement...",
             },
+            movements: {
+                title: "Linked movements",
+                subtitle:
+                    "Simulated movements linked to the “{{name}}” scenario.",
+                loading: "Loading movements...",
+                empty: "There are no movements linked to this scenario yet.",
+                loadErrorFallback:
+                    "We could not load linked movements. Please try again in a moment.",
+                recurringTitle: "Recurring movements",
+                transactionsTitle: "Transactions",
+                recurringFrequency: "Every {{interval}} {{unit}}",
+                recurrenceUnits: {
+                    DAY: {
+                        singular: "Daily",
+                        plural: "days",
+                    },
+                    WEEK: {
+                        singular: "Weekly",
+                        plural: "weeks",
+                    },
+                    MONTH: {
+                        singular: "Monthly",
+                        plural: "months",
+                    },
+                    YEAR: {
+                        singular: "Yearly",
+                        plural: "years",
+                    },
+                },
+            },
             fields: {
                 name: "Simulation name",
                 description: "Description",
@@ -1801,6 +1863,8 @@ export const resources = {
                 done: "Done",
                 addTransaction: "Add movement",
                 addRecurringTransaction: "Add recurring movement",
+                showMovements: "View linked movements",
+                hideMovements: "Hide linked movements",
             },
             validation: {
                 nameRequired: "Enter a simulation name.",

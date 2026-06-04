@@ -42,3 +42,18 @@ export function moneyAmountToFormValue(value: number | null | undefined) {
 
     return String(value);
 }
+
+export function formatMoneyAmountForDisplay(
+    value: number,
+    language: string,
+    currency: string,
+) {
+    try {
+        return new Intl.NumberFormat(language || undefined, {
+            style: "currency",
+            currency,
+        }).format(value);
+    } catch {
+        return `${value} ${currency}`;
+    }
+}

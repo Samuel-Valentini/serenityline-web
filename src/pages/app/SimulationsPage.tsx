@@ -8,22 +8,31 @@ import {
     createSimulationGroup,
     createTransaction,
     linkSimulationGroupAccount,
+    listRecurringTransactions,
+    listTransactions,
     restoreSimulationGroup,
     unlinkSimulationGroupAccount,
     updateSimulationGroup,
 } from "../../features/finance/api/financeApi";
 import type {
     AccountResponseDto,
+    RecurrenceUnit,
     RecurringTransactionCreateRequestDto,
+    RecurringTransactionResponseDto,
     SimulationGroupCreateRequestDto,
     SimulationGroupResponseDto,
     SimulationGroupUpdateRequestDto,
     TransactionCreateRequestDto,
+    TransactionResponseDto,
 } from "../../features/finance/api/financeApiTypes";
 import {
     selectAccounts,
+    selectBuckets,
+    selectCategories,
+    selectCreditCards,
     selectFinanceDataError,
     selectFinanceDataStatus,
+    selectFinancialPriorities,
     selectSimulationGroups,
 } from "../../features/finance/financeDataSelectors";
 import {
@@ -33,6 +42,7 @@ import {
 import { ApiError } from "../../shared/api";
 import { TransactionForm } from "../../features/finance/transactionForms/TransactionForm";
 import { RecurringTransactionForm } from "../../features/finance/transactionForms/RecurringTransactionForm";
+import { formatMoneyAmountForDisplay } from "../../features/finance/transactionForms/moneyInput";
 
 type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -42,6 +52,13 @@ type SimulationGroupFormState = {
     simulationGroupName: string;
     simulationGroupDescription: string;
     accountIds: string[];
+};
+
+type SimulationGroupMovementsState = {
+    status: "idle" | "loading" | "loaded" | "failed";
+    transactions: TransactionResponseDto[];
+    recurringTransactions: RecurringTransactionResponseDto[];
+    error: string | null;
 };
 
 const initialFormState: SimulationGroupFormState = {
@@ -91,7 +108,7 @@ function getLinkedAccounts(
 }
 
 export function SimulationsPage() {
-    const { t } = useTranslation("simulations");
+    const { i18n, t } = useTranslation("simulations");
     const dispatch = useAppDispatch();
 
     const accounts = useAppSelector(selectAccounts);
@@ -143,6 +160,17 @@ export function SimulationsPage() {
     const [recurringTransactionFormError, setRecurringTransactionFormError] =
         useState<string | null>(null);
 
+    const [movementsSimulationGroupId, setMovementsSimulationGroupId] =
+        useState<string | null>(null);
+
+    const [movementsBySimulationGroupId, setMovementsBySimulationGroupId] =
+        useState<Record<string, SimulationGroupMovementsState>>({});
+
+    const creditCards = useAppSelector(selectCreditCards);
+    const categories = useAppSelector(selectCategories);
+    const buckets = useAppSelector(selectBuckets);
+    const financialPriorities = useAppSelector(selectFinancialPriorities);
+
     const sortedSimulationGroups = useMemo(
         () =>
             [...simulationGroups].sort((first, second) => {
@@ -167,6 +195,103 @@ export function SimulationsPage() {
     const [accountChangingKey, setAccountChangingKey] = useState<string | null>(
         null,
     );
+
+    const displayLanguage = i18n.resolvedLanguage ?? i18n.language;
+
+    function getIsoDateFromDateTime(dateTime: string) {
+        return dateTime.split("T")[0];
+    }
+
+    function addYearsToIsoDate(date: string, years: number) {
+        const [year, month, day] = date.split("-").map(Number);
+
+        const targetDate = new Date(Date.UTC(year + years, month - 1, day));
+
+        return targetDate.toISOString().split("T")[0];
+    }
+
+    function getAccountCurrency(accountId: string) {
+        return (
+            accounts.find((account) => account.accountId === accountId)
+                ?.currency ?? null
+        );
+    }
+
+    function formatMovementMoneyAmount(amount: number, accountId: string) {
+        const currency = getAccountCurrency(accountId);
+
+        if (!currency) {
+            return String(amount);
+        }
+
+        return formatMoneyAmountForDisplay(amount, displayLanguage, currency);
+    }
+
+    function formatIsoDateForDisplay(date: string) {
+        const [year, month, day] = date.split("-").map(Number);
+
+        return new Intl.DateTimeFormat(displayLanguage || undefined).format(
+            new Date(year, month - 1, day),
+        );
+    }
+
+    function formatRecurrenceFrequency(interval: number, unit: RecurrenceUnit) {
+        if (interval === 1) {
+            return t(`movements.recurrenceUnits.${unit}.singular`);
+        }
+
+        return t("movements.recurringFrequency", {
+            interval,
+            unit: t(`movements.recurrenceUnits.${unit}.plural`),
+        });
+    }
+
+    function getAccountName(accountId: string) {
+        return (
+            accounts.find((account) => account.accountId === accountId)
+                ?.accountName ?? "—"
+        );
+    }
+
+    function getCategoryName(categoryId: string) {
+        return (
+            categories.find((category) => category.categoryId === categoryId)
+                ?.categoryName ?? "—"
+        );
+    }
+
+    function getCreditCardName(creditCardId: string | null) {
+        if (!creditCardId) {
+            return null;
+        }
+
+        return (
+            creditCards.find(
+                (creditCard) => creditCard.creditCardId === creditCardId,
+            )?.creditCardName ?? "—"
+        );
+    }
+
+    function getBucketName(bucketId: string | null) {
+        if (!bucketId) {
+            return null;
+        }
+
+        return (
+            buckets.find((bucket) => bucket.bucketId === bucketId)
+                ?.bucketName ?? "—"
+        );
+    }
+
+    function getFinancialPriorityName(financialPriorityId: string) {
+        return (
+            financialPriorities.find(
+                (financialPriority) =>
+                    financialPriority.financialPriorityId ===
+                    financialPriorityId,
+            )?.financialPriorityDisplayName ?? "—"
+        );
+    }
 
     function updateField(
         field: keyof Omit<SimulationGroupFormState, "accountIds">,
@@ -198,6 +323,7 @@ export function SimulationsPage() {
     function startEditingSimulationGroup(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setMovementsSimulationGroupId(null);
         setTransactionFormError(null);
         setRecurringTransactionFormError(null);
         setManagingAccountsSimulationGroupId(null);
@@ -225,6 +351,7 @@ export function SimulationsPage() {
     function startManagingSimulationGroupAccounts(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setMovementsSimulationGroupId(null);
         setTransactionFormError(null);
         setRecurringTransactionFormError(null);
         setTransactionFormSimulationGroupId(null);
@@ -252,6 +379,7 @@ export function SimulationsPage() {
     function startAddingTransaction(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setMovementsSimulationGroupId(null);
         setEditingSimulationGroupId(null);
         setManagingAccountsSimulationGroupId(null);
         setRecurringTransactionFormSimulationGroupId(null);
@@ -270,6 +398,7 @@ export function SimulationsPage() {
     function startAddingRecurringTransaction(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setMovementsSimulationGroupId(null);
         setEditingSimulationGroupId(null);
         setManagingAccountsSimulationGroupId(null);
         setTransactionFormSimulationGroupId(null);
@@ -285,6 +414,80 @@ export function SimulationsPage() {
     function cancelAddingRecurringTransaction() {
         setRecurringTransactionFormSimulationGroupId(null);
         setRecurringTransactionFormError(null);
+    }
+
+    async function handleToggleSimulationGroupMovements(
+        simulationGroup: SimulationGroupResponseDto,
+    ) {
+        const simulationGroupId = simulationGroup.simulationGroupId;
+        const movementsFromDate = getIsoDateFromDateTime(
+            simulationGroup.simulationGroupCreatedAt,
+        );
+        const movementsToDate = addYearsToIsoDate(movementsFromDate, 5);
+
+        if (movementsSimulationGroupId === simulationGroupId) {
+            setMovementsSimulationGroupId(null);
+            return;
+        }
+
+        setEditingSimulationGroupId(null);
+        setManagingAccountsSimulationGroupId(null);
+        setTransactionFormSimulationGroupId(null);
+        setRecurringTransactionFormSimulationGroupId(null);
+        setTransactionFormError(null);
+        setRecurringTransactionFormError(null);
+        setEditError(null);
+        setSuccessMessage(null);
+        setMovementsSimulationGroupId(simulationGroupId);
+
+        setMovementsBySimulationGroupId((currentState) => ({
+            ...currentState,
+            [simulationGroupId]: {
+                status: "loading",
+                transactions:
+                    currentState[simulationGroupId]?.transactions ?? [],
+                recurringTransactions:
+                    currentState[simulationGroupId]?.recurringTransactions ??
+                    [],
+                error: null,
+            },
+        }));
+
+        try {
+            const [recurringTransactions, transactions] = await Promise.all([
+                listRecurringTransactions({
+                    simulationGroupIds: [simulationGroupId],
+                }),
+                listTransactions({
+                    from: movementsFromDate,
+                    to: movementsToDate,
+                    simulationGroupId,
+                }),
+            ]);
+
+            setMovementsBySimulationGroupId((currentState) => ({
+                ...currentState,
+                [simulationGroupId]: {
+                    status: "loaded",
+                    recurringTransactions,
+                    transactions,
+                    error: null,
+                },
+            }));
+        } catch (error) {
+            setMovementsBySimulationGroupId((currentState) => ({
+                ...currentState,
+                [simulationGroupId]: {
+                    status: "failed",
+                    recurringTransactions: [],
+                    transactions: [],
+                    error: getErrorMessage(
+                        error,
+                        t("movements.loadErrorFallback"),
+                    ),
+                },
+            }));
+        }
     }
 
     async function handleCreateSimulationRecurringTransactions(
@@ -729,6 +932,16 @@ export function SimulationsPage() {
                                                 recurringTransactionSubmittingSimulationGroupId ===
                                                 simulationGroup.simulationGroupId;
 
+                                            const isShowingMovements =
+                                                movementsSimulationGroupId ===
+                                                simulationGroup.simulationGroupId;
+
+                                            const movementsState =
+                                                movementsBySimulationGroupId[
+                                                    simulationGroup
+                                                        .simulationGroupId
+                                                ];
+
                                             return (
                                                 <Fragment
                                                     key={
@@ -1016,6 +1229,22 @@ export function SimulationsPage() {
                                                                                     "actions.addRecurringTransaction",
                                                                                 )}
                                                                             </button>
+                                                                            <button
+                                                                                className="btn btn-sm btn-outline-primary"
+                                                                                onClick={() =>
+                                                                                    handleToggleSimulationGroupMovements(
+                                                                                        simulationGroup,
+                                                                                    )
+                                                                                }
+                                                                                type="button">
+                                                                                {isShowingMovements
+                                                                                    ? t(
+                                                                                          "actions.hideMovements",
+                                                                                      )
+                                                                                    : t(
+                                                                                          "actions.showMovements",
+                                                                                      )}
+                                                                            </button>
                                                                         </>
                                                                     ) : (
                                                                         <button
@@ -1168,6 +1397,230 @@ export function SimulationsPage() {
                                                                             "recurringTransactionForm.submitting",
                                                                         )}
                                                                     />
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ) : null}
+                                                    {isShowingMovements ? (
+                                                        <tr>
+                                                            <td colSpan={4}>
+                                                                <div className="border rounded p-3">
+                                                                    <div className="mb-3">
+                                                                        <h3 className="h6 mb-1">
+                                                                            {t(
+                                                                                "movements.title",
+                                                                            )}
+                                                                        </h3>
+                                                                        <p className="text-muted mb-0">
+                                                                            {t(
+                                                                                "movements.subtitle",
+                                                                                {
+                                                                                    name: simulationGroup.simulationGroupName,
+                                                                                },
+                                                                            )}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    {movementsState?.status ===
+                                                                    "loading" ? (
+                                                                        <p className="text-muted mb-0">
+                                                                            {t(
+                                                                                "movements.loading",
+                                                                            )}
+                                                                        </p>
+                                                                    ) : null}
+
+                                                                    {movementsState?.status ===
+                                                                    "failed" ? (
+                                                                        <div
+                                                                            className="alert alert-danger"
+                                                                            role="alert">
+                                                                            {movementsState.error ??
+                                                                                t(
+                                                                                    "movements.loadErrorFallback",
+                                                                                )}
+                                                                        </div>
+                                                                    ) : null}
+
+                                                                    {movementsState?.status ===
+                                                                        "loaded" &&
+                                                                    movementsState
+                                                                        .recurringTransactions
+                                                                        .length ===
+                                                                        0 &&
+                                                                    movementsState
+                                                                        .transactions
+                                                                        .length ===
+                                                                        0 ? (
+                                                                        <p className="text-muted mb-0">
+                                                                            {t(
+                                                                                "movements.empty",
+                                                                            )}
+                                                                        </p>
+                                                                    ) : null}
+
+                                                                    {movementsState?.status ===
+                                                                        "loaded" &&
+                                                                    movementsState
+                                                                        .recurringTransactions
+                                                                        .length >
+                                                                        0 ? (
+                                                                        <div className="mb-4">
+                                                                            <h4 className="h6">
+                                                                                {t(
+                                                                                    "movements.recurringTitle",
+                                                                                )}
+                                                                            </h4>
+
+                                                                            <div className="table-responsive">
+                                                                                <table className="table table-sm align-middle mb-0">
+                                                                                    <tbody>
+                                                                                        {movementsState.recurringTransactions.map(
+                                                                                            (
+                                                                                                recurringTransaction,
+                                                                                            ) => (
+                                                                                                <tr
+                                                                                                    className="table-success"
+                                                                                                    key={
+                                                                                                        recurringTransaction.recurringTransactionId
+                                                                                                    }>
+                                                                                                    <td>
+                                                                                                        <strong>
+                                                                                                            {
+                                                                                                                recurringTransaction.recurringTransactionDescription
+                                                                                                            }
+                                                                                                        </strong>
+                                                                                                        <div className="text-muted small">
+                                                                                                            {getCategoryName(
+                                                                                                                recurringTransaction.categoryId,
+                                                                                                            )}{" "}
+                                                                                                            ·{" "}
+                                                                                                            {getFinancialPriorityName(
+                                                                                                                recurringTransaction.financialPriorityId,
+                                                                                                            )}{" "}
+                                                                                                            ·{" "}
+                                                                                                            {getAccountName(
+                                                                                                                recurringTransaction.linkedAccountId,
+                                                                                                            )}
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {formatMovementMoneyAmount(
+                                                                                                            recurringTransaction.paymentAmount,
+                                                                                                            recurringTransaction.linkedAccountId,
+                                                                                                        )}
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {formatRecurrenceFrequency(
+                                                                                                            recurringTransaction.recurrenceInterval,
+                                                                                                            recurringTransaction.recurrenceUnit,
+                                                                                                        )}
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {formatIsoDateForDisplay(
+                                                                                                            recurringTransaction.recurringTransactionFirstPaymentDate,
+                                                                                                        )}
+                                                                                                    </td>
+                                                                                                    <td className="text-end">
+                                                                                                        <button
+                                                                                                            className="btn btn-sm btn-outline-primary"
+                                                                                                            type="button">
+                                                                                                            {t(
+                                                                                                                "actions.edit",
+                                                                                                            )}
+                                                                                                        </button>
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            ),
+                                                                                        )}
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : null}
+
+                                                                    {movementsState?.status ===
+                                                                        "loaded" &&
+                                                                    movementsState
+                                                                        .transactions
+                                                                        .length >
+                                                                        0 ? (
+                                                                        <div>
+                                                                            <h4 className="h6">
+                                                                                {t(
+                                                                                    "movements.transactionsTitle",
+                                                                                )}
+                                                                            </h4>
+
+                                                                            <div className="table-responsive">
+                                                                                <table className="table table-sm align-middle mb-0">
+                                                                                    <tbody>
+                                                                                        {movementsState.transactions.map(
+                                                                                            (
+                                                                                                transaction,
+                                                                                            ) => (
+                                                                                                <tr
+                                                                                                    key={
+                                                                                                        transaction.transactionId
+                                                                                                    }>
+                                                                                                    <td>
+                                                                                                        <strong>
+                                                                                                            {
+                                                                                                                transaction.transactionDescription
+                                                                                                            }
+                                                                                                        </strong>
+                                                                                                        <div className="text-muted small">
+                                                                                                            {getCategoryName(
+                                                                                                                transaction.categoryId,
+                                                                                                            )}{" "}
+                                                                                                            ·{" "}
+                                                                                                            {getAccountName(
+                                                                                                                transaction.accountId,
+                                                                                                            )}
+                                                                                                            {getCreditCardName(
+                                                                                                                transaction.creditCardId,
+                                                                                                            )
+                                                                                                                ? ` · ${getCreditCardName(
+                                                                                                                      transaction.creditCardId,
+                                                                                                                  )}`
+                                                                                                                : ""}
+                                                                                                            {getBucketName(
+                                                                                                                transaction.bucketId,
+                                                                                                            )
+                                                                                                                ? ` · ${getBucketName(
+                                                                                                                      transaction.bucketId,
+                                                                                                                  )}`
+                                                                                                                : ""}
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {formatMovementMoneyAmount(
+                                                                                                            transaction.transactionAmount,
+                                                                                                            transaction.accountId,
+                                                                                                        )}
+                                                                                                    </td>
+                                                                                                    <td>
+                                                                                                        {formatIsoDateForDisplay(
+                                                                                                            transaction.transactionChargeDate,
+                                                                                                        )}
+                                                                                                    </td>
+                                                                                                    <td className="text-end">
+                                                                                                        <button
+                                                                                                            className="btn btn-sm btn-outline-primary"
+                                                                                                            type="button">
+                                                                                                            {t(
+                                                                                                                "actions.edit",
+                                                                                                            )}
+                                                                                                        </button>
+                                                                                                    </td>
+                                                                                                </tr>
+                                                                                            ),
+                                                                                        )}
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : null}
                                                                 </div>
                                                             </td>
                                                         </tr>
