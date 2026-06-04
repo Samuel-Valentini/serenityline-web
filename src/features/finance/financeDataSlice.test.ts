@@ -12,6 +12,8 @@ import {
     creditCardAdded,
     creditCardUpdated,
     creditCardDeleted,
+    categoryAdded,
+    categoryUpdated,
 } from "./financeDataSlice";
 import type { FinanceReferenceData } from "./financeDataTypes";
 
@@ -24,6 +26,13 @@ const creditCard = {
     userGroupId: "group-id",
     creditCardCreatedAt: "2026-01-01T00:00:00Z",
     creditCardUpdatedAt: "2026-01-01T00:00:00Z",
+};
+
+const category = {
+    categoryId: "category-id",
+    categoryName: "Casa",
+    categoryDescription: "Spese legate alla casa",
+    active: true,
 };
 
 const referenceData: FinanceReferenceData = {
@@ -42,14 +51,7 @@ const referenceData: FinanceReferenceData = {
         },
     ],
     creditCards: [creditCard],
-    categories: [
-        {
-            categoryId: "category-id",
-            categoryName: "Casa",
-            categoryDescription: null,
-            active: true,
-        },
-    ],
+    categories: [category],
     buckets: [
         {
             bucketId: "bucket-id",
@@ -248,4 +250,43 @@ describe("financeDataSlice", () => {
 
         expect(state.creditCards).toEqual([]);
     });
+
+    it("adds a category to the finance data state", () => {
+    const newCategory = {
+        ...category,
+        categoryId: "new-category-id",
+        categoryName: "Trasporti",
+        categoryDescription: null,
+    };
+
+    const state = financeDataReducer(
+        {
+            ...initialFinanceDataState,
+            status: "loaded",
+        },
+        categoryAdded(newCategory),
+    );
+
+    expect(state.categories).toEqual([newCategory]);
+});
+
+it("updates a category in the finance data state", () => {
+    const updatedCategory = {
+        ...category,
+        categoryName: "Casa aggiornata",
+        categoryDescription: "Descrizione aggiornata",
+        active: false,
+    };
+
+    const state = financeDataReducer(
+        {
+            ...initialFinanceDataState,
+            categories: [category],
+            status: "loaded",
+        },
+        categoryUpdated(updatedCategory),
+    );
+
+    expect(state.categories).toEqual([updatedCategory]);
+});
 });

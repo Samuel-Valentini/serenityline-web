@@ -268,6 +268,70 @@ export const resources = {
             deleteErrorFallback:
                 "Non siamo riusciti a eliminare la carta. Puoi eliminare solo carte mai usate.",
         },
+        categories: {
+            eyebrow: "Classificazione",
+            title: "Categorie",
+            subtitle:
+                "Organizza entrate e uscite con categorie chiare e riutilizzabili.",
+            loading: "Caricamento categorie...",
+            loadErrorTitle: "Impossibile caricare le categorie.",
+            loadErrorFallback: "Riprova tra qualche istante.",
+            listEyebrow: "Categorie disponibili",
+            listTitle: "Le tue categorie",
+            categoriesCount: "{{count}} categorie",
+            emptyState:
+                "Non hai ancora creato categorie. Aggiungi la prima categoria per classificare i movimenti.",
+            table: {
+                name: "Nome",
+                status: "Stato",
+            },
+            status: {
+                active: "Attiva",
+                inactive: "Disattivata",
+            },
+            formEyebrow: "Nuova categoria",
+            formTitle: "Aggiungi categoria",
+            formIntro:
+                "Crea una categoria per rendere più leggibili transazioni, ricorrenze e proiezioni.",
+            fields: {
+                categoryName: "Nome categoria",
+                description: "Descrizione",
+                status: "Stato",
+                optional: "opzionale",
+            },
+            validation: {
+                categoryNameRequired: "Inserisci il nome della categoria.",
+            },
+            createSubmit: "Crea categoria",
+            createSubmitting: "Creazione categoria...",
+            createSuccess: "Categoria creata correttamente.",
+            createErrorFallback: "Non siamo riusciti a creare la categoria.",
+            viewDetails: "Vedi dettaglio",
+            detailEyebrow: "Dettaglio categoria",
+            edit: "Modifica",
+            editFormAriaLabel: "Modifica categoria",
+            updateSubmit: "Salva modifiche",
+            updateSubmitting: "Salvataggio...",
+            cancelEdit: "Annulla",
+            editSuccess: "Categoria aggiornata correttamente.",
+            editErrorFallback: "Non siamo riusciti ad aggiornare la categoria.",
+            newCategory: "Nuova categoria",
+            deactivateConfirm:
+                "Vuoi disattivare questa categoria? Potrai riattivarla in seguito.",
+            deactivateHint:
+                "Disattiva la categoria se non vuoi più usarla per nuovi movimenti.",
+            reactivateHint:
+                "Riattiva la categoria per renderla di nuovo disponibile.",
+            deactivateSubmit: "Disattiva categoria",
+            reactivateSubmit: "Riattiva categoria",
+            statusSubmitting: "Aggiornamento...",
+            deactivateSuccess: "Categoria disattivata correttamente.",
+            reactivateSuccess: "Categoria riattivata correttamente.",
+            deactivateErrorFallback:
+                "Non siamo riusciti a disattivare la categoria.",
+            reactivateErrorFallback:
+                "Non siamo riusciti a riattivare la categoria.",
+        },
         appPages: {
             placeholderBadge: "Area MVP",
             serenityline: {
@@ -903,6 +967,68 @@ export const resources = {
             deleteSuccess: "Card deleted successfully.",
             deleteErrorFallback:
                 "We could not delete the card. You can only delete cards that have never been used.",
+        },
+        categories: {
+            eyebrow: "Classification",
+            title: "Categories",
+            subtitle:
+                "Organize income and expenses with clear reusable categories.",
+            loading: "Loading categories...",
+            loadErrorTitle: "Unable to load categories.",
+            loadErrorFallback: "Please try again in a moment.",
+            listEyebrow: "Available categories",
+            listTitle: "Your categories",
+            categoriesCount: "{{count}} categories",
+            emptyState:
+                "You have not created any categories yet. Add your first category to classify movements.",
+            table: {
+                name: "Name",
+                status: "Status",
+            },
+            status: {
+                active: "Active",
+                inactive: "Inactive",
+            },
+            formEyebrow: "New category",
+            formTitle: "Add category",
+            formIntro:
+                "Create a category to make transactions, recurring items and projections easier to read.",
+            fields: {
+                categoryName: "Category name",
+                description: "Description",
+                status: "Status",
+                optional: "optional",
+            },
+            validation: {
+                categoryNameRequired: "Enter the category name.",
+            },
+            createSubmit: "Create category",
+            createSubmitting: "Creating category...",
+            createSuccess: "Category created successfully.",
+            createErrorFallback: "We could not create the category.",
+            viewDetails: "View details",
+            detailEyebrow: "Category detail",
+            edit: "Edit",
+            editFormAriaLabel: "Edit category",
+            updateSubmit: "Save changes",
+            updateSubmitting: "Saving...",
+            cancelEdit: "Cancel",
+            editSuccess: "Category updated successfully.",
+            editErrorFallback: "We could not update the category.",
+            newCategory: "New category",
+            deactivateConfirm:
+                "Do you want to deactivate this category? You can reactivate it later.",
+            deactivateHint:
+                "Deactivate the category if you no longer want to use it for new movements.",
+            reactivateHint:
+                "Reactivate the category to make it available again.",
+            deactivateSubmit: "Deactivate category",
+            reactivateSubmit: "Reactivate category",
+            statusSubmitting: "Updating...",
+            deactivateSuccess: "Category deactivated successfully.",
+            reactivateSuccess: "Category reactivated successfully.",
+            deactivateErrorFallback: "We could not deactivate the category.",
+            reactivateErrorFallback: "We could not reactivate the category.",
         },
         appPages: {
             placeholderBadge: "MVP area",

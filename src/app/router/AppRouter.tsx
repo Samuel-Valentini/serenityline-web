@@ -22,6 +22,7 @@ import { SettingsPage } from "../../pages/app/SettingsPage";
 import { ConfirmEmailChangePage } from "../../pages/auth/ConfirmEmailChangePage";
 import { AccountsPage } from "../../pages/app/AccountsPage";
 import { CreditCardsPage } from "../../pages/app/CreditCardsPage";
+import { CategoriesPage } from "../../pages/app/CategoriesPage";
 
 export function AppRouter() {
     return (
@@ -136,12 +137,7 @@ export function AppRouter() {
                             path="saldi"
                             element={<AppPlaceholderPage pageKey="balances" />}
                         />
-                        <Route
-                            path="categorie"
-                            element={
-                                <AppPlaceholderPage pageKey="categories" />
-                            }
-                        />
+                        <Route path="categorie" element={<CategoriesPage />} />
                         <Route path="impostazioni" element={<SettingsPage />} />
                         <Route
                             path="amministrazione"
