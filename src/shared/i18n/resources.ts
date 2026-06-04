@@ -332,8 +332,7 @@ export const resources = {
             },
             edit: {
                 title: "Modifica transazione",
-                subtitle:
-                    "Aggiorna il movimento inserito in questa sessione.",
+                subtitle: "Aggiorna il movimento inserito in questa sessione.",
                 submit: "Salva modifiche",
                 submitting: "Salvataggio modifiche...",
                 success: "Movimento aggiornato correttamente.",
@@ -341,6 +340,25 @@ export const resources = {
                     "Non è stato possibile aggiornare la transazione. Riprova tra qualche istante.",
                 singleRequestRequired:
                     "Questa modifica genererebbe più movimenti tecnici. Per ora modifica separatamente carta e portafoglio.",
+            },
+            search: {
+                eyebrow: "Archivio movimenti",
+                title: "Visualizza transazioni per periodo",
+                subtitle:
+                    "Cerca i movimenti inseriti dall'utente in un intervallo di date e correggili se necessario.",
+                from: "Dal",
+                to: "Al",
+                submit: "Visualizza transazioni",
+                submitting: "Caricamento...",
+                empty: "Nessuna transazione inserita dall'utente nel periodo selezionato.",
+                errorFallback:
+                    "Non è stato possibile caricare le transazioni. Riprova tra qualche istante.",
+                validation: {
+                    requiredRange:
+                        "Inserisci sia la data iniziale sia la data finale.",
+                    invalidRange:
+                        "La data iniziale non può essere successiva alla data finale.",
+                },
             },
         },
         accounts: {
@@ -1705,6 +1723,25 @@ export const resources = {
                     "We could not update the transaction. Please try again in a moment.",
                 singleRequestRequired:
                     "This change would generate multiple technical movements. For now, edit card and bucket movements separately.",
+            },
+            search: {
+                eyebrow: "Movement archive",
+                title: "View transactions by period",
+                subtitle:
+                    "Search user-entered movements within a date range and correct them if needed.",
+                from: "From",
+                to: "To",
+                submit: "View transactions",
+                submitting: "Loading...",
+                empty: "No user-entered transactions found in the selected period.",
+                errorFallback:
+                    "We could not load the transactions. Please try again in a moment.",
+                validation: {
+                    requiredRange:
+                        "Enter both the start date and the end date.",
+                    invalidRange:
+                        "The start date cannot be after the end date.",
+                },
             },
         },
         accounts: {

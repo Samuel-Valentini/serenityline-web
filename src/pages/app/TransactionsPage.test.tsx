@@ -11,6 +11,7 @@ import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
 import {
     createTransaction,
+    listTransactions,
     updateTransaction,
 } from "../../features/finance/api/financeApi";
 import {
@@ -28,6 +29,7 @@ vi.mock("../../features/finance/api/financeApi", () => ({
     createBucket: vi.fn(),
     createCategory: vi.fn(),
     createCreditCard: vi.fn(),
+    listTransactions: vi.fn(),
 }));
 
 const account = {
@@ -87,6 +89,30 @@ const updatedTransaction = {
     ...createdTransaction,
     transactionDescription: "Affitto aggiornato",
     transactionAmount: -900,
+    transactionUpdatedAt: "2026-06-04T11:00:00Z",
+};
+
+const searchedTransaction = {
+    ...createdTransaction,
+    transactionId: "searched-transaction-id",
+    transactionDescription: "Spesa farmacia",
+    transactionAmount: -42.5,
+    transactionChargeDate: "2026-06-03",
+    transactionCreatedAt: "2026-06-03T10:00:00Z",
+    transactionUpdatedAt: "2026-06-03T10:00:00Z",
+};
+
+const searchedTransactionFromRecurring = {
+    ...searchedTransaction,
+    transactionId: "recurring-generated-transaction-id",
+    transactionDescription: "Ricorrente confermata",
+    transactionIsUserEntered: false,
+};
+
+const updatedSearchedTransaction = {
+    ...searchedTransaction,
+    transactionDescription: "Spesa farmacia aggiornata",
+    transactionAmount: -45,
     transactionUpdatedAt: "2026-06-04T11:00:00Z",
 };
 
@@ -186,7 +212,7 @@ describe("TransactionsPage", () => {
         expect(await screen.findByText("Affitto")).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole("button", { name: "Modifica" }));
-        
+
         const editFormCell = screen
             .getByRole("heading", { name: "Modifica transazione" })
             .closest("td");
@@ -227,6 +253,78 @@ describe("TransactionsPage", () => {
 
         expect(
             await screen.findByText("Affitto aggiornato"),
+        ).toBeInTheDocument();
+    });
+
+    it("searches user-entered transactions and edits a search result", async () => {
+        vi.mocked(listTransactions).mockResolvedValue([
+            searchedTransaction,
+            searchedTransactionFromRecurring,
+        ]);
+        vi.mocked(updateTransaction).mockResolvedValue(
+            updatedSearchedTransaction,
+        );
+
+        renderPage();
+
+        fireEvent.change(screen.getByLabelText("Dal"), {
+            target: { value: "2026-06-01" },
+        });
+        fireEvent.change(screen.getByLabelText("Al"), {
+            target: { value: "2026-06-30" },
+        });
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Visualizza transazioni" }),
+        );
+
+        await waitFor(() => {
+            expect(listTransactions).toHaveBeenCalledWith({
+                from: "2026-06-01",
+                to: "2026-06-30",
+            });
+        });
+
+        expect(await screen.findByText("Spesa farmacia")).toBeInTheDocument();
+        expect(
+            screen.queryByText("Ricorrente confermata"),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Modifica" }));
+
+        const editFormCell = screen
+            .getByRole("heading", { name: "Modifica transazione" })
+            .closest("td");
+
+        expect(editFormCell).not.toBeNull();
+
+        fireEvent.change(within(editFormCell!).getByLabelText("Descrizione"), {
+            target: { value: "Spesa farmacia aggiornata" },
+        });
+        fireEvent.change(within(editFormCell!).getByLabelText("Importo"), {
+            target: { value: "-45,00" },
+        });
+
+        fireEvent.click(
+            within(editFormCell!).getByRole("button", {
+                name: "Salva modifiche",
+            }),
+        );
+
+        await waitFor(() => {
+            expect(updateTransaction).toHaveBeenCalledWith(
+                "searched-transaction-id",
+                expect.objectContaining({
+                    transactionDescription: "Spesa farmacia aggiornata",
+                    transactionAmount: "-45.00",
+                    transactionIsSimulated: false,
+                    simulationGroupId: null,
+                }),
+            );
+        });
+
+        expect(
+            await screen.findByText("Spesa farmacia aggiornata"),
         ).toBeInTheDocument();
     });
 });
