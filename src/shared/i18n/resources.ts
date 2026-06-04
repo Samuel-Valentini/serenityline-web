@@ -536,6 +536,25 @@ export const resources = {
                 submitting: "Creazione...",
                 createErrorFallback: "Non siamo riusciti a creare la carta.",
             },
+            bucket: {
+                eyebrow: "Nuova voce",
+                title: "Nuovo portafoglio",
+                intro: "Crea un portafoglio senza uscire dal form della transazione.",
+                fields: {
+                    name: "Nome portafoglio",
+                    description: "Descrizione",
+                    accounts: "Conti collegati",
+                },
+                validation: {
+                    nameRequired: "Inserisci il nome del portafoglio.",
+                },
+                noAccountsHint:
+                    "Non ci sono conti disponibili. Potrai collegarli dopo averli creati.",
+                submit: "Crea portafoglio",
+                submitting: "Creazione...",
+                createErrorFallback:
+                    "Non siamo riusciti a creare il portafoglio.",
+            },
         },
         appPages: {
             placeholderBadge: "Area MVP",
@@ -1430,6 +1449,24 @@ export const resources = {
                 submit: "Create card",
                 submitting: "Creating...",
                 createErrorFallback: "We could not create the card.",
+            },
+            bucket: {
+                eyebrow: "New item",
+                title: "New bucket",
+                intro: "Create a bucket without leaving the transaction form.",
+                fields: {
+                    name: "Bucket name",
+                    description: "Description",
+                    accounts: "Linked accounts",
+                },
+                validation: {
+                    nameRequired: "Enter the bucket name.",
+                },
+                noAccountsHint:
+                    "There are no accounts available. You can link them after creating them.",
+                submit: "Create bucket",
+                submitting: "Creating...",
+                createErrorFallback: "We could not create the bucket.",
             },
         },
         appPages: {

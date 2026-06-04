@@ -13,12 +13,14 @@ import { i18n } from "../../../shared/i18n/i18n";
 import { TransactionForm } from "./TransactionForm";
 import {
     createAccount,
+    createBucket,
     createCategory,
     createCreditCard,
 } from "../api/financeApi";
 
 vi.mock("../api/financeApi", () => ({
     createAccount: vi.fn(),
+    createBucket: vi.fn(),
     createCategory: vi.fn(),
     createCreditCard: vi.fn(),
 }));
@@ -122,6 +124,17 @@ const closedBucket = {
     bucketId: "closed-bucket-id",
     bucketName: "Portafoglio chiuso",
     bucketClosedAt: "2026-06-01T00:00:00Z",
+};
+
+const createdBucketFromModal = {
+    ...bucket,
+    bucketId: "created-bucket-from-modal-id",
+    bucketName: "Portafoglio nuovo",
+    bucketDescription: null,
+    accountIds: ["second-account-id"],
+    bucketCreatedAt: "2026-06-04T10:00:00Z",
+    bucketUpdatedAt: "2026-06-04T10:00:00Z",
+    bucketClosedAt: null,
 };
 
 const referenceData: FinanceReferenceData = {
@@ -575,6 +588,55 @@ describe("TransactionForm", () => {
         expect(screen.getByLabelText("Conto")).toHaveValue("second-account-id");
         expect(screen.getByLabelText(/Carta/i)).toHaveValue(
             "created-credit-card-from-modal-id",
+        );
+    });
+
+    it("creates a bucket from the modal and selects it automatically", async () => {
+        vi.mocked(createBucket).mockResolvedValueOnce(createdBucketFromModal);
+
+        renderForm();
+
+        const maleNewButtons = screen.getAllByRole("button", {
+            name: "Nuovo",
+        });
+
+        fireEvent.click(maleNewButtons[1]);
+
+        expect(
+            screen.getByRole("dialog", { name: "Nuovo portafoglio" }),
+        ).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText("Nome portafoglio"), {
+            target: { value: "Portafoglio nuovo" },
+        });
+
+        fireEvent.click(screen.getByLabelText("Conto riserva"));
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Crea portafoglio" }),
+        );
+
+        await waitFor(() => {
+            expect(createBucket).toHaveBeenCalledWith({
+                bucketName: "Portafoglio nuovo",
+                bucketDescription: null,
+                accountIds: ["second-account-id"],
+            });
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.queryByRole("dialog", { name: "Nuovo portafoglio" }),
+            ).not.toBeInTheDocument();
+        });
+
+        expect(store.getState().financeData.buckets).toContainEqual(
+            createdBucketFromModal,
+        );
+
+        expect(screen.getByLabelText("Conto")).toHaveValue("second-account-id");
+        expect(screen.getByLabelText(/Portafoglio/i)).toHaveValue(
+            "created-bucket-from-modal-id",
         );
     });
 });

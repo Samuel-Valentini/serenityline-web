@@ -9,6 +9,7 @@ import {
     selectCreditCards,
 } from "../financeDataSelectors";
 import type {
+    BucketResponseDto,
     CreditCardResponseDto,
     TransactionCreateRequestDto,
 } from "../api/financeApiTypes";
@@ -21,6 +22,7 @@ import { normalizeMoneyInput } from "./moneyInput";
 import { CreateCategoryModal } from "../referenceModals/CreateCategoryModal";
 import { CreateAccountModal } from "../referenceModals/CreateAccountModal";
 import { CreateCreditCardModal } from "../referenceModals/CreateCreditCardModal";
+import { CreateBucketModal } from "../referenceModals/CreateBucketModal";
 
 type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -114,6 +116,8 @@ export function TransactionForm({
     const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] =
         useState(false);
     const [isCreateCreditCardModalOpen, setIsCreateCreditCardModalOpen] =
+        useState(false);
+    const [isCreateBucketModalOpen, setIsCreateBucketModalOpen] =
         useState(false);
 
     const allowedAccountIds = useMemo(() => {
@@ -233,6 +237,39 @@ export function TransactionForm({
                     ? currentForm.bucketId
                     : "",
         }));
+        setFormError(null);
+    }
+
+    function handleCreateBucketClick() {
+        if (referenceActions?.onCreateBucket) {
+            referenceActions.onCreateBucket();
+            return;
+        }
+
+        setIsCreateBucketModalOpen(true);
+    }
+
+    function selectCreatedBucket(createdBucket: BucketResponseDto) {
+        setForm((currentForm) => {
+            const canKeepCurrentAccount =
+                currentForm.accountId &&
+                createdBucket.accountIds.includes(currentForm.accountId);
+
+            const inferredAccountId =
+                canKeepCurrentAccount || createdBucket.accountIds.length !== 1
+                    ? currentForm.accountId
+                    : createdBucket.accountIds[0];
+
+            return {
+                ...currentForm,
+                accountId: inferredAccountId,
+                creditCardId:
+                    inferredAccountId === currentForm.accountId
+                        ? currentForm.creditCardId
+                        : "",
+                bucketId: createdBucket.bucketId,
+            };
+        });
         setFormError(null);
     }
 
@@ -534,14 +571,12 @@ export function TransactionForm({
                             ))}
                         </select>
 
-                        {referenceActions?.onCreateBucket ? (
-                            <button
-                                className="btn btn-outline-primary"
-                                onClick={referenceActions.onCreateBucket}
-                                type="button">
-                                {t("actions.newBucket")}
-                            </button>
-                        ) : null}
+                        <button
+                            className="btn btn-outline-primary"
+                            onClick={handleCreateBucketClick}
+                            type="button">
+                            {t("actions.newBucket")}
+                        </button>
                     </div>
                 </div>
 
@@ -690,6 +725,15 @@ export function TransactionForm({
                     isOpen={isCreateCreditCardModalOpen}
                     onClose={() => setIsCreateCreditCardModalOpen(false)}
                     onCreated={selectCreatedCreditCard}
+                />
+            ) : null}
+            {isCreateBucketModalOpen ? (
+                <CreateBucketModal
+                    accounts={availableAccounts}
+                    initialAccountId={form.accountId}
+                    isOpen={isCreateBucketModalOpen}
+                    onClose={() => setIsCreateBucketModalOpen(false)}
+                    onCreated={selectCreatedBucket}
                 />
             ) : null}
         </>
