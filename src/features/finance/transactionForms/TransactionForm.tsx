@@ -23,6 +23,11 @@ import { CreateCategoryModal } from "../referenceModals/CreateCategoryModal";
 import { CreateAccountModal } from "../referenceModals/CreateAccountModal";
 import { CreateCreditCardModal } from "../referenceModals/CreateCreditCardModal";
 import { CreateBucketModal } from "../referenceModals/CreateBucketModal";
+import {
+    buildTransactionRequests,
+    isZeroMoneyAmount,
+    type TransactionBaseRequest,
+} from "./transactionRequestBuilder";
 
 type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -37,8 +42,6 @@ type TransactionFormState = {
     creditCardId: string;
     bucketId: string;
     transactionIsConfirmed: boolean;
-    transactionAffectsAccountBalance: boolean;
-    transactionAffectsSerenityline: boolean;
     transactionReminderEnabled: boolean;
     transactionReminderDaysBefore: string;
 };
@@ -58,7 +61,7 @@ export type TransactionFormProps = {
     idPrefix?: string;
     referenceActions?: TransactionFormReferenceActions;
     onCancel?: () => void;
-    onSubmit: (request: TransactionCreateRequestDto) => Promise<void> | void;
+    onSubmit: (requests: TransactionCreateRequestDto[]) => Promise<void> | void;
 };
 
 function getTodayIsoDate() {
@@ -79,8 +82,6 @@ function getInitialFormState(): TransactionFormState {
         creditCardId: "",
         bucketId: "",
         transactionIsConfirmed: false,
-        transactionAffectsAccountBalance: true,
-        transactionAffectsSerenityline: true,
         transactionReminderEnabled: false,
         transactionReminderDaysBefore: "7",
     };
@@ -200,6 +201,10 @@ export function TransactionForm({
         [allowedAccountIds, buckets, form.accountId],
     );
 
+    const willGenerateTwoTransactions = Boolean(
+        form.creditCardId && form.bucketId,
+    );
+
     function handleCreateCategoryClick() {
         if (referenceActions?.onCreateCategory) {
             referenceActions.onCreateCategory();
@@ -309,7 +314,7 @@ export function TransactionForm({
             return;
         }
 
-        if (!transactionAmount) {
+        if (!transactionAmount || isZeroMoneyAmount(transactionAmount)) {
             setFormError(t("validation.amountInvalid"));
             return;
         }
@@ -339,18 +344,12 @@ export function TransactionForm({
 
         const isSimulated = isSimulationMovementContext(context);
 
-        const request: TransactionCreateRequestDto = {
+        const baseRequest: TransactionBaseRequest = {
             transactionDescription,
-            transactionAmount,
-            transactionAffectsAccountBalance:
-                form.transactionAffectsAccountBalance,
-            transactionAffectsSerenityline: form.transactionAffectsSerenityline,
             categoryId: form.categoryId,
             transactionChargeDate: form.transactionChargeDate,
             transactionIsConfirmed: form.transactionIsConfirmed,
             accountId: form.accountId,
-            creditCardId: form.creditCardId || null,
-            bucketId: form.bucketId || null,
             transactionIsSimulated: isSimulated,
             simulationGroupId: isSimulated ? context.simulationGroupId : null,
             transactionReminderEnabled: form.transactionReminderEnabled,
@@ -359,7 +358,14 @@ export function TransactionForm({
                 : 7,
         };
 
-        await onSubmit(request);
+        const requests = buildTransactionRequests({
+            baseRequest,
+            transactionAmount,
+            creditCardId: form.creditCardId,
+            bucketId: form.bucketId,
+        });
+
+        await onSubmit(requests);
     };
 
     return (
@@ -578,7 +584,19 @@ export function TransactionForm({
                             {t("actions.newBucket")}
                         </button>
                     </div>
+
+                    {form.bucketId ? (
+                        <div className="form-text mt-2">
+                            {t("bucketAmountSignHint")}
+                        </div>
+                    ) : null}
                 </div>
+
+                {willGenerateTwoTransactions ? (
+                    <div className="alert alert-info mb-0" role="status">
+                        {t("twoMovementsHint")}
+                    </div>
+                ) : null}
 
                 <div className="form-check">
                     <input
@@ -597,46 +615,6 @@ export function TransactionForm({
                         className="form-check-label"
                         htmlFor={`${idPrefix}-confirmed`}>
                         {t("fields.confirmed")}
-                    </label>
-                </div>
-
-                <div className="form-check">
-                    <input
-                        checked={form.transactionAffectsAccountBalance}
-                        className="form-check-input"
-                        id={`${idPrefix}-affectsAccountBalance`}
-                        onChange={(event) =>
-                            updateField(
-                                "transactionAffectsAccountBalance",
-                                event.target.checked,
-                            )
-                        }
-                        type="checkbox"
-                    />
-                    <label
-                        className="form-check-label"
-                        htmlFor={`${idPrefix}-affectsAccountBalance`}>
-                        {t("fields.affectsAccountBalance")}
-                    </label>
-                </div>
-
-                <div className="form-check">
-                    <input
-                        checked={form.transactionAffectsSerenityline}
-                        className="form-check-input"
-                        id={`${idPrefix}-affectsSerenityline`}
-                        onChange={(event) =>
-                            updateField(
-                                "transactionAffectsSerenityline",
-                                event.target.checked,
-                            )
-                        }
-                        type="checkbox"
-                    />
-                    <label
-                        className="form-check-label"
-                        htmlFor={`${idPrefix}-affectsSerenityline`}>
-                        {t("fields.affectsSerenityline")}
                     </label>
                 </div>
 

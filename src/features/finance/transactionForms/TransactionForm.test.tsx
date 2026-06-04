@@ -188,12 +188,6 @@ describe("TransactionForm", () => {
         fireEvent.change(screen.getByLabelText("Conto"), {
             target: { value: "account-id" },
         });
-        fireEvent.change(screen.getByLabelText(/Carta/i), {
-            target: { value: "credit-card-id" },
-        });
-        fireEvent.change(screen.getByLabelText(/Portafoglio/i), {
-            target: { value: "bucket-id" },
-        });
 
         fireEvent.click(screen.getByLabelText("Transazione già confermata"));
         fireEvent.click(screen.getByLabelText("Attiva promemoria"));
@@ -209,22 +203,24 @@ describe("TransactionForm", () => {
         );
 
         await waitFor(() => {
-            expect(onSubmit).toHaveBeenCalledWith({
-                transactionDescription: "Affitto",
-                transactionAmount: "1250.50",
-                transactionAffectsAccountBalance: true,
-                transactionAffectsSerenityline: true,
-                categoryId: "category-id",
-                transactionChargeDate: "2026-06-04",
-                transactionIsConfirmed: true,
-                accountId: "account-id",
-                creditCardId: "credit-card-id",
-                bucketId: "bucket-id",
-                transactionIsSimulated: false,
-                simulationGroupId: null,
-                transactionReminderEnabled: true,
-                transactionReminderDaysBefore: 3,
-            });
+            expect(onSubmit).toHaveBeenCalledWith([
+                {
+                    transactionDescription: "Affitto",
+                    transactionAmount: "1250.50",
+                    transactionAffectsAccountBalance: true,
+                    transactionAffectsSerenityline: true,
+                    categoryId: "category-id",
+                    transactionChargeDate: "2026-06-04",
+                    transactionIsConfirmed: true,
+                    accountId: "account-id",
+                    creditCardId: null,
+                    bucketId: null,
+                    transactionIsSimulated: false,
+                    simulationGroupId: null,
+                    transactionReminderEnabled: true,
+                    transactionReminderDaysBefore: 3,
+                },
+            ]);
         });
     });
 
@@ -258,7 +254,7 @@ describe("TransactionForm", () => {
         );
 
         await waitFor(() => {
-            expect(onSubmit).toHaveBeenCalledWith(
+            expect(onSubmit).toHaveBeenCalledWith([
                 expect.objectContaining({
                     transactionDescription: "Spesa simulata",
                     transactionAmount: "250.00",
@@ -267,7 +263,7 @@ describe("TransactionForm", () => {
                     accountId: "account-id",
                     categoryId: "category-id",
                 }),
-            );
+            ]);
         });
     });
 
@@ -394,13 +390,13 @@ describe("TransactionForm", () => {
         );
 
         await waitFor(() => {
-            expect(onSubmit).toHaveBeenCalledWith(
+            expect(onSubmit).toHaveBeenCalledWith([
                 expect.objectContaining({
                     accountId: "second-account-id",
                     creditCardId: null,
                     bucketId: null,
                 }),
-            );
+            ]);
         });
     });
 
@@ -638,5 +634,56 @@ describe("TransactionForm", () => {
         expect(screen.getByLabelText(/Portafoglio/i)).toHaveValue(
             "created-bucket-from-modal-id",
         );
+    });
+
+    it("shows the two-movements hint and submits two requests when credit card and bucket are selected", async () => {
+        const { onSubmit } = renderForm();
+
+        fireEvent.change(screen.getByLabelText("Descrizione"), {
+            target: { value: "Spesa con carta e portafoglio" },
+        });
+        fireEvent.change(screen.getByLabelText("Importo"), {
+            target: { value: "-500,00" },
+        });
+        fireEvent.change(screen.getByLabelText("Data addebito"), {
+            target: { value: "2026-06-04" },
+        });
+        fireEvent.change(screen.getByLabelText("Categoria"), {
+            target: { value: "category-id" },
+        });
+        fireEvent.change(screen.getByLabelText("Conto"), {
+            target: { value: "account-id" },
+        });
+        fireEvent.change(screen.getByLabelText(/Carta/i), {
+            target: { value: "credit-card-id" },
+        });
+        fireEvent.change(screen.getByLabelText(/Portafoglio/i), {
+            target: { value: "bucket-id" },
+        });
+
+        expect(screen.getByRole("status")).toHaveTextContent(/2 movimenti/i);
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Salva transazione" }),
+        );
+
+        await waitFor(() => {
+            expect(onSubmit).toHaveBeenCalledWith([
+                expect.objectContaining({
+                    transactionAmount: "-500.00",
+                    creditCardId: null,
+                    bucketId: "bucket-id",
+                    transactionAffectsAccountBalance: true,
+                    transactionAffectsSerenityline: false,
+                }),
+                expect.objectContaining({
+                    transactionAmount: "-500.00",
+                    creditCardId: "credit-card-id",
+                    bucketId: null,
+                    transactionAffectsAccountBalance: false,
+                    transactionAffectsSerenityline: true,
+                }),
+            ]);
+        });
     });
 });

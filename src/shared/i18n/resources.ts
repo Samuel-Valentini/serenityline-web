@@ -461,6 +461,10 @@ export const resources = {
                 reminderDaysInvalid:
                     "Inserisci un numero di giorni di promemoria valido.",
             },
+            bucketAmountSignHint:
+                "Con un portafoglio collegato, usa + per trasferire al portafoglio e - per pagare usando il portafoglio.",
+            twoMovementsHint:
+                "Questa transazione genererà 2 movimenti: uno legato al portafoglio e uno legato alla carta di credito.",
             recurring: {
                 fields: {
                     description: "Descrizione",
@@ -1452,6 +1456,10 @@ export const resources = {
                 accountRequired: "Select an account.",
                 reminderDaysInvalid: "Enter a valid number of reminder days.",
             },
+            bucketAmountSignHint:
+                "With a linked bucket, use + to transfer money to the bucket and - to pay using the bucket.",
+            twoMovementsHint:
+                "This transaction will generate 2 movements: one linked to the bucket and one linked to the credit card.",
             recurring: {
                 fields: {
                     description: "Description",
