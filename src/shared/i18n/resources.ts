@@ -667,6 +667,12 @@ export const resources = {
             restoreSuccess: "Simulazione ripristinata correttamente.",
             restoreErrorFallback:
                 "Non è stato possibile ripristinare la simulazione. Riprova tra qualche istante.",
+            accountLinkSuccess: "Conto collegato alla simulazione.",
+            accountLinkErrorFallback:
+                "Non è stato possibile collegare il conto. Riprova tra qualche istante.",
+            accountUnlinkSuccess: "Conto scollegato dalla simulazione.",
+            accountUnlinkErrorFallback:
+                "Non è stato possibile scollegare il conto. Riprova tra qualche istante.",
             fields: {
                 name: "Nome simulazione",
                 description: "Descrizione",
@@ -683,6 +689,8 @@ export const resources = {
                 archiving: "Archiviazione...",
                 restore: "Ripristina",
                 restoring: "Ripristino...",
+                manageAccounts: "Gestisci conti",
+                done: "Fine",
             },
             validation: {
                 nameRequired: "Inserisci un nome per la simulazione.",
@@ -1719,6 +1727,12 @@ export const resources = {
             restoreSuccess: "Simulation restored successfully.",
             restoreErrorFallback:
                 "We could not restore the simulation. Please try again in a moment.",
+            accountLinkSuccess: "Account linked to the simulation.",
+            accountLinkErrorFallback:
+                "We could not link the account. Please try again in a moment.",
+            accountUnlinkSuccess: "Account unlinked from the simulation.",
+            accountUnlinkErrorFallback:
+                "We could not unlink the account. Please try again in a moment.",
             fields: {
                 name: "Simulation name",
                 description: "Description",
@@ -1735,6 +1749,8 @@ export const resources = {
                 archiving: "Archiving...",
                 restore: "Restore",
                 restoring: "Restoring...",
+                manageAccounts: "Manage accounts",
+                done: "Done",
             },
             validation: {
                 nameRequired: "Enter a simulation name.",

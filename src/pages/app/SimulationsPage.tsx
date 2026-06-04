@@ -5,7 +5,9 @@ import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 import {
     archiveSimulationGroup,
     createSimulationGroup,
+    linkSimulationGroupAccount,
     restoreSimulationGroup,
+    unlinkSimulationGroupAccount,
     updateSimulationGroup,
 } from "../../features/finance/api/financeApi";
 import type {
@@ -129,6 +131,14 @@ export function SimulationsPage() {
         [simulationGroups],
     );
 
+    const [
+        managingAccountsSimulationGroupId,
+        setManagingAccountsSimulationGroupId,
+    ] = useState<string | null>(null);
+    const [accountChangingKey, setAccountChangingKey] = useState<string | null>(
+        null,
+    );
+
     function updateField(
         field: keyof Omit<SimulationGroupFormState, "accountIds">,
         value: string,
@@ -159,6 +169,7 @@ export function SimulationsPage() {
     function startEditingSimulationGroup(
         simulationGroup: SimulationGroupResponseDto,
     ) {
+        setManagingAccountsSimulationGroupId(null);
         setEditingSimulationGroupId(simulationGroup.simulationGroupId);
         setEditForm({
             simulationGroupName: simulationGroup.simulationGroupName,
@@ -175,6 +186,20 @@ export function SimulationsPage() {
             simulationGroupName: "",
             simulationGroupDescription: "",
         });
+        setEditError(null);
+    }
+
+    function startManagingSimulationGroupAccounts(
+        simulationGroup: SimulationGroupResponseDto,
+    ) {
+        setEditingSimulationGroupId(null);
+        setManagingAccountsSimulationGroupId(simulationGroup.simulationGroupId);
+        setEditError(null);
+        setSuccessMessage(null);
+    }
+
+    function stopManagingSimulationGroupAccounts() {
+        setManagingAccountsSimulationGroupId(null);
         setEditError(null);
     }
 
@@ -295,6 +320,52 @@ export function SimulationsPage() {
             setEditError(getErrorMessage(error, t("restoreErrorFallback")));
         } finally {
             setStatusChangingSimulationGroupId(null);
+        }
+    }
+
+    async function handleToggleSimulationGroupAccount(
+        simulationGroup: SimulationGroupResponseDto,
+        accountId: string,
+    ) {
+        const isLinked = simulationGroup.accountIds.includes(accountId);
+
+        if (isLinked && simulationGroup.accountIds.length <= 1) {
+            setEditError(t("validation.accountRequired"));
+            return;
+        }
+
+        const changingKey = `${simulationGroup.simulationGroupId}:${accountId}`;
+
+        setAccountChangingKey(changingKey);
+        setEditError(null);
+        setSuccessMessage(null);
+
+        try {
+            const updatedSimulationGroup = isLinked
+                ? await unlinkSimulationGroupAccount(
+                      simulationGroup.simulationGroupId,
+                      accountId,
+                  )
+                : await linkSimulationGroupAccount(
+                      simulationGroup.simulationGroupId,
+                      accountId,
+                  );
+
+            dispatch(simulationGroupUpdated(updatedSimulationGroup));
+            setSuccessMessage(
+                isLinked ? t("accountUnlinkSuccess") : t("accountLinkSuccess"),
+            );
+        } catch (error) {
+            setEditError(
+                getErrorMessage(
+                    error,
+                    isLinked
+                        ? t("accountUnlinkErrorFallback")
+                        : t("accountLinkErrorFallback"),
+                ),
+            );
+        } finally {
+            setAccountChangingKey(null);
         }
     }
 
@@ -501,6 +572,9 @@ export function SimulationsPage() {
                                             const isUpdating =
                                                 updatingSimulationGroupId ===
                                                 simulationGroup.simulationGroupId;
+                                            const isManagingAccounts =
+                                                managingAccountsSimulationGroupId ===
+                                                simulationGroup.simulationGroupId;
 
                                             return (
                                                 <tr
@@ -570,17 +644,77 @@ export function SimulationsPage() {
                                                         )}
                                                     </td>
                                                     <td>
-                                                        {linkedAccounts.length >
-                                                        0
-                                                            ? linkedAccounts
-                                                                  .map(
-                                                                      (
-                                                                          account,
-                                                                      ) =>
-                                                                          account.accountName,
-                                                                  )
-                                                                  .join(", ")
-                                                            : "—"}
+                                                        {isManagingAccounts ? (
+                                                            <fieldset className="mb-0">
+                                                                <legend className="visually-hidden">
+                                                                    {t(
+                                                                        "fields.accounts",
+                                                                    )}
+                                                                </legend>
+
+                                                                <div className="d-grid gap-2">
+                                                                    {accounts.map(
+                                                                        (
+                                                                            account,
+                                                                        ) => {
+                                                                            const checkboxId = `simulation-${simulationGroup.simulationGroupId}-account-${account.accountId}`;
+                                                                            const isLinked =
+                                                                                simulationGroup.accountIds.includes(
+                                                                                    account.accountId,
+                                                                                );
+
+                                                                            return (
+                                                                                <div
+                                                                                    className="form-check"
+                                                                                    key={
+                                                                                        account.accountId
+                                                                                    }>
+                                                                                    <input
+                                                                                        checked={
+                                                                                            isLinked
+                                                                                        }
+                                                                                        className="form-check-input"
+                                                                                        disabled={
+                                                                                            accountChangingKey !==
+                                                                                            null
+                                                                                        }
+                                                                                        id={
+                                                                                            checkboxId
+                                                                                        }
+                                                                                        onChange={() =>
+                                                                                            handleToggleSimulationGroupAccount(
+                                                                                                simulationGroup,
+                                                                                                account.accountId,
+                                                                                            )
+                                                                                        }
+                                                                                        type="checkbox"
+                                                                                    />
+                                                                                    <label
+                                                                                        className="form-check-label"
+                                                                                        htmlFor={
+                                                                                            checkboxId
+                                                                                        }>
+                                                                                        {
+                                                                                            account.accountName
+                                                                                        }
+                                                                                    </label>
+                                                                                </div>
+                                                                            );
+                                                                        },
+                                                                    )}
+                                                                </div>
+                                                            </fieldset>
+                                                        ) : linkedAccounts.length >
+                                                          0 ? (
+                                                            linkedAccounts
+                                                                .map(
+                                                                    (account) =>
+                                                                        account.accountName,
+                                                                )
+                                                                .join(", ")
+                                                        ) : (
+                                                            "—"
+                                                        )}
                                                     </td>
                                                     <td>
                                                         <span
@@ -635,6 +769,21 @@ export function SimulationsPage() {
                                                                     )}
                                                                 </button>
                                                             </div>
+                                                        ) : isManagingAccounts ? (
+                                                            <button
+                                                                className="btn btn-sm btn-outline-secondary"
+                                                                disabled={
+                                                                    accountChangingKey !==
+                                                                    null
+                                                                }
+                                                                onClick={
+                                                                    stopManagingSimulationGroupAccounts
+                                                                }
+                                                                type="button">
+                                                                {t(
+                                                                    "actions.done",
+                                                                )}
+                                                            </button>
                                                         ) : (
                                                             <div className="d-flex flex-wrap gap-2">
                                                                 {!isArchived ? (
@@ -649,6 +798,19 @@ export function SimulationsPage() {
                                                                             type="button">
                                                                             {t(
                                                                                 "actions.edit",
+                                                                            )}
+                                                                        </button>
+
+                                                                        <button
+                                                                            className="btn btn-sm btn-outline-primary"
+                                                                            onClick={() =>
+                                                                                startManagingSimulationGroupAccounts(
+                                                                                    simulationGroup,
+                                                                                )
+                                                                            }
+                                                                            type="button">
+                                                                            {t(
+                                                                                "actions.manageAccounts",
                                                                             )}
                                                                         </button>
 

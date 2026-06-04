@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppProviders } from "../../app/providers/AppProviders";
@@ -6,7 +12,9 @@ import { store } from "../../app/store/store";
 import {
     archiveSimulationGroup,
     createSimulationGroup,
+    linkSimulationGroupAccount,
     restoreSimulationGroup,
+    unlinkSimulationGroupAccount,
     updateSimulationGroup,
 } from "../../features/finance/api/financeApi";
 import {
@@ -20,7 +28,9 @@ import { SimulationsPage } from "./SimulationsPage";
 vi.mock("../../features/finance/api/financeApi", () => ({
     archiveSimulationGroup: vi.fn(),
     createSimulationGroup: vi.fn(),
+    linkSimulationGroupAccount: vi.fn(),
     restoreSimulationGroup: vi.fn(),
+    unlinkSimulationGroupAccount: vi.fn(),
     updateSimulationGroup: vi.fn(),
 }));
 
@@ -359,5 +369,132 @@ describe("SimulationsPage", () => {
         );
 
         expect(screen.getAllByText("Attiva").length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("opens account management and links another account to an active simulation group", async () => {
+        const updatedSimulationGroup = {
+            ...simulationGroup,
+            accountIds: ["account-id", "second-account-id"],
+            simulationGroupUpdatedAt: "2026-06-04T12:00:00Z",
+        };
+
+        vi.mocked(linkSimulationGroupAccount).mockResolvedValueOnce(
+            updatedSimulationGroup,
+        );
+
+        renderPage();
+
+        fireEvent.click(screen.getByRole("button", { name: "Gestisci conti" }));
+
+        const table = screen.getByRole("table");
+
+        fireEvent.click(within(table).getByLabelText("Conto riserva"));
+
+        await waitFor(() => {
+            expect(linkSimulationGroupAccount).toHaveBeenCalledWith(
+                "simulation-group-id",
+                "second-account-id",
+            );
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Conto collegato alla simulazione."),
+            ).toBeInTheDocument();
+        });
+
+        expect(store.getState().financeData.simulationGroups).toContainEqual(
+            updatedSimulationGroup,
+        );
+    });
+
+    it("unlinks an account from an active simulation group with multiple linked accounts", async () => {
+        const simulationGroupWithTwoAccounts = {
+            ...simulationGroup,
+            accountIds: ["account-id", "second-account-id"],
+        };
+
+        const updatedSimulationGroup = {
+            ...simulationGroupWithTwoAccounts,
+            accountIds: ["second-account-id"],
+            simulationGroupUpdatedAt: "2026-06-04T12:00:00Z",
+        };
+
+        store.dispatch(financeDataCleared());
+        store.dispatch(
+            financeReferenceDataLoaded({
+                ...referenceData,
+                simulationGroups: [
+                    archivedSimulationGroup,
+                    simulationGroupWithTwoAccounts,
+                ],
+            }),
+        );
+
+        vi.mocked(unlinkSimulationGroupAccount).mockResolvedValueOnce(
+            updatedSimulationGroup,
+        );
+
+        renderPage();
+
+        fireEvent.click(screen.getByRole("button", { name: "Gestisci conti" }));
+
+        const table = screen.getByRole("table");
+
+        fireEvent.click(within(table).getByLabelText("Conto principale"));
+
+        await waitFor(() => {
+            expect(unlinkSimulationGroupAccount).toHaveBeenCalledWith(
+                "simulation-group-id",
+                "account-id",
+            );
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.getByText("Conto scollegato dalla simulazione."),
+            ).toBeInTheDocument();
+        });
+
+        expect(store.getState().financeData.simulationGroups).toContainEqual(
+            updatedSimulationGroup,
+        );
+    });
+
+    it("prevents unlinking the last account from an active simulation group", async () => {
+        renderPage();
+
+        fireEvent.click(screen.getByRole("button", { name: "Gestisci conti" }));
+
+        const table = screen.getByRole("table");
+
+        fireEvent.click(within(table).getByLabelText("Conto principale"));
+
+        expect(
+            await screen.findByText("Seleziona almeno un conto."),
+        ).toBeInTheDocument();
+
+        expect(unlinkSimulationGroupAccount).not.toHaveBeenCalled();
+        expect(linkSimulationGroupAccount).not.toHaveBeenCalled();
+    });
+
+    it("closes account management mode", () => {
+        renderPage();
+
+        fireEvent.click(screen.getByRole("button", { name: "Gestisci conti" }));
+
+        expect(
+            screen.getByRole("button", { name: "Fine" }),
+        ).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Fine" }));
+
+        expect(
+            screen.queryByRole("button", { name: "Fine" }),
+        ).not.toBeInTheDocument();
+
+        expect(
+            screen.getByRole("button", { name: "Gestisci conti" }),
+        ).toBeInTheDocument();
     });
 });
