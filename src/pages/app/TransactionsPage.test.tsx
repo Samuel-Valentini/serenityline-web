@@ -1,9 +1,18 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
-import { createTransaction } from "../../features/finance/api/financeApi";
+import {
+    createTransaction,
+    updateTransaction,
+} from "../../features/finance/api/financeApi";
 import {
     financeDataCleared,
     financeReferenceDataLoaded,
@@ -14,6 +23,7 @@ import { TransactionsPage } from "./TransactionsPage";
 
 vi.mock("../../features/finance/api/financeApi", () => ({
     createTransaction: vi.fn(),
+    updateTransaction: vi.fn(),
     createAccount: vi.fn(),
     createBucket: vi.fn(),
     createCategory: vi.fn(),
@@ -71,6 +81,13 @@ const createdTransaction = {
     transactionReminderDaysBefore: 7,
     transactionCreatedAt: "2026-06-04T10:00:00Z",
     transactionUpdatedAt: "2026-06-04T10:00:00Z",
+};
+
+const updatedTransaction = {
+    ...createdTransaction,
+    transactionDescription: "Affitto aggiornato",
+    transactionAmount: -900,
+    transactionUpdatedAt: "2026-06-04T11:00:00Z",
 };
 
 function renderPage() {
@@ -136,6 +153,80 @@ describe("TransactionsPage", () => {
 
         expect(await screen.findByText("Affitto")).toBeInTheDocument();
         expect(screen.getByText("Confermata")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Modifica" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "Modifica" })).toBeEnabled();
+    });
+
+    it("edits a transaction added in the current session", async () => {
+        vi.mocked(createTransaction).mockResolvedValue(createdTransaction);
+        vi.mocked(updateTransaction).mockResolvedValue(updatedTransaction);
+
+        renderPage();
+
+        fireEvent.change(screen.getByLabelText("Descrizione"), {
+            target: { value: "Affitto" },
+        });
+        fireEvent.change(screen.getByLabelText("Importo"), {
+            target: { value: "-850,00" },
+        });
+        fireEvent.change(screen.getByLabelText("Data addebito"), {
+            target: { value: "2026-06-04" },
+        });
+        fireEvent.change(screen.getByLabelText("Categoria"), {
+            target: { value: "category-id" },
+        });
+        fireEvent.change(screen.getByLabelText("Conto"), {
+            target: { value: "account-id" },
+        });
+        fireEvent.click(screen.getByLabelText("Transazione già confermata"));
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Salva transazione" }),
+        );
+
+        expect(await screen.findByText("Affitto")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Modifica" }));
+        
+        const editFormCell = screen
+            .getByRole("heading", { name: "Modifica transazione" })
+            .closest("td");
+
+        expect(editFormCell).not.toBeNull();
+
+        fireEvent.change(within(editFormCell!).getByLabelText("Descrizione"), {
+            target: { value: "Affitto aggiornato" },
+        });
+        fireEvent.change(within(editFormCell!).getByLabelText("Importo"), {
+            target: { value: "-900,00" },
+        });
+
+        fireEvent.click(
+            within(editFormCell!).getByRole("button", {
+                name: "Salva modifiche",
+            }),
+        );
+        await waitFor(() => {
+            expect(updateTransaction).toHaveBeenCalledWith(
+                "transaction-id",
+                expect.objectContaining({
+                    transactionDescription: "Affitto aggiornato",
+                    transactionAmount: "-900.00",
+                    transactionAffectsAccountBalance: true,
+                    transactionAffectsSerenityline: true,
+                    categoryId: "category-id",
+                    transactionChargeDate: "2026-06-04",
+                    transactionIsConfirmed: true,
+                    accountId: "account-id",
+                    creditCardId: null,
+                    bucketId: null,
+                    transactionIsSimulated: false,
+                    simulationGroupId: null,
+                }),
+            );
+        });
+
+        expect(
+            await screen.findByText("Affitto aggiornato"),
+        ).toBeInTheDocument();
     });
 });

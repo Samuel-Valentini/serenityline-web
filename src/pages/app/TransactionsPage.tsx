@@ -1,11 +1,15 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAppSelector } from "../../app/store/hooks";
-import { createTransaction } from "../../features/finance/api/financeApi";
+import {
+    createTransaction,
+    updateTransaction,
+} from "../../features/finance/api/financeApi";
 import type {
     TransactionCreateRequestDto,
     TransactionResponseDto,
+    TransactionUpdateRequestDto,
 } from "../../features/finance/api/financeApiTypes";
 import {
     selectAccounts,
@@ -15,8 +19,14 @@ import {
     selectFinanceDataError,
     selectFinanceDataStatus,
 } from "../../features/finance/financeDataSelectors";
-import { TransactionForm } from "../../features/finance/transactionForms/TransactionForm";
-import { formatMoneyAmountForDisplay } from "../../features/finance/transactionForms/moneyInput";
+import {
+    TransactionForm,
+    type TransactionFormState,
+} from "../../features/finance/transactionForms/TransactionForm";
+import {
+    formatMoneyAmountForDisplay,
+    moneyAmountToFormValue,
+} from "../../features/finance/transactionForms/moneyInput";
 import { ApiError } from "../../shared/api";
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -56,6 +66,14 @@ export function TransactionsPage() {
     const [isCreateSubmitting, setIsCreateSubmitting] = useState(false);
     const [createError, setCreateError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [editingTransactionId, setEditingTransactionId] = useState<
+        string | null
+    >(null);
+    const [transactionUpdateSubmittingId, setTransactionUpdateSubmittingId] =
+        useState<string | null>(null);
+    const [transactionUpdateError, setTransactionUpdateError] = useState<
+        string | null
+    >(null);
 
     const displayLanguage = i18n.resolvedLanguage || i18n.language || "it";
 
@@ -132,6 +150,104 @@ export function TransactionsPage() {
 
     function formatIsoDateForDisplay(date: string) {
         return new Intl.DateTimeFormat(displayLanguage).format(new Date(date));
+    }
+
+    function getTransactionInitialValues(
+        transaction: TransactionResponseDto,
+    ): Partial<TransactionFormState> {
+        return {
+            transactionDescription: transaction.transactionDescription,
+            transactionAmount: moneyAmountToFormValue(
+                transaction.transactionAmount,
+                displayLanguage,
+            ),
+            transactionChargeDate: transaction.transactionChargeDate,
+            categoryId: transaction.categoryId,
+            accountId: transaction.accountId,
+            creditCardId: transaction.creditCardId ?? "",
+            bucketId: transaction.bucketId ?? "",
+            transactionIsConfirmed: transaction.transactionIsConfirmed,
+            transactionReminderEnabled: transaction.transactionReminderEnabled,
+            transactionReminderDaysBefore: String(
+                transaction.transactionReminderDaysBefore,
+            ),
+        };
+    }
+
+    function startEditingTransaction(transaction: TransactionResponseDto) {
+        setEditingTransactionId(transaction.transactionId);
+        setTransactionUpdateError(null);
+        setCreateError(null);
+        setSuccessMessage(null);
+    }
+
+    function cancelEditingTransaction() {
+        setEditingTransactionId(null);
+        setTransactionUpdateError(null);
+    }
+
+    async function handleUpdateSessionTransaction(
+        transaction: TransactionResponseDto,
+        requests: TransactionCreateRequestDto[],
+    ) {
+        if (requests.length !== 1) {
+            setTransactionUpdateError(t("edit.singleRequestRequired"));
+            return;
+        }
+
+        const request = requests[0];
+
+        const updateRequest: TransactionUpdateRequestDto = {
+            transactionDescription: request.transactionDescription,
+            transactionAmount: request.transactionAmount,
+            transactionAffectsAccountBalance:
+                request.transactionAffectsAccountBalance ??
+                transaction.transactionAffectsAccountBalance,
+            transactionAffectsSerenityline:
+                request.transactionAffectsSerenityline ??
+                transaction.transactionAffectsSerenityline,
+            categoryId: request.categoryId,
+            transactionChargeDate: request.transactionChargeDate,
+            transactionIsConfirmed: request.transactionIsConfirmed ?? false,
+            accountId: request.accountId,
+            creditCardId: request.creditCardId ?? null,
+            bucketId: request.bucketId ?? null,
+            transactionIsSimulated: false,
+            simulationGroupId: null,
+            transactionReminderEnabled:
+                request.transactionReminderEnabled ?? false,
+            transactionReminderDaysBefore:
+                request.transactionReminderDaysBefore ?? 7,
+        };
+
+        setTransactionUpdateSubmittingId(transaction.transactionId);
+        setTransactionUpdateError(null);
+        setSuccessMessage(null);
+
+        try {
+            const updatedTransaction = await updateTransaction(
+                transaction.transactionId,
+                updateRequest,
+            );
+
+            setSessionTransactions((currentTransactions) =>
+                currentTransactions.map((currentTransaction) =>
+                    currentTransaction.transactionId ===
+                    updatedTransaction.transactionId
+                        ? updatedTransaction
+                        : currentTransaction,
+                ),
+            );
+
+            setEditingTransactionId(null);
+            setSuccessMessage(t("edit.success"));
+        } catch (error) {
+            setTransactionUpdateError(
+                getErrorMessage(error, t("edit.errorFallback")),
+            );
+        } finally {
+            setTransactionUpdateSubmittingId(null);
+        }
     }
 
     async function handleCreateTransactions(
@@ -261,77 +377,150 @@ export function TransactionsPage() {
                                     </thead>
                                     <tbody>
                                         {sessionTransactions.map(
-                                            (transaction) => (
-                                                <tr
-                                                    key={
-                                                        transaction.transactionId
-                                                    }>
-                                                    <td>
-                                                        {
-                                                            transaction.transactionDescription
-                                                        }
-                                                    </td>
-                                                    <td>
-                                                        {formatMoneyAmount(
-                                                            transaction,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {formatIsoDateForDisplay(
-                                                            transaction.transactionChargeDate,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {getAccountName(
-                                                            transaction.accountId,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {getCategoryName(
-                                                            transaction.categoryId,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {getCreditCardName(
-                                                            transaction.creditCardId,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        {getBucketName(
-                                                            transaction.bucketId,
-                                                        )}
-                                                    </td>
-                                                    <td>
-                                                        <span
-                                                            className={
-                                                                transaction.transactionIsConfirmed
-                                                                    ? "badge text-bg-success"
-                                                                    : "badge text-bg-secondary"
-                                                            }>
-                                                            {transaction.transactionIsConfirmed
-                                                                ? t(
-                                                                      "session.status.confirmed",
-                                                                  )
-                                                                : t(
-                                                                      "session.status.planned",
-                                                                  )}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <button
-                                                            className="btn btn-sm btn-outline-primary"
-                                                            disabled
-                                                            title={t(
-                                                                "session.actions.editComingSoon",
-                                                            )}
-                                                            type="button">
-                                                            {t(
-                                                                "session.actions.edit",
-                                                            )}
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ),
+                                            (transaction) => {
+                                                const isEditing =
+                                                    editingTransactionId ===
+                                                    transaction.transactionId;
+                                                const isUpdating =
+                                                    transactionUpdateSubmittingId ===
+                                                    transaction.transactionId;
+
+                                                return (
+                                                    <Fragment
+                                                        key={
+                                                            transaction.transactionId
+                                                        }>
+                                                        <tr>
+                                                            <td>
+                                                                {
+                                                                    transaction.transactionDescription
+                                                                }
+                                                            </td>
+                                                            <td>
+                                                                {formatMoneyAmount(
+                                                                    transaction,
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                {formatIsoDateForDisplay(
+                                                                    transaction.transactionChargeDate,
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                {getAccountName(
+                                                                    transaction.accountId,
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                {getCategoryName(
+                                                                    transaction.categoryId,
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                {getCreditCardName(
+                                                                    transaction.creditCardId,
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                {getBucketName(
+                                                                    transaction.bucketId,
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                <span
+                                                                    className={
+                                                                        transaction.transactionIsConfirmed
+                                                                            ? "badge text-bg-success"
+                                                                            : "badge text-bg-secondary"
+                                                                    }>
+                                                                    {transaction.transactionIsConfirmed
+                                                                        ? t(
+                                                                              "session.status.confirmed",
+                                                                          )
+                                                                        : t(
+                                                                              "session.status.planned",
+                                                                          )}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                <button
+                                                                    className="btn btn-sm btn-outline-primary"
+                                                                    onClick={() =>
+                                                                        startEditingTransaction(
+                                                                            transaction,
+                                                                        )
+                                                                    }
+                                                                    type="button">
+                                                                    {t(
+                                                                        "session.actions.edit",
+                                                                    )}
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+
+                                                        {isEditing ? (
+                                                            <tr>
+                                                                <td colSpan={9}>
+                                                                    <div className="border rounded p-3">
+                                                                        <div className="mb-3">
+                                                                            <h3 className="h6 mb-1">
+                                                                                {t(
+                                                                                    "edit.title",
+                                                                                )}
+                                                                            </h3>
+                                                                            <p className="text-muted mb-0">
+                                                                                {t(
+                                                                                    "edit.subtitle",
+                                                                                )}
+                                                                            </p>
+                                                                        </div>
+
+                                                                        {transactionUpdateError ? (
+                                                                            <div
+                                                                                className="alert alert-danger"
+                                                                                role="alert">
+                                                                                {
+                                                                                    transactionUpdateError
+                                                                                }
+                                                                            </div>
+                                                                        ) : null}
+
+                                                                        <TransactionForm
+                                                                            context={{
+                                                                                type: "standard",
+                                                                            }}
+                                                                            idPrefix={`transaction-${transaction.transactionId}-editForm`}
+                                                                            initialValues={getTransactionInitialValues(
+                                                                                transaction,
+                                                                            )}
+                                                                            isSubmitting={
+                                                                                isUpdating
+                                                                            }
+                                                                            onCancel={
+                                                                                cancelEditingTransaction
+                                                                            }
+                                                                            onSubmit={(
+                                                                                requests,
+                                                                            ) =>
+                                                                                handleUpdateSessionTransaction(
+                                                                                    transaction,
+                                                                                    requests,
+                                                                                )
+                                                                            }
+                                                                            submitLabel={t(
+                                                                                "edit.submit",
+                                                                            )}
+                                                                            submittingLabel={t(
+                                                                                "edit.submitting",
+                                                                            )}
+                                                                        />
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ) : null}
+                                                    </Fragment>
+                                                );
+                                            },
                                         )}
                                     </tbody>
                                 </table>

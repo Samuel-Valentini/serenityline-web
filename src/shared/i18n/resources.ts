@@ -330,6 +330,18 @@ export const resources = {
                         "La modifica delle transazioni arriva nel prossimo blocco.",
                 },
             },
+            edit: {
+                title: "Modifica transazione",
+                subtitle:
+                    "Aggiorna il movimento inserito in questa sessione.",
+                submit: "Salva modifiche",
+                submitting: "Salvataggio modifiche...",
+                success: "Movimento aggiornato correttamente.",
+                errorFallback:
+                    "Non è stato possibile aggiornare la transazione. Riprova tra qualche istante.",
+                singleRequestRequired:
+                    "Questa modifica genererebbe più movimenti tecnici. Per ora modifica separatamente carta e portafoglio.",
+            },
         },
         accounts: {
             eyebrow: "Base finanziaria",
@@ -1682,6 +1694,17 @@ export const resources = {
                     editComingSoon:
                         "Transaction editing will be added in the next block.",
                 },
+            },
+            edit: {
+                title: "Edit transaction",
+                subtitle: "Update the movement added in this session.",
+                submit: "Save changes",
+                submitting: "Saving changes...",
+                success: "Movement updated successfully.",
+                errorFallback:
+                    "We could not update the transaction. Please try again in a moment.",
+                singleRequestRequired:
+                    "This change would generate multiple technical movements. For now, edit card and bucket movements separately.",
             },
         },
         accounts: {
