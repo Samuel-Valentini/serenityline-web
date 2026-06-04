@@ -8,7 +8,10 @@ import {
     selectCategories,
     selectCreditCards,
 } from "../financeDataSelectors";
-import type { TransactionCreateRequestDto } from "../api/financeApiTypes";
+import type {
+    CreditCardResponseDto,
+    TransactionCreateRequestDto,
+} from "../api/financeApiTypes";
 import {
     isSimulationMovementContext,
     type FinanceMovementFormContext,
@@ -17,6 +20,7 @@ import { normalizeMoneyInput } from "./moneyInput";
 
 import { CreateCategoryModal } from "../referenceModals/CreateCategoryModal";
 import { CreateAccountModal } from "../referenceModals/CreateAccountModal";
+import { CreateCreditCardModal } from "../referenceModals/CreateCreditCardModal";
 
 type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -108,6 +112,8 @@ export function TransactionForm({
     const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] =
         useState(false);
     const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] =
+        useState(false);
+    const [isCreateCreditCardModalOpen, setIsCreateCreditCardModalOpen] =
         useState(false);
 
     const allowedAccountIds = useMemo(() => {
@@ -206,6 +212,28 @@ export function TransactionForm({
         }
 
         setIsCreateAccountModalOpen(true);
+    }
+
+    function handleCreateCreditCardClick() {
+        if (referenceActions?.onCreateCreditCard) {
+            referenceActions.onCreateCreditCard();
+            return;
+        }
+
+        setIsCreateCreditCardModalOpen(true);
+    }
+
+    function selectCreatedCreditCard(createdCreditCard: CreditCardResponseDto) {
+        setForm((currentForm) => ({
+            ...currentForm,
+            accountId: createdCreditCard.accountId,
+            creditCardId: createdCreditCard.creditCardId,
+            bucketId:
+                currentForm.accountId === createdCreditCard.accountId
+                    ? currentForm.bucketId
+                    : "",
+        }));
+        setFormError(null);
     }
 
     function updateField(
@@ -469,14 +497,12 @@ export function TransactionForm({
                             ))}
                         </select>
 
-                        {referenceActions?.onCreateCreditCard ? (
-                            <button
-                                className="btn btn-outline-primary"
-                                onClick={referenceActions.onCreateCreditCard}
-                                type="button">
-                                {t("actions.newCreditCard")}
-                            </button>
-                        ) : null}
+                        <button
+                            className="btn btn-outline-primary"
+                            onClick={handleCreateCreditCardClick}
+                            type="button">
+                            {t("actions.newCreditCard")}
+                        </button>
                     </div>
                 </div>
 
@@ -657,6 +683,15 @@ export function TransactionForm({
                     updateAccount(createdAccount.accountId)
                 }
             />
+            {isCreateCreditCardModalOpen ? (
+                <CreateCreditCardModal
+                    accounts={availableAccounts}
+                    initialAccountId={form.accountId}
+                    isOpen={isCreateCreditCardModalOpen}
+                    onClose={() => setIsCreateCreditCardModalOpen(false)}
+                    onCreated={selectCreatedCreditCard}
+                />
+            ) : null}
         </>
     );
 }

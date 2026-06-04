@@ -11,11 +11,16 @@ import {
 import type { FinanceReferenceData } from "../financeDataTypes";
 import { i18n } from "../../../shared/i18n/i18n";
 import { TransactionForm } from "./TransactionForm";
-import { createAccount, createCategory } from "../api/financeApi";
+import {
+    createAccount,
+    createCategory,
+    createCreditCard,
+} from "../api/financeApi";
 
 vi.mock("../api/financeApi", () => ({
     createAccount: vi.fn(),
     createCategory: vi.fn(),
+    createCreditCard: vi.fn(),
 }));
 
 const account = {
@@ -81,6 +86,17 @@ const creditCard = {
     userGroupId: "group-id",
     creditCardCreatedAt: "2026-01-01T00:00:00Z",
     creditCardUpdatedAt: "2026-01-01T00:00:00Z",
+};
+
+const createdCreditCardFromModal = {
+    ...creditCard,
+    creditCardId: "created-credit-card-from-modal-id",
+    creditCardName: "Carta nuova",
+    creditCardDescription: null,
+    creditCardChargeDay: 20,
+    accountId: "second-account-id",
+    creditCardCreatedAt: "2026-06-04T10:00:00Z",
+    creditCardUpdatedAt: "2026-06-04T10:00:00Z",
 };
 
 const secondAccountCreditCard = {
@@ -415,7 +431,11 @@ describe("TransactionForm", () => {
 
         renderForm();
 
-        fireEvent.click(screen.getByRole("button", { name: "Nuova" }));
+        const femaleNewButtons = screen.getAllByRole("button", {
+            name: "Nuova",
+        });
+
+        fireEvent.click(femaleNewButtons[0]);
 
         expect(
             screen.getByRole("dialog", { name: "Nuova categoria" }),
@@ -499,6 +519,62 @@ describe("TransactionForm", () => {
 
         expect(screen.getByLabelText("Conto")).toHaveValue(
             "created-account-from-modal-id",
+        );
+    });
+
+    it("creates a credit card from the modal and selects it automatically", async () => {
+        vi.mocked(createCreditCard).mockResolvedValueOnce(
+            createdCreditCardFromModal,
+        );
+
+        renderForm();
+
+        const femaleNewButtons = screen.getAllByRole("button", {
+            name: "Nuova",
+        });
+
+        fireEvent.click(femaleNewButtons[1]);
+
+        expect(
+            screen.getByRole("dialog", { name: "Nuova carta" }),
+        ).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText("Nome carta"), {
+            target: { value: "Carta nuova" },
+        });
+
+        fireEvent.change(screen.getByLabelText("Giorno di addebito"), {
+            target: { value: "20" },
+        });
+
+        fireEvent.change(screen.getByLabelText("Conto collegato"), {
+            target: { value: "second-account-id" },
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Crea carta" }));
+
+        await waitFor(() => {
+            expect(createCreditCard).toHaveBeenCalledWith({
+                creditCardName: "Carta nuova",
+                creditCardDescription: null,
+                creditCardChargeDay: 20,
+                accountId: "second-account-id",
+            });
+        });
+
+        await waitFor(() => {
+            expect(
+                screen.queryByRole("dialog", { name: "Nuova carta" }),
+            ).not.toBeInTheDocument();
+        });
+
+        expect(store.getState().financeData.creditCards).toContainEqual(
+            createdCreditCardFromModal,
+        );
+
+        expect(screen.getByLabelText("Conto")).toHaveValue("second-account-id");
+        expect(screen.getByLabelText(/Carta/i)).toHaveValue(
+            "created-credit-card-from-modal-id",
         );
     });
 });

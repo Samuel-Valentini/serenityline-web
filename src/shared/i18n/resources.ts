@@ -513,6 +513,29 @@ export const resources = {
                 submitting: "Creazione...",
                 createErrorFallback: "Non siamo riusciti a creare il conto.",
             },
+            creditCard: {
+                eyebrow: "Nuova voce",
+                title: "Nuova carta",
+                intro: "Crea una carta senza uscire dal form della transazione.",
+                fields: {
+                    name: "Nome carta",
+                    description: "Descrizione",
+                    chargeDay: "Giorno di addebito",
+                    account: "Conto collegato",
+                },
+                options: {
+                    selectAccount: "Seleziona conto",
+                },
+                validation: {
+                    nameRequired: "Inserisci il nome della carta.",
+                    chargeDayInvalid:
+                        "Inserisci un giorno di addebito valido tra 1 e 31.",
+                    accountRequired: "Seleziona il conto collegato alla carta.",
+                },
+                submit: "Crea carta",
+                submitting: "Creazione...",
+                createErrorFallback: "Non siamo riusciti a creare la carta.",
+            },
         },
         appPages: {
             placeholderBadge: "Area MVP",
@@ -1384,6 +1407,29 @@ export const resources = {
                 submit: "Create account",
                 submitting: "Creating...",
                 createErrorFallback: "We could not create the account.",
+            },
+            creditCard: {
+                eyebrow: "New item",
+                title: "New card",
+                intro: "Create a card without leaving the transaction form.",
+                fields: {
+                    name: "Card name",
+                    description: "Description",
+                    chargeDay: "Charge day",
+                    account: "Linked account",
+                },
+                options: {
+                    selectAccount: "Select account",
+                },
+                validation: {
+                    nameRequired: "Enter the card name.",
+                    chargeDayInvalid:
+                        "Enter a valid charge day between 1 and 31.",
+                    accountRequired: "Select the account linked to the card.",
+                },
+                submit: "Create card",
+                submitting: "Creating...",
+                createErrorFallback: "We could not create the card.",
             },
         },
         appPages: {
