@@ -361,7 +361,9 @@ export type FinancialPriorityResponseDto = {
 
 export type FinanceCalendarMovementType =
     | "PERSISTED_TRANSACTION"
-    | "PROJECTED_RECURRING_TRANSACTION";
+    | "PROJECTED_RECURRING_TRANSACTION"
+    | "TECHNICAL_CREDIT_CARD_CHARGE_FROM_PERSISTED_TRANSACTION"
+    | "TECHNICAL_CREDIT_CARD_CHARGE_FROM_PROJECTED_RECURRING_TRANSACTION";
 
 export type FinanceCalendarMovementResponseDto = {
     movementType: FinanceCalendarMovementType;

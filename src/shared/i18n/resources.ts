@@ -137,6 +137,56 @@ export const resources = {
                     "Sono disponibili {{count}} priorità per distinguere movimenti critici, essenziali e opzionali.",
             },
         },
+        calendar: {
+            eyebrow: "Calendario finanziario",
+            title: "Calendario",
+            subtitle:
+                "Controlla entrate, uscite, ricorrenze previste e movimenti tecnici in una vista unica.",
+            referenceDataLoading: "Caricamento dati finanziari...",
+            referenceDataLoadErrorTitle:
+                "Impossibile caricare i dati finanziari.",
+            referenceDataLoadErrorFallback: "Riprova tra qualche istante.",
+            loading: "Caricamento calendario...",
+            empty: "Nessun movimento nel periodo caricato.",
+            loadErrorFallback:
+                "Non è stato possibile caricare il calendario. Riprova tra qualche istante.",
+            unknown: {
+                account: "Conto sconosciuto",
+                category: "Categoria sconosciuta",
+                bucket: "Portafoglio sconosciuto",
+            },
+            actions: {
+                addTransaction: "Aggiungi transazione",
+                addRecurringTransaction: "Aggiungi transazione ricorrente",
+            },
+            timeline: {
+                eyebrow: "Vista caricata",
+                title: "Movimenti passati e futuri",
+                initialRange: "Periodo iniziale: {{from}} - {{to}}.",
+                loadedRange: "Periodo caricato: {{from}} - {{to}}.",
+                refresh: "Aggiorna calendario",
+                refreshing: "Aggiornamento...",
+                windowLabel: "Finestra scorrevole del calendario finanziario",
+            },
+            movementTypes: {
+                persistedTransaction: "Transazione",
+                projectedRecurringTransaction: "Ricorrente prevista",
+                technicalCreditCardCharge: "Addebito carta",
+            },
+            table: {
+                description: "Descrizione",
+                amount: "Importo",
+                category: "Categoria",
+                date: "Data",
+                confirmed: "Confermata",
+                account: "Conto",
+                bucket: "Portafoglio: {{bucketName}}",
+            },
+            status: {
+                confirmed: "Sì",
+                unconfirmed: "No",
+            },
+        },
         recurringTransactions: {
             eyebrow: "Futuro ricorrente",
             title: "Movimenti ricorrenti",
@@ -1488,6 +1538,55 @@ export const resources = {
                 categories: "Categories",
                 settings: "Settings",
                 administration: "Administration",
+            },
+        },
+        calendar: {
+            eyebrow: "Financial calendar",
+            title: "Calendar",
+            subtitle:
+                "Track income, expenses, projected recurring items and technical movements in one view.",
+            referenceDataLoading: "Loading finance data...",
+            referenceDataLoadErrorTitle: "Unable to load finance data.",
+            referenceDataLoadErrorFallback: "Please try again in a moment.",
+            loading: "Loading calendar...",
+            empty: "No movements in the loaded period.",
+            loadErrorFallback:
+                "We could not load the calendar. Please try again in a moment.",
+            unknown: {
+                account: "Unknown account",
+                category: "Unknown category",
+                bucket: "Unknown bucket",
+            },
+            actions: {
+                addTransaction: "Add transaction",
+                addRecurringTransaction: "Add recurring transaction",
+            },
+            timeline: {
+                eyebrow: "Loaded view",
+                title: "Past and future movements",
+                initialRange: "Initial period: {{from}} - {{to}}.",
+                loadedRange: "Loaded period: {{from}} - {{to}}.",
+                refresh: "Refresh calendar",
+                refreshing: "Refreshing...",
+                windowLabel: "Scrollable financial calendar window",
+            },
+            movementTypes: {
+                persistedTransaction: "Transaction",
+                projectedRecurringTransaction: "Projected recurring",
+                technicalCreditCardCharge: "Card charge",
+            },
+            table: {
+                description: "Description",
+                amount: "Amount",
+                category: "Category",
+                date: "Date",
+                confirmed: "Confirmed",
+                account: "Account",
+                bucket: "Bucket: {{bucketName}}",
+            },
+            status: {
+                confirmed: "Yes",
+                unconfirmed: "No",
             },
         },
         dashboard: {
