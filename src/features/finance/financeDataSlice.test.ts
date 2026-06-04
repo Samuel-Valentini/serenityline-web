@@ -16,6 +16,8 @@ import {
     categoryUpdated,
     bucketAdded,
     bucketUpdated,
+    simulationGroupAdded,
+    simulationGroupUpdated,
 } from "./financeDataSlice";
 import type { FinanceReferenceData } from "./financeDataTypes";
 
@@ -48,6 +50,16 @@ const bucket = {
     bucketClosedAt: null,
 };
 
+const simulationGroup = {
+    simulationGroupId: "simulation-group-id",
+    simulationGroupName: "Scenario base",
+    simulationGroupDescription: null,
+    simulationGroupCreatedAt: "2026-01-01T00:00:00Z",
+    simulationGroupUpdatedAt: "2026-01-01T00:00:00Z",
+    simulationGroupArchivedAt: null,
+    accountIds: ["account-id"],
+};
+
 const referenceData: FinanceReferenceData = {
     accounts: [
         {
@@ -66,17 +78,7 @@ const referenceData: FinanceReferenceData = {
     creditCards: [creditCard],
     categories: [category],
     buckets: [bucket],
-    simulationGroups: [
-        {
-            simulationGroupId: "simulation-group-id",
-            simulationGroupName: "Scenario base",
-            simulationGroupDescription: null,
-            simulationGroupCreatedAt: "2026-01-01T00:00:00Z",
-            simulationGroupUpdatedAt: "2026-01-01T00:00:00Z",
-            simulationGroupArchivedAt: null,
-            accountIds: ["account-id"],
-        },
-    ],
+    simulationGroups: [simulationGroup],
     financialPriorities: [
         {
             financialPriorityId: "priority-id",
@@ -345,5 +347,60 @@ describe("financeDataSlice", () => {
         );
 
         expect(state.buckets).toEqual([bucket]);
+    });
+
+    it("adds a simulation group to the finance data state", () => {
+        const newSimulationGroup = {
+            ...simulationGroup,
+            simulationGroupId: "new-simulation-group-id",
+            simulationGroupName: "Scenario alternativo",
+            simulationGroupDescription: "Scenario di test",
+            simulationGroupCreatedAt: "2026-06-04T10:00:00Z",
+            simulationGroupUpdatedAt: "2026-06-04T10:00:00Z",
+            accountIds: ["account-id", "second-account-id"],
+        };
+
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                status: "loaded",
+            },
+            simulationGroupAdded(newSimulationGroup),
+        );
+
+        expect(state.simulationGroups).toEqual([newSimulationGroup]);
+    });
+
+    it("updates a simulation group in the finance data state", () => {
+        const updatedSimulationGroup = {
+            ...simulationGroup,
+            simulationGroupName: "Scenario aggiornato",
+            simulationGroupDescription: "Descrizione aggiornata",
+            simulationGroupUpdatedAt: "2026-06-04T10:00:00Z",
+            accountIds: ["account-id", "second-account-id"],
+        };
+
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                simulationGroups: [simulationGroup],
+                status: "loaded",
+            },
+            simulationGroupUpdated(updatedSimulationGroup),
+        );
+
+        expect(state.simulationGroups).toEqual([updatedSimulationGroup]);
+    });
+
+    it("adds a simulation group when updating one that is not in finance data yet", () => {
+        const state = financeDataReducer(
+            {
+                ...initialFinanceDataState,
+                status: "loaded",
+            },
+            simulationGroupUpdated(simulationGroup),
+        );
+
+        expect(state.simulationGroups).toEqual([simulationGroup]);
     });
 });

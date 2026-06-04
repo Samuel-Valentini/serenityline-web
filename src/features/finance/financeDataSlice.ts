@@ -5,6 +5,7 @@ import type {
     BucketResponseDto,
     CategoryResponseDto,
     CreditCardResponseDto,
+    SimulationGroupResponseDto,
 } from "./api/financeApiTypes";
 
 import type {
@@ -102,6 +103,29 @@ const financeDataSlice = createSlice({
 
             state.buckets.push(action.payload);
         },
+        simulationGroupAdded(
+            state,
+            action: PayloadAction<SimulationGroupResponseDto>,
+        ) {
+            state.simulationGroups.push(action.payload);
+        },
+        simulationGroupUpdated(
+            state,
+            action: PayloadAction<SimulationGroupResponseDto>,
+        ) {
+            const simulationGroupIndex = state.simulationGroups.findIndex(
+                (simulationGroup) =>
+                    simulationGroup.simulationGroupId ===
+                    action.payload.simulationGroupId,
+            );
+
+            if (simulationGroupIndex >= 0) {
+                state.simulationGroups[simulationGroupIndex] = action.payload;
+                return;
+            }
+
+            state.simulationGroups.push(action.payload);
+        },
         financeReferenceDataLoadingFailed(
             state,
             action: PayloadAction<FinanceDataError>,
@@ -125,6 +149,8 @@ export const {
     categoryUpdated,
     bucketAdded,
     bucketUpdated,
+    simulationGroupAdded,
+    simulationGroupUpdated,
     financeDataCleared,
     financeReferenceDataLoaded,
     financeReferenceDataLoadingFailed,

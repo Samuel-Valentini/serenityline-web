@@ -635,6 +635,70 @@ export const resources = {
                     "Non siamo riusciti a creare il portafoglio.",
             },
         },
+        simulations: {
+            eyebrow: "Scenari",
+            title: "Simulazioni",
+            subtitle:
+                "Crea scenari alternativi per valutare decisioni e confrontare l'impatto sulla tua SerenityLine.",
+            loading: "Caricamento simulazioni...",
+            loadErrorTitle: "Impossibile caricare le simulazioni.",
+            loadErrorFallback: "Riprova tra qualche istante.",
+            createTitle: "Nuova simulazione",
+            createSubtitle:
+                "Scegli un nome e collega i conti che potranno essere usati nello scenario.",
+            noAccounts:
+                "Crea almeno un conto prima di configurare una simulazione.",
+            optional: "opzionale",
+            createSuccess: "Simulazione creata correttamente.",
+            createErrorFallback:
+                "Non è stato possibile creare la simulazione. Riprova tra qualche istante.",
+            listTitle: "Scenari disponibili",
+            listSubtitle:
+                "Le simulazioni attive potranno contenere movimenti e ricorrenze simulate.",
+            count: "{{count}} simulazioni",
+            emptyState:
+                "Non hai ancora creato simulazioni. Crea il primo scenario per confrontare decisioni future.",
+            updateSuccess: "Simulazione aggiornata correttamente.",
+            updateErrorFallback:
+                "Non è stato possibile aggiornare la simulazione. Riprova tra qualche istante.",
+            archiveSuccess: "Simulazione archiviata correttamente.",
+            archiveErrorFallback:
+                "Non è stato possibile archiviare la simulazione. Riprova tra qualche istante.",
+            restoreSuccess: "Simulazione ripristinata correttamente.",
+            restoreErrorFallback:
+                "Non è stato possibile ripristinare la simulazione. Riprova tra qualche istante.",
+            fields: {
+                name: "Nome simulazione",
+                description: "Descrizione",
+                accounts: "Conti collegati",
+            },
+            actions: {
+                create: "Crea simulazione",
+                creating: "Creazione in corso...",
+                edit: "Modifica",
+                save: "Salva",
+                saving: "Salvataggio...",
+                cancel: "Annulla",
+                archive: "Archivia",
+                archiving: "Archiviazione...",
+                restore: "Ripristina",
+                restoring: "Ripristino...",
+            },
+            validation: {
+                nameRequired: "Inserisci un nome per la simulazione.",
+                accountRequired: "Seleziona almeno un conto.",
+            },
+            table: {
+                name: "Nome",
+                accounts: "Conti collegati",
+                status: "Stato",
+                actions: "Azioni",
+            },
+            status: {
+                active: "Attiva",
+                archived: "Archiviata",
+            },
+        },
         appPages: {
             placeholderBadge: "Area MVP",
             serenityline: {
@@ -1621,6 +1685,70 @@ export const resources = {
                 submit: "Create bucket",
                 submitting: "Creating...",
                 createErrorFallback: "We could not create the bucket.",
+            },
+        },
+        simulations: {
+            eyebrow: "Scenarios",
+            title: "Simulations",
+            subtitle:
+                "Create alternative scenarios to evaluate decisions and compare their impact on your SerenityLine.",
+            loading: "Loading simulations...",
+            loadErrorTitle: "Unable to load simulations.",
+            loadErrorFallback: "Please try again in a moment.",
+            createTitle: "New simulation",
+            createSubtitle:
+                "Choose a name and link the accounts that can be used in this scenario.",
+            noAccounts:
+                "Create at least one account before configuring a simulation.",
+            optional: "optional",
+            createSuccess: "Simulation created successfully.",
+            createErrorFallback:
+                "We could not create the simulation. Please try again in a moment.",
+            listTitle: "Available scenarios",
+            listSubtitle:
+                "Active simulations will be able to contain simulated movements and recurring transactions.",
+            count: "{{count}} simulations",
+            emptyState:
+                "You have not created any simulations yet. Create your first scenario to compare future decisions.",
+            updateSuccess: "Simulation updated successfully.",
+            updateErrorFallback:
+                "We could not update the simulation. Please try again in a moment.",
+            archiveSuccess: "Simulation archived successfully.",
+            archiveErrorFallback:
+                "We could not archive the simulation. Please try again in a moment.",
+            restoreSuccess: "Simulation restored successfully.",
+            restoreErrorFallback:
+                "We could not restore the simulation. Please try again in a moment.",
+            fields: {
+                name: "Simulation name",
+                description: "Description",
+                accounts: "Linked accounts",
+            },
+            actions: {
+                create: "Create simulation",
+                creating: "Creating...",
+                edit: "Edit",
+                save: "Save",
+                saving: "Saving...",
+                cancel: "Cancel",
+                archive: "Archive",
+                archiving: "Archiving...",
+                restore: "Restore",
+                restoring: "Restoring...",
+            },
+            validation: {
+                nameRequired: "Enter a simulation name.",
+                accountRequired: "Select at least one account.",
+            },
+            table: {
+                name: "Name",
+                accounts: "Linked accounts",
+                status: "Status",
+                actions: "Actions",
+            },
+            status: {
+                active: "Active",
+                archived: "Archived",
             },
         },
         appPages: {

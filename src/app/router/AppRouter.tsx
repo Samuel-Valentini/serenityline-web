@@ -24,6 +24,7 @@ import { AccountsPage } from "../../pages/app/AccountsPage";
 import { CreditCardsPage } from "../../pages/app/CreditCardsPage";
 import { CategoriesPage } from "../../pages/app/CategoriesPage";
 import { BucketsPage } from "../../pages/app/BucketsPage";
+import { SimulationsPage } from "../../pages/app/SimulationsPage";
 
 export function AppRouter() {
     return (
@@ -122,9 +123,7 @@ export function AppRouter() {
                         />
                         <Route
                             path="simulazioni"
-                            element={
-                                <AppPlaceholderPage pageKey="simulations" />
-                            }
+                            element={<SimulationsPage />}
                         />
                         <Route path="portafogli" element={<BucketsPage />} />
                         <Route path="conti" element={<AccountsPage />} />
