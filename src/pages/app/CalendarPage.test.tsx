@@ -1,5 +1,5 @@
 import { MemoryRouter } from "react-router";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppProviders } from "../../app/providers/AppProviders";
@@ -182,6 +182,53 @@ describe("CalendarPage", () => {
         renderPage();
 
         expect(await screen.findByText("Stipendio")).toBeInTheDocument();
+        expect(listCalendarMovements).toHaveBeenCalledTimes(1);
+    });
+
+    it("filters loaded calendar movements locally", async () => {
+        vi.mocked(listCalendarMovements).mockResolvedValue([
+            persistedMovement,
+            projectedRecurringMovement,
+            technicalCreditCardMovement,
+        ]);
+
+        renderPage();
+
+        expect(await screen.findByText("Stipendio")).toBeInTheDocument();
+        expect(screen.getByText("Affitto previsto")).toBeInTheDocument();
+        expect(screen.getByText("Addebito carta previsto")).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText("Cerca"), {
+            target: { value: "affitto" },
+        });
+
+        expect(screen.queryByText("Stipendio")).not.toBeInTheDocument();
+        expect(screen.getByText("Affitto previsto")).toBeInTheDocument();
+        expect(
+            screen.queryByText("Addebito carta previsto"),
+        ).not.toBeInTheDocument();
+
+        expect(listCalendarMovements).toHaveBeenCalledTimes(1);
+    });
+
+    it("filters loaded movements by confirmation status", async () => {
+        vi.mocked(listCalendarMovements).mockResolvedValue([
+            persistedMovement,
+            projectedRecurringMovement,
+        ]);
+
+        renderPage();
+
+        expect(await screen.findByText("Stipendio")).toBeInTheDocument();
+        expect(screen.getByText("Affitto previsto")).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText("Stato conferma"), {
+            target: { value: "unconfirmed" },
+        });
+
+        expect(screen.queryByText("Stipendio")).not.toBeInTheDocument();
+        expect(screen.getByText("Affitto previsto")).toBeInTheDocument();
+
         expect(listCalendarMovements).toHaveBeenCalledTimes(1);
     });
 });

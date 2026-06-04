@@ -587,3 +587,28 @@ h6 {
         width: 100%;
     }
 }
+
+.sl-calendar-filters {
+    padding: 1rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.sl-calendar-filter-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.sl-calendar-filters .form-select[multiple] {
+    min-height: 8rem;
+}
+
+@media (max-width: 767.98px) {
+    .sl-calendar-filter-heading {
+        flex-direction: column;
+    }
+}

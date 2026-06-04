@@ -168,6 +168,25 @@ export const resources = {
                 refreshing: "Aggiornamento...",
                 windowLabel: "Finestra scorrevole del calendario finanziario",
             },
+            filters: {
+                title: "Filtri vista",
+                description:
+                    "I filtri agiscono solo sulle voci già caricate nella vista corrente.",
+                clear: "Pulisci filtri",
+                search: "Cerca",
+                searchPlaceholder: "Cerca nella descrizione...",
+                categories: "Categorie",
+                accounts: "Conti",
+                buckets: "Portafogli",
+                confirmed: "Stato conferma",
+                confirmedOptions: {
+                    all: "Tutte",
+                    confirmed: "Solo confermate",
+                    unconfirmed: "Solo non confermate",
+                },
+                resultCount: "{{filtered}} di {{total}} voci visibili",
+                empty: "Nessuna voce caricata corrisponde ai filtri selezionati.",
+            },
             movementTypes: {
                 persistedTransaction: "Transazione",
                 projectedRecurringTransaction: "Ricorrente prevista",
@@ -1569,6 +1588,25 @@ export const resources = {
                 refresh: "Refresh calendar",
                 refreshing: "Refreshing...",
                 windowLabel: "Scrollable financial calendar window",
+            },
+            filters: {
+                title: "View filters",
+                description:
+                    "Filters only apply to the items already loaded in the current view.",
+                clear: "Clear filters",
+                search: "Search",
+                searchPlaceholder: "Search in the description...",
+                categories: "Categories",
+                accounts: "Accounts",
+                buckets: "Buckets",
+                confirmed: "Confirmation status",
+                confirmedOptions: {
+                    all: "All",
+                    confirmed: "Confirmed only",
+                    unconfirmed: "Unconfirmed only",
+                },
+                resultCount: "{{filtered}} of {{total}} visible items",
+                empty: "No loaded item matches the selected filters.",
             },
             movementTypes: {
                 persistedTransaction: "Transaction",

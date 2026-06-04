@@ -59,6 +59,12 @@ function isTechnicalCreditCardMovement(
     );
 }
 
+type CalendarConfirmedFilter = "all" | "confirmed" | "unconfirmed";
+
+function getSelectedValues(options: HTMLCollectionOf<HTMLOptionElement>) {
+    return Array.from(options, (option) => option.value);
+}
+
 export function CalendarPage() {
     const { i18n, t } = useTranslation("calendar");
     const navigate = useNavigate();
@@ -77,6 +83,14 @@ export function CalendarPage() {
     const buckets = useAppSelector(selectBuckets);
 
     const [selectedSimulationGroupIds] = useState<string[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
+        [],
+    );
+    const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
+    const [selectedBucketIds, setSelectedBucketIds] = useState<string[]>([]);
+    const [confirmedFilter, setConfirmedFilter] =
+        useState<CalendarConfirmedFilter>("all");
 
     const {
         movements,
@@ -109,6 +123,70 @@ export function CalendarPage() {
         () => new Map(buckets.map((bucket) => [bucket.bucketId, bucket])),
         [buckets],
     );
+
+    const normalizedSearchQuery = searchQuery
+        .trim()
+        .toLocaleLowerCase(displayLanguage);
+
+    const filteredMovements = useMemo(() => {
+        return movements.filter((movement) => {
+            if (
+                normalizedSearchQuery.length > 0 &&
+                !movement.description
+                    .toLocaleLowerCase(displayLanguage)
+                    .includes(normalizedSearchQuery)
+            ) {
+                return false;
+            }
+
+            if (
+                selectedCategoryIds.length > 0 &&
+                !selectedCategoryIds.includes(movement.categoryId)
+            ) {
+                return false;
+            }
+
+            if (
+                selectedAccountIds.length > 0 &&
+                !selectedAccountIds.includes(movement.accountId)
+            ) {
+                return false;
+            }
+
+            if (
+                selectedBucketIds.length > 0 &&
+                (!movement.bucketId ||
+                    !selectedBucketIds.includes(movement.bucketId))
+            ) {
+                return false;
+            }
+
+            if (confirmedFilter === "confirmed" && !movement.confirmed) {
+                return false;
+            }
+
+            if (confirmedFilter === "unconfirmed" && movement.confirmed) {
+                return false;
+            }
+
+            return true;
+        });
+    }, [
+        confirmedFilter,
+        displayLanguage,
+        movements,
+        normalizedSearchQuery,
+        selectedAccountIds,
+        selectedBucketIds,
+        selectedCategoryIds,
+    ]);
+
+    const hasActiveFilters =
+        normalizedSearchQuery.length > 0 ||
+        selectedCategoryIds.length > 0 ||
+        selectedAccountIds.length > 0 ||
+        selectedBucketIds.length > 0 ||
+        confirmedFilter !== "all";
 
     const todayTargetMovementKey = useMemo(() => {
         if (movements.length === 0) {
@@ -214,6 +292,14 @@ export function CalendarPage() {
         void refreshRange(initialRange);
     }
 
+    function handleClearFilters() {
+        setSearchQuery("");
+        setSelectedCategoryIds([]);
+        setSelectedAccountIds([]);
+        setSelectedBucketIds([]);
+        setConfirmedFilter("all");
+    }
+
     return (
         <section className="sl-page sl-calendar-page">
             <header className="sl-page-header">
@@ -300,6 +386,166 @@ export function CalendarPage() {
                     </button>
                 </div>
 
+                <div className="sl-calendar-filters mt-3">
+                    <div className="sl-calendar-filter-heading">
+                        <div>
+                            <h3 className="h5">{t("filters.title")}</h3>
+                            <p className="text-muted mb-0">
+                                {t("filters.description")}
+                            </p>
+                        </div>
+
+                        <button
+                            className="btn btn-sm btn-outline-secondary"
+                            disabled={!hasActiveFilters}
+                            onClick={handleClearFilters}
+                            type="button">
+                            {t("filters.clear")}
+                        </button>
+                    </div>
+
+                    <div className="row g-3">
+                        <div className="col-12 col-lg-4">
+                            <label
+                                className="form-label"
+                                htmlFor="calendarSearchQuery">
+                                {t("filters.search")}
+                            </label>
+                            <input
+                                className="form-control"
+                                id="calendarSearchQuery"
+                                onChange={(event) =>
+                                    setSearchQuery(event.target.value)
+                                }
+                                placeholder={t("filters.searchPlaceholder")}
+                                type="search"
+                                value={searchQuery}
+                            />
+                        </div>
+
+                        <div className="col-12 col-md-6 col-lg-4">
+                            <label
+                                className="form-label"
+                                htmlFor="calendarCategoryFilter">
+                                {t("filters.categories")}
+                            </label>
+                            <select
+                                className="form-select"
+                                id="calendarCategoryFilter"
+                                multiple
+                                onChange={(event) =>
+                                    setSelectedCategoryIds(
+                                        getSelectedValues(
+                                            event.target.selectedOptions,
+                                        ),
+                                    )
+                                }
+                                value={selectedCategoryIds}>
+                                {categories.map((category) => (
+                                    <option
+                                        key={category.categoryId}
+                                        value={category.categoryId}>
+                                        {category.categoryName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="col-12 col-md-6 col-lg-4">
+                            <label
+                                className="form-label"
+                                htmlFor="calendarAccountFilter">
+                                {t("filters.accounts")}
+                            </label>
+                            <select
+                                className="form-select"
+                                id="calendarAccountFilter"
+                                multiple
+                                onChange={(event) =>
+                                    setSelectedAccountIds(
+                                        getSelectedValues(
+                                            event.target.selectedOptions,
+                                        ),
+                                    )
+                                }
+                                value={selectedAccountIds}>
+                                {accounts.map((account) => (
+                                    <option
+                                        key={account.accountId}
+                                        value={account.accountId}>
+                                        {account.accountName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="col-12 col-md-6 col-lg-4">
+                            <label
+                                className="form-label"
+                                htmlFor="calendarBucketFilter">
+                                {t("filters.buckets")}
+                            </label>
+                            <select
+                                className="form-select"
+                                id="calendarBucketFilter"
+                                multiple
+                                onChange={(event) =>
+                                    setSelectedBucketIds(
+                                        getSelectedValues(
+                                            event.target.selectedOptions,
+                                        ),
+                                    )
+                                }
+                                value={selectedBucketIds}>
+                                {buckets.map((bucket) => (
+                                    <option
+                                        key={bucket.bucketId}
+                                        value={bucket.bucketId}>
+                                        {bucket.bucketName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="col-12 col-md-6 col-lg-4">
+                            <label
+                                className="form-label"
+                                htmlFor="calendarConfirmedFilter">
+                                {t("filters.confirmed")}
+                            </label>
+                            <select
+                                className="form-select"
+                                id="calendarConfirmedFilter"
+                                onChange={(event) =>
+                                    setConfirmedFilter(
+                                        event.target
+                                            .value as CalendarConfirmedFilter,
+                                    )
+                                }
+                                value={confirmedFilter}>
+                                <option value="all">
+                                    {t("filters.confirmedOptions.all")}
+                                </option>
+                                <option value="confirmed">
+                                    {t("filters.confirmedOptions.confirmed")}
+                                </option>
+                                <option value="unconfirmed">
+                                    {t("filters.confirmedOptions.unconfirmed")}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div className="col-12 col-lg-4 d-flex align-items-end">
+                            <p className="text-muted mb-0">
+                                {t("filters.resultCount", {
+                                    filtered: filteredMovements.length,
+                                    total: movements.length,
+                                })}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
                 {error ? (
                     <div className="alert alert-danger mt-3" role="alert">
                         {getErrorMessage(error, t("loadErrorFallback"))}
@@ -316,7 +562,11 @@ export function CalendarPage() {
                     <p className="text-muted mt-3 mb-0">{t("empty")}</p>
                 ) : null}
 
-                {movements.length > 0 ? (
+                {movements.length > 0 && filteredMovements.length === 0 ? (
+                    <p className="text-muted mt-3 mb-0">{t("filters.empty")}</p>
+                ) : null}
+
+                {filteredMovements.length > 0 ? (
                     <div
                         aria-label={t("timeline.windowLabel")}
                         className="sl-calendar-window mt-3"
@@ -335,7 +585,7 @@ export function CalendarPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {movements.map((movement) => {
+                                {filteredMovements.map((movement) => {
                                     const movementKey =
                                         getFinanceCalendarMovementKey(movement);
                                     const isTodayTarget =
