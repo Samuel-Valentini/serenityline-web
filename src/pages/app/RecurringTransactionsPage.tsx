@@ -559,7 +559,7 @@ export function RecurringTransactionsPage() {
                                             {financeReportSummary.recurringByCurrency.map(
                                                 (currencySummary) => (
                                                     <div
-                                                        className="col-12 col-md-6"
+                                                        className="col-12 "
                                                         key={
                                                             currencySummary.currency
                                                         }>
@@ -679,7 +679,7 @@ export function RecurringTransactionsPage() {
                                             {financeReportSummary.extremesByCurrency.map(
                                                 (currencyExtremes) => (
                                                     <div
-                                                        className="col-12 col-lg-6"
+                                                        className="col-12"
                                                         key={
                                                             currencyExtremes.currency
                                                         }>
@@ -758,33 +758,51 @@ export function RecurringTransactionsPage() {
                                         </p>
                                     ) : (
                                         <div className="table-responsive">
-                                            <table className="table table-sm align-middle mb-0">
+                                            <table className="table table-sm align-middle mb-0 sl-year-end-forecast-table">
                                                 <thead>
                                                     <tr>
-                                                        <th>
+                                                        <th className="sl-year-end-forecast-year-column">
                                                             {t(
                                                                 "report.forecastYear",
                                                             )}
                                                         </th>
-                                                        <th>
+
+                                                        <th className="sl-year-end-forecast-date-column">
                                                             {t(
                                                                 "report.forecastDate",
                                                             )}
                                                         </th>
-                                                        <th>
+
+                                                        <th className="sl-year-end-forecast-currency-column">
                                                             {t(
                                                                 "report.currency",
                                                             )}
                                                         </th>
-                                                        <th className="text-end">
-                                                            {t(
-                                                                "report.endOfYearAccountBalance",
-                                                            )}
+
+                                                        <th className="text-end sl-year-end-forecast-money-column">
+                                                            <span className="sl-year-end-forecast-heading-full">
+                                                                {t(
+                                                                    "report.endOfYearAccountBalance",
+                                                                )}
+                                                            </span>
+                                                            <span className="sl-year-end-forecast-heading-short">
+                                                                {t(
+                                                                    "report.accountBalance",
+                                                                )}
+                                                            </span>
                                                         </th>
-                                                        <th className="text-end">
-                                                            {t(
-                                                                "report.endOfYearSerenityline",
-                                                            )}
+
+                                                        <th className="text-end sl-year-end-forecast-money-column">
+                                                            <span className="sl-year-end-forecast-heading-full">
+                                                                {t(
+                                                                    "report.endOfYearSerenityline",
+                                                                )}
+                                                            </span>
+                                                            <span className="sl-year-end-forecast-heading-short">
+                                                                {t(
+                                                                    "report.serenityline",
+                                                                )}
+                                                            </span>
                                                         </th>
                                                     </tr>
                                                 </thead>
@@ -795,28 +813,32 @@ export function RecurringTransactionsPage() {
                                                                 (balance) => (
                                                                     <tr
                                                                         key={`${forecast.year}-${balance.currency}`}>
-                                                                        <td>
+                                                                        <td className="sl-year-end-forecast-year-column">
                                                                             {
                                                                                 forecast.year
                                                                             }
                                                                         </td>
-                                                                        <td>
+
+                                                                        <td className="sl-year-end-forecast-date-column">
                                                                             {formatIsoDateForDisplay(
                                                                                 forecast.date,
                                                                             )}
                                                                         </td>
-                                                                        <td>
+
+                                                                        <td className="sl-year-end-forecast-currency-column">
                                                                             {
                                                                                 balance.currency
                                                                             }
                                                                         </td>
-                                                                        <td className="text-end">
+
+                                                                        <td className="text-end sl-year-end-forecast-money-column">
                                                                             {formatMoneyAmount(
                                                                                 balance.endOfYearAccountBalance,
                                                                                 balance.currency,
                                                                             )}
                                                                         </td>
-                                                                        <td className="text-end">
+
+                                                                        <td className="text-end sl-year-end-forecast-money-column">
                                                                             {formatMoneyAmount(
                                                                                 balance.endOfYearSerenityline,
                                                                                 balance.currency,
@@ -944,13 +966,15 @@ export function RecurringTransactionsPage() {
                             </p>
                         ) : (
                             <div className="table-responsive mt-3">
-                                <table className="table align-middle">
+                                <table className="table align-middle sl-recurring-transactions-table">
                                     <thead>
                                         <tr>
                                             <th>{t("table.description")}</th>
                                             <th>{t("table.amount")}</th>
                                             <th>{t("table.frequency")}</th>
-                                            <th>{t("table.firstPayment")}</th>
+                                            <th className="sl-recurring-first-payment-column">
+                                                {t("table.firstPayment")}
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -993,16 +1017,16 @@ export function RecurringTransactionsPage() {
                                                                     recurringTransaction.recurrenceUnit,
                                                                 )}
                                                             </td>
-                                                            <td>
+                                                            <td className="sl-recurring-first-payment-column">
                                                                 {formatIsoDateForDisplay(
                                                                     recurringTransaction.recurringTransactionFirstPaymentDate,
                                                                 )}
                                                             </td>
                                                         </tr>
-                                                        <tr className="w-100">
+                                                        <tr className="w-100 sl-recurring-details-row">
                                                             <td
                                                                 colSpan={1}
-                                                                className="text-center">
+                                                                className="text-center sl-recurring-edit-cell">
                                                                 <button
                                                                     className="btn btn-sm btn-outline-primary"
                                                                     onClick={() =>
@@ -1016,22 +1040,43 @@ export function RecurringTransactionsPage() {
                                                                     )}
                                                                 </button>
                                                             </td>
+
                                                             <td colSpan={3}>
-                                                                <div className="text-muted small text-center">
-                                                                    {getCategoryName(
-                                                                        recurringTransaction.categoryId,
-                                                                    )}{" "}
-                                                                    ·{" "}
-                                                                    {getFinancialPriorityName(
-                                                                        recurringTransaction.financialPriorityId,
-                                                                    )}{" "}
+                                                                <div className="text-muted small text-center sl-recurring-details-meta">
+                                                                    <span>
+                                                                        {getCategoryName(
+                                                                            recurringTransaction.categoryId,
+                                                                        )}
+                                                                    </span>
+
+                                                                    <span aria-hidden="true">
+                                                                        ·
+                                                                    </span>
+
+                                                                    <span>
+                                                                        {getFinancialPriorityName(
+                                                                            recurringTransaction.financialPriorityId,
+                                                                        )}
+                                                                    </span>
+
+                                                                    <span
+                                                                        className="sl-recurring-mobile-first-payment"
+                                                                        aria-hidden="true">
+                                                                        ·
+                                                                    </span>
+
+                                                                    <span className="sl-recurring-mobile-first-payment">
+                                                                        {formatIsoDateForDisplay(
+                                                                            recurringTransaction.recurringTransactionFirstPaymentDate,
+                                                                        )}
+                                                                    </span>
                                                                 </div>
                                                             </td>
                                                         </tr>
 
                                                         {isEditingRecurringTransaction ? (
                                                             <tr>
-                                                                <td colSpan={5}>
+                                                                <td colSpan={4}>
                                                                     <div className="border rounded p-3">
                                                                         <div className="mb-3">
                                                                             <h3 className="h6 mb-1">

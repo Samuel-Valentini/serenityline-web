@@ -2803,3 +2803,94 @@ h6 {
         white-space: normal;
     }
 }
+
+.sl-year-end-forecast-heading-short {
+    display: none;
+}
+
+@media (max-width: 575.98px) {
+    .sl-year-end-forecast-table {
+        min-width: 0;
+        table-layout: auto;
+    }
+
+    .sl-year-end-forecast-table th,
+    .sl-year-end-forecast-table td {
+        padding-right: 0.35rem;
+        padding-left: 0.35rem;
+        font-size: 0.82rem;
+        white-space: normal;
+    }
+
+    .sl-year-end-forecast-date-column {
+        display: none;
+    }
+
+    .sl-year-end-forecast-heading-full {
+        display: none;
+    }
+
+    .sl-year-end-forecast-heading-short {
+        display: inline;
+    }
+
+    .sl-year-end-forecast-year-column {
+        width: 3.5rem;
+    }
+
+    .sl-year-end-forecast-currency-column {
+        width: 3.25rem;
+    }
+
+    .sl-year-end-forecast-money-column {
+        min-width: 5.75rem;
+    }
+}
+
+.sl-recurring-mobile-first-payment {
+    display: none;
+}
+
+@media (max-width: 575.98px) {
+    .sl-recurring-transactions-table {
+        min-width: 0;
+    }
+
+    .sl-recurring-transactions-table th,
+    .sl-recurring-transactions-table td {
+        padding-right: 0.45rem;
+        padding-left: 0.45rem;
+        font-size: 0.86rem;
+        white-space: normal;
+    }
+
+    .sl-recurring-first-payment-column {
+        display: none;
+    }
+
+    .sl-recurring-details-row > td {
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .sl-recurring-edit-cell {
+        width: 5.5rem;
+    }
+
+    .sl-recurring-details-meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        line-height: 1.35;
+    }
+
+    .sl-recurring-mobile-first-payment {
+        display: inline;
+    }
+
+    .sl-recurring-details-row .btn {
+        white-space: nowrap;
+    }
+}
