@@ -1708,3 +1708,338 @@ h6 {
         grid-template-columns: 1fr;
     }
 }
+
+.sl-how-page {
+    padding: 3.5rem 1.5rem 4rem;
+}
+
+.sl-how-hero,
+.sl-how-story-card,
+.sl-how-serenityline,
+.sl-how-actions-section,
+.sl-how-getting-started,
+.sl-how-comparison-grid,
+.sl-how-final-card,
+.sl-how-trust-strip {
+    width: min(100%, 76rem);
+    margin-inline: auto;
+}
+
+.sl-how-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
+    gap: 2rem;
+    align-items: center;
+}
+
+.sl-how-hero-copy h1 {
+    max-width: 13ch;
+    margin-bottom: 1rem;
+    font-size: clamp(3rem, 8vw, 5.7rem);
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+}
+
+.sl-how-hero-copy .lead {
+    max-width: 43rem;
+    color: var(--sl-color-text-muted);
+}
+
+.sl-how-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.sl-how-preview,
+.sl-how-story-card,
+.sl-how-line-card,
+.sl-how-useful-card,
+.sl-how-comparison-card,
+.sl-how-security-card,
+.sl-how-final-card {
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1.5rem;
+    background: var(--sl-color-card);
+    box-shadow: 0 1.5rem 4rem rgba(5, 46, 34, 0.07);
+}
+
+.sl-how-preview {
+    position: relative;
+    overflow: hidden;
+    padding: 1.6rem;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(216, 195, 155, 0.28),
+            transparent 22rem
+        ),
+        var(--sl-color-card);
+}
+
+.sl-how-preview h2 {
+    max-width: 13ch;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+}
+
+.sl-how-preview-chart {
+    position: relative;
+    height: 13rem;
+    margin: 1.5rem 0;
+    border: 1px solid rgba(231, 223, 208, 0.8);
+    border-radius: 1rem;
+    background:
+        linear-gradient(rgba(5, 46, 34, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(5, 46, 34, 0.05) 1px, transparent 1px);
+    background-size:
+        100% 25%,
+        25% 100%;
+}
+
+.sl-how-preview-line {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    top: 53%;
+    height: 0.18rem;
+    border-radius: 999px;
+    background: var(--sl-color-green-900);
+    transform: rotate(-8deg);
+}
+
+.sl-how-preview-dot {
+    position: absolute;
+    width: 0.9rem;
+    height: 0.9rem;
+    border: 0.18rem solid var(--sl-color-card);
+    border-radius: 999px;
+    background: var(--sl-color-gold);
+    box-shadow: 0 0.4rem 1.2rem rgba(5, 46, 34, 0.18);
+}
+
+.sl-how-preview-dot-a {
+    left: 18%;
+    top: 57%;
+}
+
+.sl-how-preview-dot-b {
+    left: 50%;
+    top: 46%;
+}
+
+.sl-how-preview-dot-c {
+    right: 18%;
+    top: 35%;
+}
+
+.sl-how-preview dl {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 0;
+}
+
+.sl-how-preview dt {
+    color: var(--sl-color-text-muted);
+    font-size: 0.8rem;
+}
+
+.sl-how-preview dd {
+    margin-bottom: 0;
+    color: var(--sl-color-green-900);
+    font-weight: 800;
+}
+
+.sl-how-trust-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1.5rem;
+}
+
+.sl-how-trust-strip span {
+    padding: 0.58rem 0.8rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 999px;
+    background: rgba(255, 253, 248, 0.72);
+    color: var(--sl-color-green-900);
+    font-size: 0.86rem;
+    font-weight: 750;
+}
+
+.sl-how-story-card,
+.sl-how-comparison-grid,
+.sl-how-final-card,
+.sl-how-serenityline,
+.sl-how-actions-section,
+.sl-how-getting-started {
+    margin-top: 2rem;
+}
+
+.sl-how-story-card {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 2rem;
+    padding: clamp(1.4rem, 3vw, 2rem);
+}
+
+.sl-how-story-card h2,
+.sl-section-heading h2,
+.sl-how-final-card h2,
+.sl-how-comparison-card h2,
+.sl-how-security-card h2 {
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    line-height: 0.96;
+    letter-spacing: -0.05em;
+}
+
+.sl-how-story-copy p {
+    color: var(--sl-color-text-muted);
+}
+
+.sl-how-story-copy blockquote {
+    margin: 1rem 0 0;
+    padding-left: 1rem;
+    border-left: 3px solid var(--sl-color-gold);
+    color: var(--sl-color-green-900);
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.sl-how-serenityline-grid,
+.sl-how-comparison-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 1rem;
+}
+
+.sl-how-line-card,
+.sl-how-useful-card,
+.sl-how-comparison-card,
+.sl-how-security-card,
+.sl-how-final-card {
+    padding: clamp(1.3rem, 3vw, 2rem);
+}
+
+.sl-how-line-card p,
+.sl-how-useful-card span,
+.sl-how-action-grid p,
+.sl-how-step p,
+.sl-how-comparison-card p,
+.sl-how-security-card p,
+.sl-how-final-card p {
+    color: var(--sl-color-text-muted);
+}
+
+.sl-how-useful-list {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.sl-how-useful-list div {
+    padding: 0.9rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1rem;
+    background: rgba(255, 253, 248, 0.72);
+}
+
+.sl-how-useful-list strong {
+    display: block;
+    color: var(--sl-color-green-900);
+}
+
+.sl-how-action-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.sl-how-action-grid h3 {
+    color: var(--sl-color-green-900);
+    font-size: 1.05rem;
+}
+
+.sl-how-step-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.sl-how-step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    padding: 1.15rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1.2rem;
+    background: var(--sl-color-card);
+}
+
+.sl-how-step > span {
+    display: grid;
+    width: 2.3rem;
+    height: 2.3rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--sl-color-green-900);
+    color: var(--sl-color-card);
+    font-weight: 800;
+}
+
+.sl-how-step h3 {
+    margin-bottom: 0.35rem;
+}
+
+.sl-how-step p:last-child {
+    margin-bottom: 0;
+}
+
+.sl-how-security-card a {
+    color: var(--sl-color-green-900);
+    font-weight: 800;
+}
+
+.sl-how-final-card {
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(47, 128, 100, 0.13),
+            transparent 24rem
+        ),
+        var(--sl-color-card);
+}
+
+@media (max-width: 991.98px) {
+    .sl-how-page {
+        padding-top: 2rem;
+    }
+
+    .sl-how-hero,
+    .sl-how-story-card,
+    .sl-how-serenityline-grid,
+    .sl-how-comparison-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sl-how-action-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 575.98px) {
+    .sl-how-actions,
+    .sl-how-actions .btn {
+        width: 100%;
+    }
+
+    .sl-how-action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sl-how-preview dl {
+        grid-template-columns: 1fr;
+    }
+}
