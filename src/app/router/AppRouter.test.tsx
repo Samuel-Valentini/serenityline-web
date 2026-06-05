@@ -120,4 +120,16 @@ describe("AppRouter", () => {
 
         expect(screen.getByText("Utente da api me")).toBeInTheDocument();
     });
+
+    it("renders the public security page", () => {
+        renderRouterAt("/sicurezza");
+
+        expect(
+            screen.getByRole("heading", {
+                name: "I tuoi dati meritano più di una password",
+            }),
+        ).toBeInTheDocument();
+
+        expect(screen.getByText("Sicurezza progettata, non promessa")).toBeInTheDocument();
+    });
 });

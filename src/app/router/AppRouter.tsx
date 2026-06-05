@@ -30,6 +30,7 @@ import { CalendarPage } from "../../pages/app/CalendarPage";
 import { SerenityLinePage } from "../../pages/app/SerenityLinePage";
 import { BalancesPage } from "../../pages/app/BalancesPage";
 import { AdministrationPage } from "../../pages/app/AdministrationPage";
+import { SecurityPage } from "../../pages/public/SecurityPage";
 
 export function AppRouter() {
     return (
@@ -43,7 +44,7 @@ export function AppRouter() {
                     />
                     <Route
                         path={ROUTES.public.security}
-                        element={<PublicInfoPage pageKey="security" />}
+                        element={<SecurityPage />}
                     />
                     <Route
                         path={ROUTES.public.privacy}

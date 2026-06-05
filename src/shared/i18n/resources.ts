@@ -38,6 +38,122 @@ export const resources = {
             featureThreeText:
                 "Ricorrenze, uscite, entrate e promemoria vengono integrati in una vista unica.",
         },
+        securityPage: {
+            hero: {
+                eyebrow: "Sicurezza e privacy",
+                title: "I tuoi dati meritano più di una password",
+                paragraphs: [
+                    "SerenityLine nasce per aiutarti a prendere decisioni importanti sul tuo futuro. Per questo la sicurezza non è stata aggiunta alla fine: è parte del modo in cui il prodotto è progettato.",
+                    "I dati finanziari sono trattati con un approccio privacy by design: conserviamo solo ciò che serve al funzionamento del servizio, evitiamo persistenze inutili nel browser e proteggiamo ogni operazione sensibile con controlli lato backend.",
+                    "L'accesso ai dati non dipende mai da ciò che il frontend dichiara: ogni richiesta viene verificata sul server in base all'utente, al gruppo e ai permessi effettivi.",
+                ],
+            },
+            actions: {
+                register: "Crea account",
+                login: "Accedi",
+            },
+            trustBadgesLabel: "Garanzie di sicurezza",
+            trustBadges: [
+                "Privacy by design",
+                "Token sicuri e sessioni revocabili",
+                "Dati finanziari non salvati stabilmente nel browser",
+                "Email sensibili cifrate nel database",
+                "Accessi verificati lato server",
+                "Export e cancellazione totale dei dati a tua scelta",
+            ],
+            assurance: {
+                eyebrow: "privacy by design",
+                title: "Sicurezza progettata, non promessa",
+                text: "SerenityLine tratta dati finanziari personali: per questo la sicurezza è parte dell'architettura, non un'aggiunta estetica.",
+                items: [
+                    "Password hashate",
+                    "Token temporanei monouso",
+                    "Refresh token con rotazione",
+                    "Sessioni revocabili",
+                    "Cookie HttpOnly",
+                    "Protezione CSRF",
+                    "Outbox email cifrata",
+                ],
+            },
+            intro: {
+                eyebrow: "Dietro l'esperienza semplice",
+                title: "Un'infrastruttura pensata per ridurre il rischio",
+                paragraphs: [
+                    "Password protette con hashing robusto, sessioni revocabili, refresh token con rotazione, token temporanei monouso per le azioni sensibili, protezione CSRF e cifratura dei contenuti salvati nell'outbox email lavorano insieme per proteggere l'accesso e ridurre l'esposizione dei dati sensibili.",
+                    "Nel browser evitiamo persistenze inutili: l'access token resta in memoria e i dati finanziari non vengono salvati stabilmente in localStorage. Sul backend, ogni operazione viene autorizzata verificando utente, gruppo e permessi effettivi.",
+                ],
+                closing:
+                    "La tua serenità non ha prezzo. Nemmeno la protezione dei tuoi dati.",
+            },
+            details: {
+                eyebrow: "Dettagli che fanno la differenza",
+                title: "Sicurezza comprensibile per tutti, solida per chi guarda sotto il cofano",
+                items: [
+                    {
+                        title: "Token temporanei, non scorciatoie permanenti",
+                        text: "Verifiche email, reset password e codici di sicurezza usano token generati in modo crittograficamente sicuro, salvati solo in forma derivata e validi per un tempo limitato.",
+                    },
+                    {
+                        title: "Sessioni sotto controllo",
+                        text: "Il refresh token ruota a ogni utilizzo. Se un token già usato ricompare, la sessione viene trattata come sospetta e revocata.",
+                    },
+                    {
+                        title: "Dati sensibili lontani dal browser",
+                        text: "L'access token vive solo in memoria applicativa. Il refresh token è in cookie HttpOnly, non leggibile da JavaScript, e i dati finanziari non vengono salvati stabilmente in localStorage.",
+                    },
+                    {
+                        title: "Cifratura dove conta davvero",
+                        text: "Le email in uscita che possono contenere link o codici sensibili vengono salvate cifrate nel database e marcate per essere cancellate subito dopo l'invio.",
+                    },
+                    {
+                        title: "Autorizzazioni verificate lato server",
+                        text: "Conti, transazioni, ricorrenti, portafogli e simulazioni sono sempre filtrati per utente, gruppo e permessi. Gli ID inviati dal frontend non sono mai considerati prova di accesso.",
+                    },
+                ],
+            },
+            technical: {
+                eyebrow: "Per chi vuole saperne di più",
+                title: "Scelte tecniche verificabili, non slogan",
+                subtitle:
+                    "SerenityLine usa un modello di autenticazione pensato per minimizzare l'impatto di token esposti o riutilizzati.",
+                cards: [
+                    {
+                        title: "Token e sessioni",
+                        paragraphs: [
+                            "I token casuali vengono generati con SecureRandom; i token standard usano 32 byte di entropia, mentre i refresh token usano 64 byte, vengono ruotati a ogni utilizzo e sono legati alla singola sessione dell'utente.",
+                            "I token persistiti non vengono salvati in chiaro: vengono derivati con HMAC-SHA256 e confrontati con confronto costante tramite MessageDigest.isEqual.",
+                        ],
+                    },
+                    {
+                        title: "Access token revocabili",
+                        paragraphs: [
+                            "Gli access token JWT includono issuer, subject, scadenza, data di emissione e tokenVersion: quando serve invalidare gli accessi, la versione del token dell'utente cambia e i token precedenti non sono più accettati.",
+                            "I refresh token sono legati a una sessione, ruotano a ogni refresh e mantengono relazione con il token precedente e quello sostitutivo. Il riutilizzo di un refresh token già consumato attiva la revoca della sessione.",
+                        ],
+                    },
+                    {
+                        title: "Password e outbox email",
+                        paragraphs: [
+                            "Le password sono protette con BCrypt. Le email in uscita vengono salvate tramite outbox cifrata: oggetto e corpo sono cifrati con AES-256-GCM, IV casuale da 12 byte e tag di autenticazione da 128 bit.",
+                            "Per le comunicazioni contenenti token temporanei è prevista anche la cancellazione del corpo dopo l'invio.",
+                        ],
+                    },
+                    {
+                        title: "Autorizzazione finance",
+                        paragraphs: [
+                            "L'autorizzazione dei dati finance è applicata lato backend: le query e i service filtrano per user, user group o relazione account-utente in base al ruolo.",
+                            "Proprietario, collaboratore avanzato, collaboratore lettura e collaboratore hanno superfici di accesso distinte, e nessuna operazione si fida degli ID ricevuti dal frontend senza verificare ownership o membership.",
+                        ],
+                    },
+                ],
+            },
+            final: {
+                eyebrow: "Privacy by design",
+                title: "Concentrati sulle tue scelte, non sulla sicurezza dei tuoi dati",
+                text: "In altre parole: SerenityLine è progettato perché tu possa usare dati finanziari personali con più fiducia, più controllo e meno esposizione inutile.",
+                cta: "Inizia con SerenityLine",
+            },
+        },
         auth: {
             loginTitle: "Accedi a SerenityLine",
             loginSubtitle: "Entra nel tuo spazio finanziario personale.",
@@ -1819,6 +1935,122 @@ export const resources = {
             featureThreeTitle: "Deadlines under control",
             featureThreeText:
                 "Recurring events, income, expenses and reminders are integrated into one view.",
+        },
+        securityPage: {
+            hero: {
+                eyebrow: "Security and privacy",
+                title: "Your data deserves more than a password",
+                paragraphs: [
+                    "SerenityLine is built to help you make important decisions about your future. That is why security was not added at the end: it is part of how the product is designed.",
+                    "Financial data is handled with a privacy by design approach: we keep only what is needed for the service to work, avoid unnecessary persistence in the browser and protect every sensitive operation with backend-side checks.",
+                    "Access to data never depends on what the frontend claims: every request is verified on the server based on the user, the group and the actual permissions.",
+                ],
+            },
+            actions: {
+                register: "Create account",
+                login: "Sign in",
+            },
+            trustBadgesLabel: "Security guarantees",
+            trustBadges: [
+                "Privacy by design",
+                "Secure tokens and revocable sessions",
+                "Financial data not persistently stored in the browser",
+                "Sensitive emails encrypted in the database",
+                "Server-side access checks",
+                "Data export and full deletion at your choice",
+            ],
+            assurance: {
+                eyebrow: "Privacy by design",
+                title: "Designed security, not promised security",
+                text: "SerenityLine handles personal financial data: this is why security is part of the architecture, not a cosmetic add-on.",
+                items: [
+                    "Hashed passwords",
+                    "Single-use temporary tokens",
+                    "Refresh token rotation",
+                    "Revocable sessions",
+                    "HttpOnly cookies",
+                    "CSRF protection",
+                    "Encrypted email outbox",
+                ],
+            },
+            intro: {
+                eyebrow: "Behind a simple experience",
+                title: "Infrastructure designed to reduce risk",
+                paragraphs: [
+                    "Passwords protected with robust hashing, revocable sessions, refresh token rotation, single-use temporary tokens for sensitive actions, CSRF protection and encryption of email outbox content work together to protect access and reduce exposure of sensitive data.",
+                    "In the browser we avoid unnecessary persistence: the access token stays in application memory and financial data is not persistently stored in localStorage. On the backend, every operation is authorized by checking the user, group and actual permissions.",
+                ],
+                closing:
+                    "Your peace of mind is priceless. So is the protection of your data.",
+            },
+            details: {
+                eyebrow: "Details that make the difference",
+                title: "Clear security for everyone, solid security for those who look under the hood",
+                items: [
+                    {
+                        title: "Temporary tokens, not permanent shortcuts",
+                        text: "Email verification, password reset and security codes use cryptographically secure tokens, stored only in derived form and valid for a limited time.",
+                    },
+                    {
+                        title: "Sessions under control",
+                        text: "The refresh token rotates on every use. If an already-used token appears again, the session is treated as suspicious and revoked.",
+                    },
+                    {
+                        title: "Sensitive data kept away from the browser",
+                        text: "The access token lives only in application memory. The refresh token is stored in an HttpOnly cookie, unreadable by JavaScript, and financial data is not persistently stored in localStorage.",
+                    },
+                    {
+                        title: "Encryption where it truly matters",
+                        text: "Outgoing emails that may contain sensitive links or codes are stored encrypted in the database and marked so their body can be deleted right after sending.",
+                    },
+                    {
+                        title: "Server-side authorization checks",
+                        text: "Accounts, transactions, recurring items, portfolios and simulations are always filtered by user, group and permissions. IDs sent by the frontend are never treated as proof of access.",
+                    },
+                ],
+            },
+            technical: {
+                eyebrow: "For those who want to know more",
+                title: "Verifiable technical choices, not slogans",
+                subtitle:
+                    "SerenityLine uses an authentication model designed to minimize the impact of exposed or reused tokens.",
+                cards: [
+                    {
+                        title: "Tokens and sessions",
+                        paragraphs: [
+                            "Random tokens are generated with SecureRandom; standard tokens use 32 bytes of entropy, while refresh tokens use 64 bytes, rotate on every use and are bound to the user's individual session.",
+                            "Persisted tokens are not stored in plain text: they are derived with HMAC-SHA256 and compared with constant-time comparison through MessageDigest.isEqual.",
+                        ],
+                    },
+                    {
+                        title: "Revocable access tokens",
+                        paragraphs: [
+                            "JWT access tokens include issuer, subject, expiration, issue time and tokenVersion: when accesses need to be invalidated, the user's token version changes and previous tokens are no longer accepted.",
+                            "Refresh tokens are bound to a session, rotate on every refresh and keep a relationship with the previous token and its replacement. Reuse of an already-consumed refresh token triggers session revocation.",
+                        ],
+                    },
+                    {
+                        title: "Passwords and email outbox",
+                        paragraphs: [
+                            "Passwords are protected with BCrypt. Outgoing emails are stored through an encrypted outbox: subject and body are encrypted with AES-256-GCM, a random 12-byte IV and a 128-bit authentication tag.",
+                            "For communications containing temporary tokens, the email body can also be deleted after sending.",
+                        ],
+                    },
+                    {
+                        title: "Finance authorization",
+                        paragraphs: [
+                            "Finance data authorization is applied on the backend: queries and services filter by user, user group or account-user relationship depending on the role.",
+                            "Owner, advanced collaborator, read-only collaborator and collaborator have distinct access surfaces, and no operation trusts IDs received from the frontend without verifying ownership or membership.",
+                        ],
+                    },
+                ],
+            },
+            final: {
+                eyebrow: "Privacy by design",
+                title: "Focus on your choices, not on the security of your data",
+                text: "In other words: SerenityLine is designed so you can use personal financial data with more trust, more control and less unnecessary exposure.",
+                cta: "Start with SerenityLine",
+            },
         },
         auth: {
             loginTitle: "Sign in to SerenityLine",
