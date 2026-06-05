@@ -1,9 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import {
+    confirmRecurringTransactionOccurrence,
+    getTransaction,
+    updateTransaction,
+} from "../../features/finance/api/financeApi";
 import { useAppSelector } from "../../app/store/hooks";
-import type { FinanceCalendarMovementResponseDto } from "../../features/finance/api/financeApiTypes";
+import type {
+    FinanceCalendarMovementResponseDto,
+    RecurringTransactionOccurrenceConfirmRequestDto,
+    TransactionResponseDto,
+    TransactionUpdateRequestDto,
+} from "../../features/finance/api/financeApiTypes";
 import {
     addDaysToIsoDate,
     getFinanceCalendarMovementKey,
@@ -18,7 +28,11 @@ import {
     selectFinanceDataError,
     selectFinanceDataStatus,
 } from "../../features/finance/financeDataSelectors";
-import { formatMoneyAmountForDisplay } from "../../features/finance/transactionForms/moneyInput";
+import {
+    formatMoneyAmountForDisplay,
+    moneyAmountToFormValue,
+    normalizeMoneyInput,
+} from "../../features/finance/transactionForms/moneyInput";
 import { ApiError } from "../../shared/api";
 import { ROUTES } from "../../shared/constants/routes";
 
@@ -62,6 +76,48 @@ function isTechnicalCreditCardMovement(
 
 type CalendarConfirmedFilter = "all" | "confirmed" | "unconfirmed";
 
+type RecurringConfirmationState = {
+    movementKey: string;
+    amount: string;
+    chargeDate: string;
+} | null;
+
+function isPersistedTransactionMovement(
+    movement: FinanceCalendarMovementResponseDto,
+) {
+    return movement.movementType === "PERSISTED_TRANSACTION";
+}
+
+function isProjectedRecurringTransactionMovement(
+    movement: FinanceCalendarMovementResponseDto,
+) {
+    return movement.movementType === "PROJECTED_RECURRING_TRANSACTION";
+}
+
+function getConfirmedTransactionUpdateRequest(
+    transaction: TransactionResponseDto,
+): TransactionUpdateRequestDto {
+    return {
+        transactionDescription: transaction.transactionDescription,
+        transactionAmount: String(transaction.transactionAmount),
+        transactionAffectsAccountBalance:
+            transaction.transactionAffectsAccountBalance,
+        transactionAffectsSerenityline:
+            transaction.transactionAffectsSerenityline,
+        categoryId: transaction.categoryId,
+        transactionChargeDate: transaction.transactionChargeDate,
+        transactionIsConfirmed: true,
+        accountId: transaction.accountId,
+        creditCardId: transaction.creditCardId,
+        bucketId: transaction.bucketId,
+        transactionIsSimulated: transaction.transactionIsSimulated,
+        simulationGroupId: transaction.simulationGroupId,
+        transactionReminderEnabled: transaction.transactionReminderEnabled,
+        transactionReminderDaysBefore:
+            transaction.transactionReminderDaysBefore,
+    };
+}
+
 const PREVIOUS_RANGE_DAYS = 90;
 const NEXT_RANGE_DAYS = 180;
 const SCROLL_LOAD_THRESHOLD_PX = 900;
@@ -96,6 +152,17 @@ export function CalendarPage() {
     const [selectedBucketIds, setSelectedBucketIds] = useState<string[]>([]);
     const [confirmedFilter, setConfirmedFilter] =
         useState<CalendarConfirmedFilter>("all");
+    const [confirmingMovement, setConfirmingMovement] =
+        useState<RecurringConfirmationState>(null);
+    const [confirmationSubmittingKey, setConfirmationSubmittingKey] = useState<
+        string | null
+    >(null);
+    const [confirmationError, setConfirmationError] = useState<string | null>(
+        null,
+    );
+    const [confirmationSuccess, setConfirmationSuccess] = useState<
+        string | null
+    >(null);
 
     const {
         movements,
@@ -105,6 +172,7 @@ export function CalendarPage() {
         error,
         loadRange,
         refreshRange,
+        replaceMovementWithTransaction,
     } = useFinanceCalendarCache(selectedSimulationGroupIds);
 
     const hasRequestedInitialRangeRef = useRef(false);
@@ -313,6 +381,119 @@ export function CalendarPage() {
         setConfirmedFilter("all");
     }
 
+    function clearConfirmationFeedback() {
+        setConfirmationError(null);
+        setConfirmationSuccess(null);
+    }
+
+    function startConfirmingRecurringMovement(
+        movement: FinanceCalendarMovementResponseDto,
+    ) {
+        clearConfirmationFeedback();
+
+        setConfirmingMovement({
+            movementKey: getFinanceCalendarMovementKey(movement),
+            amount: moneyAmountToFormValue(movement.amount, displayLanguage),
+            chargeDate: movement.chargeDate,
+        });
+    }
+
+    function cancelConfirmingRecurringMovement() {
+        setConfirmingMovement(null);
+        setConfirmationError(null);
+    }
+
+    async function confirmPersistedTransactionMovement(
+        movement: FinanceCalendarMovementResponseDto,
+    ) {
+        if (!movement.transactionId || movement.confirmed) {
+            return;
+        }
+
+        const movementKey = getFinanceCalendarMovementKey(movement);
+
+        setConfirmationSubmittingKey(movementKey);
+        clearConfirmationFeedback();
+
+        try {
+            const transaction = await getTransaction(movement.transactionId);
+            const updatedTransaction = await updateTransaction(
+                movement.transactionId,
+                getConfirmedTransactionUpdateRequest(transaction),
+            );
+
+            replaceMovementWithTransaction(
+                movementKey,
+                movement,
+                updatedTransaction,
+            );
+            setConfirmationSuccess(t("confirmation.persistedSuccess"));
+        } catch (error) {
+            setConfirmationError(
+                getErrorMessage(error, t("confirmation.errorFallback")),
+            );
+        } finally {
+            setConfirmationSubmittingKey(null);
+        }
+    }
+
+    async function confirmProjectedRecurringMovement(
+        movement: FinanceCalendarMovementResponseDto,
+    ) {
+        if (!movement.recurringTransactionId || !confirmingMovement) {
+            return;
+        }
+
+        const normalizedAmount = normalizeMoneyInput(
+            confirmingMovement.amount,
+            displayLanguage,
+        );
+
+        if (!normalizedAmount) {
+            setConfirmationError(t("confirmation.validation.amount"));
+            return;
+        }
+
+        if (!confirmingMovement.chargeDate) {
+            setConfirmationError(t("confirmation.validation.chargeDate"));
+            return;
+        }
+
+        const movementKey = getFinanceCalendarMovementKey(movement);
+
+        const request: RecurringTransactionOccurrenceConfirmRequestDto = {
+            logicalDate: movement.logicalDate,
+            transactionAmount: normalizedAmount,
+            transactionChargeDate: confirmingMovement.chargeDate,
+        };
+
+        setConfirmationSubmittingKey(movementKey);
+        setConfirmationError(null);
+        setConfirmationSuccess(null);
+
+        try {
+            const confirmedTransaction =
+                await confirmRecurringTransactionOccurrence(
+                    movement.recurringTransactionId,
+                    request,
+                );
+
+            replaceMovementWithTransaction(
+                movementKey,
+                movement,
+                confirmedTransaction,
+            );
+            setConfirmingMovement(null);
+            setConfirmationSuccess(t("confirmation.recurringSuccess"));
+        } catch (error) {
+            setConfirmationError(
+                getErrorMessage(error, t("confirmation.errorFallback")),
+            );
+        } finally {
+            setConfirmationSubmittingKey(null);
+        }
+    }
+
     function getPreviousRange() {
         if (!loadedFrom) {
             return null;
@@ -407,6 +588,63 @@ export function CalendarPage() {
         if (distanceFromBottom < thresholdPx) {
             void loadNextCalendarRange();
         }
+    }
+
+    function renderMovementActions(
+        movement: FinanceCalendarMovementResponseDto,
+    ) {
+        const movementKey = getFinanceCalendarMovementKey(movement);
+        const isSubmitting = confirmationSubmittingKey === movementKey;
+
+        if (movement.confirmed) {
+            return (
+                <span className="text-muted">{t("confirmation.noAction")}</span>
+            );
+        }
+
+        if (isTechnicalCreditCardMovement(movement)) {
+            return (
+                <small className="text-muted">
+                    {t("confirmation.technicalReadonly")}
+                </small>
+            );
+        }
+
+        if (
+            isPersistedTransactionMovement(movement) &&
+            movement.transactionId
+        ) {
+            return (
+                <button
+                    className="btn btn-sm btn-outline-success"
+                    disabled={isSubmitting}
+                    onClick={() =>
+                        confirmPersistedTransactionMovement(movement)
+                    }
+                    type="button">
+                    {isSubmitting
+                        ? t("confirmation.confirming")
+                        : t("confirmation.confirm")}
+                </button>
+            );
+        }
+
+        if (
+            isProjectedRecurringTransactionMovement(movement) &&
+            movement.recurringTransactionId
+        ) {
+            return (
+                <button
+                    className="btn btn-sm btn-outline-success"
+                    disabled={isSubmitting}
+                    onClick={() => startConfirmingRecurringMovement(movement)}
+                    type="button">
+                    {t("confirmation.confirm")}
+                </button>
+            );
+        }
+
+        return <span className="text-muted">{t("confirmation.noAction")}</span>;
     }
 
     return (
@@ -655,6 +893,18 @@ export function CalendarPage() {
                     </div>
                 </div>
 
+                {confirmationSuccess ? (
+                    <div className="alert alert-success mt-3" role="status">
+                        {confirmationSuccess}
+                    </div>
+                ) : null}
+
+                {confirmationError && !confirmingMovement ? (
+                    <div className="alert alert-danger mt-3" role="alert">
+                        {confirmationError}
+                    </div>
+                ) : null}
+
                 {error ? (
                     <div className="alert alert-danger mt-3" role="alert">
                         {getErrorMessage(error, t("loadErrorFallback"))}
@@ -700,6 +950,7 @@ export function CalendarPage() {
                                     <th scope="col">{t("table.date")}</th>
                                     <th scope="col">{t("table.confirmed")}</th>
                                     <th scope="col">{t("table.account")}</th>
+                                    <th scope="col">{t("table.actions")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -713,75 +964,232 @@ export function CalendarPage() {
                                     );
 
                                     return (
-                                        <tr
-                                            className={
-                                                movement.chargeDate ===
-                                                todayIsoDate
-                                                    ? "sl-calendar-today-row"
-                                                    : undefined
-                                            }
-                                            key={movementKey}
-                                            ref={
-                                                isTodayTarget
-                                                    ? todayMovementRef
-                                                    : undefined
-                                            }>
-                                            <td>
-                                                <div className="sl-calendar-description">
-                                                    <span>
-                                                        {movement.description}
-                                                    </span>
+                                        <Fragment key={movementKey}>
+                                            <tr
+                                                className={
+                                                    movement.chargeDate ===
+                                                    todayIsoDate
+                                                        ? "sl-calendar-today-row"
+                                                        : undefined
+                                                }
+                                                ref={
+                                                    isTodayTarget
+                                                        ? todayMovementRef
+                                                        : undefined
+                                                }>
+                                                <td>
+                                                    <div className="sl-calendar-description">
+                                                        <span>
+                                                            {
+                                                                movement.description
+                                                            }
+                                                        </span>
+                                                        <span
+                                                            className={getMovementTypeBadgeClass(
+                                                                movement,
+                                                            )}>
+                                                            {getMovementTypeLabel(
+                                                                movement,
+                                                            )}
+                                                        </span>
+                                                        {bucketName ? (
+                                                            <small>
+                                                                {t(
+                                                                    "table.bucket",
+                                                                    {
+                                                                        bucketName,
+                                                                    },
+                                                                )}
+                                                            </small>
+                                                        ) : null}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {formatMovementAmount(
+                                                        movement,
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    {getCategoryName(
+                                                        movement.categoryId,
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    {formatIsoDateForDisplay(
+                                                        movement.chargeDate,
+                                                        displayLanguage,
+                                                    )}
+                                                </td>
+                                                <td>
                                                     <span
-                                                        className={getMovementTypeBadgeClass(
-                                                            movement,
-                                                        )}>
-                                                        {getMovementTypeLabel(
-                                                            movement,
-                                                        )}
+                                                        className={
+                                                            movement.confirmed
+                                                                ? "badge text-bg-success"
+                                                                : "badge text-bg-secondary"
+                                                        }>
+                                                        {movement.confirmed
+                                                            ? t(
+                                                                  "status.confirmed",
+                                                              )
+                                                            : t(
+                                                                  "status.unconfirmed",
+                                                              )}
                                                     </span>
-                                                    {bucketName ? (
-                                                        <small>
-                                                            {t("table.bucket", {
-                                                                bucketName,
-                                                            })}
-                                                        </small>
-                                                    ) : null}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                {formatMovementAmount(movement)}
-                                            </td>
-                                            <td>
-                                                {getCategoryName(
-                                                    movement.categoryId,
-                                                )}
-                                            </td>
-                                            <td>
-                                                {formatIsoDateForDisplay(
-                                                    movement.chargeDate,
-                                                    displayLanguage,
-                                                )}
-                                            </td>
-                                            <td>
-                                                <span
-                                                    className={
-                                                        movement.confirmed
-                                                            ? "badge text-bg-success"
-                                                            : "badge text-bg-secondary"
-                                                    }>
-                                                    {movement.confirmed
-                                                        ? t("status.confirmed")
-                                                        : t(
-                                                              "status.unconfirmed",
-                                                          )}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {getAccountName(
-                                                    movement.accountId,
-                                                )}
-                                            </td>
-                                        </tr>
+                                                </td>
+                                                <td>
+                                                    {getAccountName(
+                                                        movement.accountId,
+                                                    )}
+                                                </td>
+                                                <td>
+                                                    {renderMovementActions(
+                                                        movement,
+                                                    )}
+                                                </td>
+                                            </tr>
+
+                                            {confirmingMovement?.movementKey ===
+                                            movementKey ? (
+                                                <tr>
+                                                    <td colSpan={7}>
+                                                        <div className="border rounded p-3">
+                                                            <div className="mb-3">
+                                                                <h3 className="h6 mb-1">
+                                                                    {t(
+                                                                        "confirmation.recurringTitle",
+                                                                    )}
+                                                                </h3>
+                                                                <p className="text-muted mb-0">
+                                                                    {t(
+                                                                        "confirmation.recurringSubtitle",
+                                                                    )}
+                                                                </p>
+                                                            </div>
+
+                                                            {confirmationError ? (
+                                                                <div
+                                                                    className="alert alert-danger"
+                                                                    role="alert">
+                                                                    {
+                                                                        confirmationError
+                                                                    }
+                                                                </div>
+                                                            ) : null}
+
+                                                            <div className="row g-3 align-items-end">
+                                                                <div className="col-12 col-md-4">
+                                                                    <label
+                                                                        className="form-label"
+                                                                        htmlFor={`calendar-confirm-amount-${movementKey}`}>
+                                                                        {t(
+                                                                            "confirmation.amount",
+                                                                        )}
+                                                                    </label>
+                                                                    <input
+                                                                        className="form-control"
+                                                                        id={`calendar-confirm-amount-${movementKey}`}
+                                                                        onChange={(
+                                                                            event,
+                                                                        ) =>
+                                                                            setConfirmingMovement(
+                                                                                (
+                                                                                    current,
+                                                                                ) =>
+                                                                                    current
+                                                                                        ? {
+                                                                                              ...current,
+                                                                                              amount: event
+                                                                                                  .target
+                                                                                                  .value,
+                                                                                          }
+                                                                                        : current,
+                                                                            )
+                                                                        }
+                                                                        value={
+                                                                            confirmingMovement.amount
+                                                                        }
+                                                                    />
+                                                                </div>
+
+                                                                <div className="col-12 col-md-4">
+                                                                    <label
+                                                                        className="form-label"
+                                                                        htmlFor={`calendar-confirm-chargeDate-${movementKey}`}>
+                                                                        {t(
+                                                                            "confirmation.chargeDate",
+                                                                        )}
+                                                                    </label>
+                                                                    <input
+                                                                        className="form-control"
+                                                                        id={`calendar-confirm-chargeDate-${movementKey}`}
+                                                                        onChange={(
+                                                                            event,
+                                                                        ) =>
+                                                                            setConfirmingMovement(
+                                                                                (
+                                                                                    current,
+                                                                                ) =>
+                                                                                    current
+                                                                                        ? {
+                                                                                              ...current,
+                                                                                              chargeDate:
+                                                                                                  event
+                                                                                                      .target
+                                                                                                      .value,
+                                                                                          }
+                                                                                        : current,
+                                                                            )
+                                                                        }
+                                                                        type="date"
+                                                                        value={
+                                                                            confirmingMovement.chargeDate
+                                                                        }
+                                                                    />
+                                                                </div>
+
+                                                                <div className="col-12 col-md-4 d-flex gap-2">
+                                                                    <button
+                                                                        className="btn btn-success"
+                                                                        disabled={
+                                                                            confirmationSubmittingKey ===
+                                                                            movementKey
+                                                                        }
+                                                                        onClick={() =>
+                                                                            confirmProjectedRecurringMovement(
+                                                                                movement,
+                                                                            )
+                                                                        }
+                                                                        type="button">
+                                                                        {confirmationSubmittingKey ===
+                                                                        movementKey
+                                                                            ? t(
+                                                                                  "confirmation.confirming",
+                                                                              )
+                                                                            : t(
+                                                                                  "confirmation.confirmRecurring",
+                                                                              )}
+                                                                    </button>
+                                                                    <button
+                                                                        className="btn btn-outline-secondary"
+                                                                        disabled={
+                                                                            confirmationSubmittingKey ===
+                                                                            movementKey
+                                                                        }
+                                                                        onClick={
+                                                                            cancelConfirmingRecurringMovement
+                                                                        }
+                                                                        type="button">
+                                                                        {t(
+                                                                            "confirmation.cancel",
+                                                                        )}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ) : null}
+                                        </Fragment>
                                     );
                                 })}
                             </tbody>

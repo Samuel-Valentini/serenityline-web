@@ -1,10 +1,21 @@
 import { MemoryRouter } from "react-router";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
-import { listCalendarMovements } from "../../features/finance/api/financeApi";
+import {
+    confirmRecurringTransactionOccurrence,
+    getTransaction,
+    listCalendarMovements,
+    updateTransaction,
+} from "../../features/finance/api/financeApi";
 import { clearFinanceCalendarCacheForTests } from "../../features/finance/calendar/useFinanceCalendarCache";
 import {
     financeDataCleared,
@@ -15,8 +26,51 @@ import { i18n } from "../../shared/i18n/i18n";
 import { CalendarPage } from "./CalendarPage";
 
 vi.mock("../../features/finance/api/financeApi", () => ({
+    confirmRecurringTransactionOccurrence: vi.fn(),
+    getTransaction: vi.fn(),
     listCalendarMovements: vi.fn(),
+    updateTransaction: vi.fn(),
 }));
+
+const unconfirmedTransaction = {
+    transactionId: "unconfirmed-transaction-id",
+    transactionDescription: "Bollette",
+    transactionAmount: -90,
+    transactionAffectsAccountBalance: true,
+    transactionAffectsSerenityline: true,
+    categoryId: "category-id",
+    transactionChargeDate: "2026-06-05",
+    transactionIsConfirmed: false,
+    accountId: "account-id",
+    creditCardId: null,
+    bucketId: null,
+    transactionIsSimulated: false,
+    simulationGroupId: null,
+    transactionIsUserEntered: true,
+    recurringTransactionId: null,
+    recurringTransactionLogicalDate: null,
+    recurringTransactionConfirmedAt: null,
+    transactionReminderEnabled: false,
+    transactionReminderDaysBefore: 7,
+    transactionCreatedAt: "2026-06-05T10:00:00Z",
+    transactionUpdatedAt: "2026-06-05T10:00:00Z",
+};
+
+const confirmedTransaction = {
+    ...unconfirmedTransaction,
+    transactionIsConfirmed: true,
+    transactionUpdatedAt: "2026-06-05T11:00:00Z",
+};
+
+const confirmedRecurringTransaction = {
+    ...confirmedTransaction,
+    transactionId: "confirmed-recurring-transaction-id",
+    transactionDescription: "Affitto previsto",
+    transactionAmount: -900,
+    transactionChargeDate: "2026-06-21",
+    recurringTransactionId: "recurring-transaction-id",
+    recurringTransactionLogicalDate: "2026-06-20",
+};
 
 const account = {
     accountId: "account-id",
@@ -78,6 +132,14 @@ const persistedMovement = {
     simulationGroupId: null,
     userEntered: true,
     finalOccurrence: false,
+};
+
+const unconfirmedPersistedMovement = {
+    ...persistedMovement,
+    transactionId: "unconfirmed-transaction-id",
+    description: "Bollette",
+    amount: -90,
+    confirmed: false,
 };
 
 const projectedRecurringMovement = {
@@ -276,5 +338,89 @@ describe("CalendarPage", () => {
         });
 
         expect(await screen.findByText("Movimento futuro")).toBeInTheDocument();
+    });
+
+    it("confirms an unconfirmed persisted transaction movement", async () => {
+        vi.mocked(listCalendarMovements).mockResolvedValue([
+            unconfirmedPersistedMovement,
+        ]);
+        vi.mocked(getTransaction).mockResolvedValue(unconfirmedTransaction);
+        vi.mocked(updateTransaction).mockResolvedValue(confirmedTransaction);
+
+        renderPage();
+
+        expect(await screen.findByText("Bollette")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Conferma" }));
+
+        await waitFor(() => {
+            expect(getTransaction).toHaveBeenCalledWith(
+                "unconfirmed-transaction-id",
+            );
+            expect(updateTransaction).toHaveBeenCalledWith(
+                "unconfirmed-transaction-id",
+                expect.objectContaining({
+                    transactionDescription: "Bollette",
+                    transactionIsConfirmed: true,
+                }),
+            );
+        });
+
+        expect(
+            await screen.findByText("Transazione confermata."),
+        ).toBeInTheDocument();
+    });
+
+    it("confirms a projected recurring movement with editable amount and charge date", async () => {
+        vi.mocked(listCalendarMovements).mockResolvedValue([
+            projectedRecurringMovement,
+        ]);
+        vi.mocked(confirmRecurringTransactionOccurrence).mockResolvedValue(
+            confirmedRecurringTransaction,
+        );
+
+        renderPage();
+
+        expect(await screen.findByText("Affitto previsto")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Conferma" }));
+
+        const confirmCell = screen
+            .getByRole("heading", {
+                name: "Conferma ricorrenza prevista",
+            })
+            .closest("td");
+
+        expect(confirmCell).not.toBeNull();
+
+        fireEvent.change(within(confirmCell!).getByLabelText("Importo"), {
+            target: { value: "-900,00" },
+        });
+        fireEvent.change(within(confirmCell!).getByLabelText("Data addebito"), {
+            target: { value: "2026-06-21" },
+        });
+
+        fireEvent.click(
+            within(confirmCell!).getByRole("button", {
+                name: "Conferma ricorrenza",
+            }),
+        );
+
+        await waitFor(() => {
+            expect(confirmRecurringTransactionOccurrence).toHaveBeenCalledWith(
+                "recurring-transaction-id",
+                {
+                    logicalDate: "2026-06-20",
+                    transactionAmount: "-900.00",
+                    transactionChargeDate: "2026-06-21",
+                },
+            );
+        });
+
+        expect(
+            await screen.findByText(
+                "Ricorrenza confermata e salvata come transazione.",
+            ),
+        ).toBeInTheDocument();
     });
 });

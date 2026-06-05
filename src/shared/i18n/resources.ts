@@ -202,10 +202,33 @@ export const resources = {
                 confirmed: "Confermata",
                 account: "Conto",
                 bucket: "Portafoglio: {{bucketName}}",
+                actions: "Azioni",
             },
             status: {
                 confirmed: "Sì",
                 unconfirmed: "No",
+            },
+            confirmation: {
+                confirm: "Conferma",
+                confirming: "Conferma...",
+                confirmRecurring: "Conferma ricorrenza",
+                cancel: "Annulla",
+                noAction: "—",
+                technicalReadonly: "Movimento tecnico automatico",
+                recurringTitle: "Conferma ricorrenza prevista",
+                recurringSubtitle:
+                    "Controlla importo e data di addebito prima di salvare la ricorrenza come transazione.",
+                amount: "Importo",
+                chargeDate: "Data addebito",
+                persistedSuccess: "Transazione confermata.",
+                recurringSuccess:
+                    "Ricorrenza confermata e salvata come transazione.",
+                errorFallback:
+                    "Non è stato possibile confermare il movimento. Riprova tra qualche istante.",
+                validation: {
+                    amount: "Inserisci un importo valido.",
+                    chargeDate: "Inserisci una data di addebito valida.",
+                },
             },
         },
         recurringTransactions: {
@@ -1625,10 +1648,33 @@ export const resources = {
                 confirmed: "Confirmed",
                 account: "Account",
                 bucket: "Bucket: {{bucketName}}",
+                actions: "Actions",
             },
             status: {
                 confirmed: "Yes",
                 unconfirmed: "No",
+            },
+            confirmation: {
+                confirm: "Confirm",
+                confirming: "Confirming...",
+                confirmRecurring: "Confirm recurring item",
+                cancel: "Cancel",
+                noAction: "—",
+                technicalReadonly: "Automatic technical movement",
+                recurringTitle: "Confirm projected recurring item",
+                recurringSubtitle:
+                    "Review amount and charge date before saving this recurring item as a transaction.",
+                amount: "Amount",
+                chargeDate: "Charge date",
+                persistedSuccess: "Transaction confirmed.",
+                recurringSuccess:
+                    "Recurring item confirmed and saved as a transaction.",
+                errorFallback:
+                    "We could not confirm the movement. Please try again in a moment.",
+                validation: {
+                    amount: "Enter a valid amount.",
+                    chargeDate: "Enter a valid charge date.",
+                },
             },
         },
         dashboard: {

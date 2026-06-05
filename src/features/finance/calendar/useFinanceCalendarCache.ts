@@ -5,6 +5,7 @@ import type {
     FinanceCalendarMovementResponseDto,
     FinanceCalendarSearchRequestDto,
     IsoDate,
+    TransactionResponseDto,
     Uuid,
 } from "../api/financeApiTypes";
 
@@ -220,6 +221,35 @@ function removeLoadingRangeKey(
     };
 }
 
+function transactionToCalendarMovement(
+    transaction: TransactionResponseDto,
+    sourceMovement: FinanceCalendarMovementResponseDto,
+): FinanceCalendarMovementResponseDto {
+    return {
+        movementType: "PERSISTED_TRANSACTION",
+        transactionId: transaction.transactionId,
+        recurringTransactionId: transaction.recurringTransactionId,
+        logicalDate:
+            transaction.recurringTransactionLogicalDate ??
+            transaction.transactionChargeDate,
+        chargeDate: transaction.transactionChargeDate,
+        description: transaction.transactionDescription,
+        amount: transaction.transactionAmount,
+        affectsAccountBalance: transaction.transactionAffectsAccountBalance,
+        affectsSerenityline: transaction.transactionAffectsSerenityline,
+        categoryId: transaction.categoryId,
+        financialPriorityId: sourceMovement.financialPriorityId,
+        accountId: transaction.accountId,
+        creditCardId: transaction.creditCardId,
+        bucketId: transaction.bucketId,
+        confirmed: transaction.transactionIsConfirmed,
+        simulated: transaction.transactionIsSimulated,
+        simulationGroupId: transaction.simulationGroupId,
+        userEntered: transaction.transactionIsUserEntered,
+        finalOccurrence: sourceMovement.finalOccurrence,
+    };
+}
+
 export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
     const simulationGroupIdsKey = useMemo(
         () => getCacheKey(simulationGroupIds),
@@ -341,6 +371,33 @@ export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
         [loadRange],
     );
 
+    const replaceMovementWithTransaction = useCallback(
+        (
+            movementKeyToReplace: string,
+            sourceMovement: FinanceCalendarMovementResponseDto,
+            transaction: TransactionResponseDto,
+        ) => {
+            const cacheEntry = getCacheEntry(simulationGroupIdsKey);
+            const confirmedMovement = transactionToCalendarMovement(
+                transaction,
+                sourceMovement,
+            );
+
+            cacheEntry.movements = sortMovements([
+                ...cacheEntry.movements.filter(
+                    (movement) =>
+                        getFinanceCalendarMovementKey(movement) !==
+                        movementKeyToReplace,
+                ),
+                confirmedMovement,
+            ]);
+            cacheEntry.updatedAt = Date.now();
+
+            setCacheRevision((currentRevision) => currentRevision + 1);
+        },
+        [simulationGroupIdsKey],
+    );
+
     return {
         movements: snapshot.movements,
         loadedFrom: snapshot.loadedFrom,
@@ -350,5 +407,6 @@ export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
         error,
         loadRange,
         refreshRange,
+        replaceMovementWithTransaction,
     };
 }
