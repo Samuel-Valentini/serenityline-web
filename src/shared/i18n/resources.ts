@@ -554,7 +554,14 @@ export const resources = {
                 "Non è stato possibile ripristinare l'account. Il token potrebbe essere scaduto o non più valido.",
         },
         appShell: {
+            brandLabel: "Vai alla dashboard",
             navigationLabel: "Navigazione principale",
+            navigationTitle: "Menu",
+            quickActionsLabel: "Azioni rapide",
+            openNavigation: "Apri menu",
+            closeNavigation: "Chiudi menu",
+            collapseSidebar: "Nascondi menu",
+            expandSidebar: "Menu",
             logout: "Esci",
             userFallback: "Utente SerenityLine",
             nav: {
@@ -2772,7 +2779,14 @@ export const resources = {
                 "Could not restore the account. The token may have expired or may no longer be valid.",
         },
         appShell: {
+            brandLabel: "Go to dashboard",
             navigationLabel: "Main navigation",
+            navigationTitle: "Menu",
+            quickActionsLabel: "Quick actions",
+            openNavigation: "Open menu",
+            closeNavigation: "Close menu",
+            collapseSidebar: "Hide menu",
+            expandSidebar: "Menu",
             logout: "Sign out",
             userFallback: "SerenityLine user",
             nav: {
