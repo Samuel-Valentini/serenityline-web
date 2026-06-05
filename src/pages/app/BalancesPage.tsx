@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { UIEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { UIEvent, WheelEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
@@ -21,7 +21,12 @@ import {
 
 const PREVIOUS_RANGE_DAYS = 90;
 const NEXT_RANGE_DAYS = 180;
-const SCROLL_LOAD_THRESHOLD_PX = 900;
+const PREVIOUS_SCROLL_LOAD_THRESHOLD_PX = 80;
+const NEXT_SCROLL_LOAD_THRESHOLD_PX = 900;
+const TOP_SCROLL_PIN_THRESHOLD_PX = 16;
+const TODAY_SCROLL_MAX_ATTEMPTS = 12;
+const PAGE_SCROLL_FALLBACK_TOPBAR_HEIGHT_PX = 96;
+const PAGE_SCROLL_EXTRA_GAP_PX = 8;
 
 function addDaysToIsoDate(date: string, days: number) {
     const nextDate = new Date(`${date}T00:00:00Z`);
@@ -133,10 +138,117 @@ export function BalancesPage() {
     const todayBalanceRef = useRef<HTMLTableRowElement | null>(null);
     const hasRequestedInitialRangeRef = useRef(false);
     const hasScrolledToTodayRef = useRef(false);
+    const hasPositionedBalancesWindowRef = useRef(false);
+    const isPositioningTodayRef = useRef(false);
+    const isWheelScrollingUpRef = useRef(false);
+    const wheelScrollIntentTimeoutRef = useRef<ReturnType<
+        typeof window.setTimeout
+    > | null>(null);
     const isLoadingPreviousRangeRef = useRef(false);
     const isLoadingNextRangeRef = useRef(false);
     const previousRangeArmedRef = useRef(true);
     const nextRangeArmedRef = useRef(true);
+
+    const getAppTopbarHeightPx = useCallback(() => {
+        if (typeof document === "undefined") {
+            return PAGE_SCROLL_FALLBACK_TOPBAR_HEIGHT_PX;
+        }
+
+        const appTopbar = document.querySelector<HTMLElement>(".sl-app-topbar");
+
+        if (!appTopbar) {
+            return PAGE_SCROLL_FALLBACK_TOPBAR_HEIGHT_PX;
+        }
+
+        return Math.ceil(appTopbar.getBoundingClientRect().height);
+    }, []);
+
+    const scrollBalancesWindowBelowTopbar = useCallback(() => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const balancesWindow = balancesWindowRef.current;
+
+        if (!balancesWindow) {
+            return;
+        }
+
+        const targetTop =
+            balancesWindow.getBoundingClientRect().top +
+            window.scrollY -
+            getAppTopbarHeightPx() -
+            PAGE_SCROLL_EXTRA_GAP_PX;
+
+        window.scrollTo({
+            behavior: "auto",
+            top: Math.max(targetTop, 0),
+        });
+
+        hasPositionedBalancesWindowRef.current = true;
+    }, [getAppTopbarHeightPx]);
+
+    const scrollTodayBalanceRowToCenter = useCallback(
+        function scrollTodayBalanceRowToCenter(attempt = 0) {
+            if (typeof window === "undefined") {
+                return;
+            }
+
+            const balancesWindow = balancesWindowRef.current;
+            const todayBalanceRow = todayBalanceRef.current;
+
+            isPositioningTodayRef.current = true;
+
+            if (!balancesWindow || !todayBalanceRow) {
+                if (attempt < TODAY_SCROLL_MAX_ATTEMPTS) {
+                    window.requestAnimationFrame(() => {
+                        scrollTodayBalanceRowToCenter(attempt + 1);
+                    });
+
+                    return;
+                }
+
+                isPositioningTodayRef.current = false;
+                return;
+            }
+
+            if (!hasPositionedBalancesWindowRef.current) {
+                scrollBalancesWindowBelowTopbar();
+            }
+
+            const balancesWindowRect = balancesWindow.getBoundingClientRect();
+            const todayBalanceRowRect = todayBalanceRow.getBoundingClientRect();
+
+            const targetScrollTop =
+                balancesWindow.scrollTop +
+                todayBalanceRowRect.top -
+                balancesWindowRect.top -
+                balancesWindow.clientHeight / 2 +
+                todayBalanceRow.clientHeight / 2;
+
+            balancesWindow.scrollTo({
+                behavior: "auto",
+                top: Math.max(targetScrollTop, 0),
+            });
+
+            if (attempt < TODAY_SCROLL_MAX_ATTEMPTS) {
+                window.requestAnimationFrame(() => {
+                    scrollTodayBalanceRowToCenter(attempt + 1);
+                });
+
+                return;
+            }
+
+            hasScrolledToTodayRef.current = true;
+
+            window.requestAnimationFrame(() => {
+                isPositioningTodayRef.current = false;
+                previousRangeArmedRef.current = false;
+                nextRangeArmedRef.current = false;
+            });
+        },
+        [scrollBalancesWindowBelowTopbar],
+    );
 
     const accountCurrencies = useMemo(
         () => [...new Set(accounts.map((account) => account.currency))].sort(),
@@ -199,28 +311,37 @@ export function BalancesPage() {
     }, [balances.length, dispatch, initialRange]);
 
     useEffect(() => {
+        hasScrolledToTodayRef.current = false;
+        hasPositionedBalancesWindowRef.current = false;
+        isPositioningTodayRef.current = false;
+        previousRangeArmedRef.current = true;
+        nextRangeArmedRef.current = true;
+    }, [selectedCurrency]);
+
+    useEffect(() => {
         if (hasScrolledToTodayRef.current || balances.length === 0) {
             return;
         }
 
         const animationFrameId = window.requestAnimationFrame(() => {
-            if (typeof todayBalanceRef.current?.scrollIntoView === "function") {
-                todayBalanceRef.current.scrollIntoView({
-                    block: "center",
-                });
-            }
-
-            hasScrolledToTodayRef.current = true;
+            scrollTodayBalanceRowToCenter();
         });
 
         return () => window.cancelAnimationFrame(animationFrameId);
-    }, [balances.length, selectedCurrency]);
+    }, [
+        balances.length,
+        scrollTodayBalanceRowToCenter,
+        selectedCurrency,
+        todayTargetDate,
+    ]);
 
     useEffect(() => {
-        hasScrolledToTodayRef.current = false;
-        previousRangeArmedRef.current = true;
-        nextRangeArmedRef.current = true;
-    }, [selectedCurrency]);
+        return () => {
+            if (wheelScrollIntentTimeoutRef.current) {
+                window.clearTimeout(wheelScrollIntentTimeoutRef.current);
+            }
+        };
+    }, []);
 
     function getPreviousRange() {
         if (!cacheEntry.loadedFrom) {
@@ -257,6 +378,9 @@ export function BalancesPage() {
 
         const balancesWindow = balancesWindowRef.current;
         const previousScrollHeight = balancesWindow?.scrollHeight ?? 0;
+        const shouldKeepPinnedToTop =
+            (balancesWindow?.scrollTop ?? 0) <= TOP_SCROLL_PIN_THRESHOLD_PX ||
+            isWheelScrollingUpRef.current;
 
         isLoadingPreviousRangeRef.current = true;
         setIsLoadingPreviousRange(true);
@@ -270,6 +394,11 @@ export function BalancesPage() {
 
             window.requestAnimationFrame(() => {
                 if (!balancesWindow) {
+                    return;
+                }
+
+                if (shouldKeepPinnedToTop) {
+                    balancesWindow.scrollTop = 0;
                     return;
                 }
 
@@ -309,10 +438,32 @@ export function BalancesPage() {
         }
     }
 
+    function handleBalancesWindowWheel(event: WheelEvent<HTMLDivElement>) {
+        if (event.deltaY >= 0) {
+            isWheelScrollingUpRef.current = false;
+            return;
+        }
+
+        isWheelScrollingUpRef.current = true;
+
+        if (wheelScrollIntentTimeoutRef.current) {
+            window.clearTimeout(wheelScrollIntentTimeoutRef.current);
+        }
+
+        wheelScrollIntentTimeoutRef.current = window.setTimeout(() => {
+            isWheelScrollingUpRef.current = false;
+        }, 250);
+    }
+
     function handleBalancesWindowScroll(event: UIEvent<HTMLDivElement>) {
+        if (isPositioningTodayRef.current) {
+            return;
+        }
+
         const balancesWindow = event.currentTarget;
-        const thresholdPx = Math.max(
-            SCROLL_LOAD_THRESHOLD_PX,
+        const previousThresholdPx = PREVIOUS_SCROLL_LOAD_THRESHOLD_PX;
+        const nextThresholdPx = Math.max(
+            NEXT_SCROLL_LOAD_THRESHOLD_PX,
             balancesWindow.clientHeight * 1.5,
         );
 
@@ -321,8 +472,8 @@ export function BalancesPage() {
             balancesWindow.scrollTop -
             balancesWindow.clientHeight;
 
-        const isNearTop = balancesWindow.scrollTop < thresholdPx;
-        const isNearBottom = distanceFromBottom < thresholdPx;
+        const isNearTop = balancesWindow.scrollTop < previousThresholdPx;
+        const isNearBottom = distanceFromBottom < nextThresholdPx;
 
         if (!isNearTop) {
             previousRangeArmedRef.current = true;
@@ -449,6 +600,7 @@ export function BalancesPage() {
                         aria-label={t("timeline.windowLabel")}
                         className="sl-balances-window mt-3"
                         onScroll={handleBalancesWindowScroll}
+                        onWheel={handleBalancesWindowWheel}
                         ref={balancesWindowRef}
                         tabIndex={0}>
                         {isLoadingPreviousRange ? (

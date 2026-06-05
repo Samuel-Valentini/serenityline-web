@@ -39,16 +39,16 @@ const appNavigationItems = [
         labelKey: "nav.buckets",
     },
     {
+        to: ROUTES.app.balances,
+        labelKey: "nav.balances",
+    },
+    {
         to: ROUTES.app.accounts,
         labelKey: "nav.accounts",
     },
     {
         to: ROUTES.app.creditCards,
         labelKey: "nav.creditCards",
-    },
-    {
-        to: ROUTES.app.balances,
-        labelKey: "nav.balances",
     },
     {
         to: ROUTES.app.categories,
