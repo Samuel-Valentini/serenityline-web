@@ -18,25 +18,199 @@ export const resources = {
             footerClaim: "Pianifica, prevedi, vivi sereno.",
         },
         home: {
-            heroEyebrow: "Pianifica, prevedi, vivi sereno.",
-            heroTitle: "La tua serenità non ha prezzo.",
-            heroSubtitle:
-                "SerenityLine ti aiuta a leggere il futuro della tua liquidità, anticipare i momenti critici e decidere con più lucidità.",
-            primaryCta: "Crea il tuo account",
-            secondaryCta: "Scopri come funziona",
-            previewLabel: "Anteprima MVP",
-            previewTitle: "La tua proiezione finanziaria",
-            previewText:
-                "Una linea temporale chiara per capire dove stai andando, non solo quanto hai oggi.",
-            featureOneTitle: "Visione futura",
-            featureOneText:
-                "Non solo saldo attuale: SerenityLine mette in evidenza la traiettoria dei prossimi mesi.",
-            featureTwoTitle: "Decisioni simulate",
-            featureTwoText:
-                "Prima di una scelta importante, confronti scenari e conseguenze sulla liquidità futura.",
-            featureThreeTitle: "Scadenze sotto controllo",
-            featureThreeText:
-                "Ricorrenze, uscite, entrate e promemoria vengono integrati in una vista unica.",
+            hero: {
+                eyebrow: "Pianifica. Prevedi. Vivi sereno.",
+                title: "La tua serenità non ha prezzo.",
+                subtitle:
+                    "SerenityLine ti aiuta a capire dove stai andando: prevede la tua liquidità futura, confronta scenari e rende più chiare le decisioni economiche importanti.",
+                primaryCta: "Inizia gratis",
+                secondaryCta: "Scopri come funziona",
+                trustBadgesLabel: "Elementi di fiducia",
+                trustBadges: [
+                    "Nessuna carta richiesta",
+                    "Privacy by design",
+                    "Dati sotto controllo",
+                    "Italiano e inglese",
+                ],
+            },
+            preview: {
+                label: "Anteprima SerenityLine",
+                title: "La tua liquidità, proiettata nel tempo.",
+                chartLabel:
+                    "Grafico illustrativo della liquidità SerenityLine proiettata nel tempo",
+                today: "Oggi",
+                event: "Scadenza",
+                text: "Non guardare solo quanto hai oggi. Guarda cosa succede nei prossimi mesi.",
+                metrics: {
+                    today: {
+                        label: "Oggi",
+                        value: "Liquidità chiara",
+                    },
+                    minimum: {
+                        label: "Minimo futuro",
+                        value: "Punto critico visibile",
+                    },
+                    scenario: {
+                        label: "Scenario",
+                        value: "Decisione confrontabile",
+                    },
+                },
+            },
+            problem: {
+                eyebrow: "Il problema",
+                title: "Il saldo del conto non racconta tutto.",
+                paragraphs: [
+                    "Una disponibilità alta oggi può nascondere scadenze importanti in arrivo. Una disponibilità bassa può invece non dire nulla su entrate future, rimborsi, rate già previste o obiettivi che stai costruendo.",
+                    "Molti strumenti ti aiutano a capire cosa è già successo. SerenityLine nasce per una domanda diversa:",
+                ],
+                question:
+                    "Posso permettermi questa scelta senza compromettere la mia tranquillità nei prossimi mesi?",
+                cta: "Con SerenityLine trasformi conti, movimenti e ricorrenze in una previsione chiara della tua liquidità futura.",
+            },
+            features: {
+                eyebrow: "Funzionalità principali",
+                title: "Tutto ruota intorno alla tua liquidità futura",
+                items: [
+                    {
+                        title: "Liquidità prevista",
+                        text: "Vedi come può evolvere la tua disponibilità nei prossimi giorni, mesi o anni. SerenityLine mette in evidenza la traiettoria, non solo il saldo di oggi.",
+                    },
+                    {
+                        title: "Simulazioni",
+                        text: "Prova una scelta prima di compierla: una nuova spesa, un cambio di lavoro, un mutuo, un progetto personale. Confronta lo scenario simulato con la tua linea attuale.",
+                    },
+                    {
+                        title: "Calendario dinamico",
+                        text: "Leggi cosa succede giorno per giorno: movimenti reali, previsti, ricorrenti, simulati e tecnici in una vista ordinata.",
+                    },
+                    {
+                        title: "Portafogli e obiettivi",
+                        text: "Distingui il denaro presente sul conto dalla liquidità che vuoi destinare a risparmi, tasse, emergenze, viaggi o progetti familiari.",
+                    },
+                ],
+            },
+            value: {
+                eyebrow: "Più prospettiva, meno incertezza",
+                title: "Prendi decisioni economiche con più chiarezza.",
+                text: "SerenityLine non nasce per controllare ogni centesimo in modo ossessivo. Nasce per darti una visione più utile: cosa succede se continui così, quando arriveranno i punti critici e quali scelte puoi sostenere con maggiore serenità.",
+                cards: [
+                    {
+                        title: "Prima di una spesa importante",
+                        text: "Capisci se una spesa una tantum rischia di creare tensione nei mesi successivi.",
+                    },
+                    {
+                        title: "Prima di cambiare abitudini",
+                        text: "Verifica se il tuo stile di vita è sostenibile nel tempo, non solo nel mese corrente.",
+                    },
+                    {
+                        title: "Prima di un progetto personale",
+                        text: "Simula studio, lavoro, casa, famiglia o investimenti sul tuo futuro senza duplicare fogli di calcolo.",
+                    },
+                ],
+            },
+            method: {
+                eyebrow: "Il metodo",
+                title: "Dai dati essenziali a una linea chiara.",
+                steps: [
+                    {
+                        title: "Aggiungi i tuoi conti",
+                        text: "Inserisci i conti principali, il saldo iniziale e la valuta. Sono la base della tua proiezione.",
+                    },
+                    {
+                        title: "Registra movimenti e ricorrenze",
+                        text: "Aggiungi entrate, uscite, rate, abbonamenti, stipendi, scadenze e movimenti previsti.",
+                    },
+                    {
+                        title: "Leggi la SerenityLine",
+                        text: "Visualizza la tua liquidità nel tempo, individua i punti delicati e confronta gli scenari prima di decidere.",
+                    },
+                ],
+                cta: "Crea la tua SerenityLine",
+            },
+            difference: {
+                eyebrow: "Oltre il budgeting",
+                title: "Non solo cosa hai speso. Dove stai andando.",
+                text: "Budget, fogli di calcolo e app bancarie sono utili, ma spesso restano legati al passato o al saldo corrente. SerenityLine mette al centro la previsione: ricorrenze, scadenze, carte, portafogli e scenari diventano parte di una linea temporale comprensibile.",
+                without: {
+                    label: "Senza SerenityLine",
+                    text: "Ho € 3.000 sul conto. Posso stare tranquillo?",
+                },
+                with: {
+                    label: "Con SerenityLine",
+                    text: "Tra tre mesi, dopo tasse, rate e scadenze, la mia liquidità prevista sarà ancora sostenibile?",
+                },
+            },
+            security: {
+                eyebrow: "Fiducia",
+                title: "Progettato per dati sensibili.",
+                text: "SerenityLine tratta informazioni personali e finanziarie. Per questo la sicurezza non è un'aggiunta: è parte del progetto. L'esperienza è pensata per essere chiara, controllabile e rispettosa dei tuoi dati.",
+                cta: "Scopri la sicurezza",
+                items: [
+                    {
+                        title: "Privacy by design",
+                        text: "I dati finanziari sensibili non vengono salvati stabilmente nel browser.",
+                    },
+                    {
+                        title: "Accesso protetto",
+                        text: "Le operazioni sono verificate lato server e l'accesso ai dati è separato in base all'utente e al gruppo.",
+                    },
+                    {
+                        title: "Controllo dei dati",
+                        text: "Sono previste funzioni per esportare e cancellare i dati, così il tuo spazio resta sotto il tuo controllo.",
+                    },
+                ],
+            },
+            onboarding: {
+                eyebrow: "Inizia senza complicarti la vita",
+                title: "Parti dai dati che contano davvero.",
+                paragraphs: [
+                    "Non devi ricostruire tutta la tua vita finanziaria in un giorno. Puoi iniziare dai conti principali e dalle ricorrenze più importanti: stipendio, affitto, mutuo, bollette, abbonamenti e scadenze.",
+                    "Quando la base è pronta, SerenityLine inizia a darti prospettiva. Ogni dato aggiunto rende la previsione più utile.",
+                ],
+                checklist: [
+                    "Crea l'account.",
+                    "Aggiungi i conti principali.",
+                    "Inserisci le ricorrenze più importanti.",
+                    "Guarda la tua prima SerenityLine.",
+                    "Simula una scelta futura.",
+                ],
+            },
+            faq: {
+                eyebrow: "Domande frequenti",
+                title: "Prima di iniziare",
+                items: [
+                    {
+                        question: "SerenityLine sostituisce la mia banca?",
+                        answer: "No. SerenityLine non è una banca e non vuole sostituire il tuo conto. Ti aiuta a leggere la tua liquidità futura e a pianificare meglio le decisioni.",
+                    },
+                    {
+                        question: "Devo inserire tutto subito?",
+                        answer: "No. Puoi iniziare dai dati essenziali. Le ricorrenze principali sono spesso il punto migliore da cui partire.",
+                    },
+                    {
+                        question: "A cosa servono le simulazioni?",
+                        answer: "Servono a confrontare futuri possibili. Puoi vedere come una scelta potrebbe modificare la tua liquidità nei mesi successivi prima di prenderla davvero.",
+                    },
+                    {
+                        question:
+                            "Che differenza c'è tra saldo e liquidità SerenityLine?",
+                        answer: "Il saldo è ciò che risulta sul conto. La liquidità SerenityLine considera anche impegni, carte, accantonamenti e movimenti rilevanti per la pianificazione.",
+                    },
+                ],
+            },
+            final: {
+                eyebrow: "La tua SerenityLine inizia da qui",
+                title: "Capisci oggi l'impatto delle decisioni di domani.",
+                text: "Crea il tuo account, inserisci i primi dati essenziali e trasforma il saldo di oggi in una previsione utile per il futuro.",
+                primaryCta: "Inizia gratis",
+                secondaryCta: "Scopri come funziona",
+                trustBadgesLabel: "Elementi di fiducia finali",
+                trustBadges: [
+                    "Nessuna carta richiesta",
+                    "Dati sotto controllo",
+                    "Puoi esportare o cancellare i tuoi dati",
+                ],
+            },
         },
         howItWorksPage: {
             hero: {
@@ -518,38 +692,6 @@ export const resources = {
                 simulations: "Confronta scenari",
             },
         },
-        // dashboard: {
-        //     title: "Dashboard",
-        //     subtitle: "Cosa devo sapere adesso?",
-        //     loading: "Caricamento dati finanziari...",
-        //     loadErrorTitle: "Impossibile caricare i dati finanziari.",
-        //     loadErrorFallback: "Riprova tra qualche istante.",
-        //     emptyState: {
-        //         title: "Non hai ancora dati finanziari",
-        //         text: "Aggiungi il primo conto per iniziare a costruire la tua proiezione SerenityLine.",
-        //     },
-        //     metrics: {
-        //         accounts: "Conti",
-        //         accountsDescription: "Conti collegati alla tua proiezione.",
-        //         buckets: "Portafogli",
-        //         bucketsDescription:
-        //             "Portafogli attivi per organizzare la liquidità.",
-        //         simulations: "Simulazioni",
-        //         simulationsDescription:
-        //             "Scenari attivi per confrontare decisioni.",
-        //         categories: "Categorie",
-        //         categoriesDescription:
-        //             "Categorie attive per classificare i movimenti.",
-        //     },
-        //     sections: {
-        //         nextSteps: "Prossimi passi",
-        //         nextStepsText:
-        //             "La dashboard userà questi dati come base per saldi, calendario, simulazioni e SerenityLine.",
-        //         priorities: "Priorità finanziarie",
-        //         prioritiesText:
-        //             "Sono disponibili {{count}} priorità per distinguere movimenti critici, essenziali e opzionali.",
-        //     },
-        // },
         serenityline: {
             eyebrow: "Previsione strategica",
             title: "SerenityLine",
@@ -2090,25 +2232,199 @@ export const resources = {
             footerClaim: "Plan, forecast, live with peace of mind.",
         },
         home: {
-            heroEyebrow: "Plan, forecast, live with peace of mind.",
-            heroTitle: "Your peace of mind is priceless.",
-            heroSubtitle:
-                "SerenityLine helps you read the future of your liquidity, anticipate critical moments and make clearer decisions.",
-            primaryCta: "Create your account",
-            secondaryCta: "See how it works",
-            previewLabel: "MVP preview",
-            previewTitle: "Your financial projection",
-            previewText:
-                "A clear timeline to understand where you are going, not just how much you have today.",
-            featureOneTitle: "Future view",
-            featureOneText:
-                "Not just today's balance: SerenityLine highlights the trajectory of the months ahead.",
-            featureTwoTitle: "Decision simulation",
-            featureTwoText:
-                "Before an important choice, you compare scenarios and their effect on future liquidity.",
-            featureThreeTitle: "Deadlines under control",
-            featureThreeText:
-                "Recurring events, income, expenses and reminders are integrated into one view.",
+            hero: {
+                eyebrow: "Plan. Forecast. Live with peace of mind.",
+                title: "Your peace of mind is priceless.",
+                subtitle:
+                    "SerenityLine helps you understand where you are going: it forecasts your future liquidity, compares scenarios and makes important financial decisions clearer.",
+                primaryCta: "Start for free",
+                secondaryCta: "See how it works",
+                trustBadgesLabel: "Trust elements",
+                trustBadges: [
+                    "No card required",
+                    "Privacy by design",
+                    "Data under control",
+                    "Italian and English",
+                ],
+            },
+            preview: {
+                label: "SerenityLine preview",
+                title: "Your liquidity, projected over time.",
+                chartLabel:
+                    "Illustrative chart of SerenityLine liquidity projected over time",
+                today: "Today",
+                event: "Deadline",
+                text: "Do not look only at how much you have today. See what happens over the next few months.",
+                metrics: {
+                    today: {
+                        label: "Today",
+                        value: "Clear liquidity",
+                    },
+                    minimum: {
+                        label: "Future minimum",
+                        value: "Critical point visible",
+                    },
+                    scenario: {
+                        label: "Scenario",
+                        value: "Decision comparable",
+                    },
+                },
+            },
+            problem: {
+                eyebrow: "The problem",
+                title: "Your account balance does not tell the whole story.",
+                paragraphs: [
+                    "High availability today can hide important deadlines coming up. Low availability, on the other hand, may say little about future income, reimbursements, already planned installments or goals you are building toward.",
+                    "Many tools help you understand what has already happened. SerenityLine starts from a different question:",
+                ],
+                question:
+                    "Can I afford this choice without compromising my peace of mind over the next few months?",
+                cta: "With SerenityLine you turn accounts, movements and recurring items into a clear forecast of your future liquidity.",
+            },
+            features: {
+                eyebrow: "Core features",
+                title: "Everything revolves around your future liquidity",
+                items: [
+                    {
+                        title: "Forecast liquidity",
+                        text: "See how your availability may evolve over the coming days, months or years. SerenityLine highlights the trajectory, not just today's balance.",
+                    },
+                    {
+                        title: "Simulations",
+                        text: "Try a choice before making it: a new expense, a job change, a mortgage, a personal project. Compare the simulated scenario with your current line.",
+                    },
+                    {
+                        title: "Dynamic calendar",
+                        text: "Read what happens day by day: real, planned, recurring, simulated and technical movements in an ordered view.",
+                    },
+                    {
+                        title: "Portfolios and goals",
+                        text: "Distinguish the money in your account from the liquidity you want to assign to savings, taxes, emergencies, trips or family projects.",
+                    },
+                ],
+            },
+            value: {
+                eyebrow: "More perspective, less uncertainty",
+                title: "Make financial decisions with more clarity.",
+                text: "SerenityLine is not built to obsessively control every cent. It is built to give you a more useful view: what happens if you keep going like this, when critical points will arrive and which choices you can sustain with greater peace of mind.",
+                cards: [
+                    {
+                        title: "Before an important expense",
+                        text: "Understand whether a one-time expense may create tension in the following months.",
+                    },
+                    {
+                        title: "Before changing habits",
+                        text: "Check whether your lifestyle is sustainable over time, not just in the current month.",
+                    },
+                    {
+                        title: "Before a personal project",
+                        text: "Simulate studying, work, home, family or investments in your future without duplicating spreadsheets.",
+                    },
+                ],
+            },
+            method: {
+                eyebrow: "The method",
+                title: "From essential data to a clear line.",
+                steps: [
+                    {
+                        title: "Add your accounts",
+                        text: "Enter your main accounts, opening balance and currency. They are the foundation of your projection.",
+                    },
+                    {
+                        title: "Record movements and recurring items",
+                        text: "Add income, expenses, installments, subscriptions, salaries, deadlines and planned movements.",
+                    },
+                    {
+                        title: "Read the SerenityLine",
+                        text: "View your liquidity over time, spot delicate points and compare scenarios before deciding.",
+                    },
+                ],
+                cta: "Create your SerenityLine",
+            },
+            difference: {
+                eyebrow: "Beyond budgeting",
+                title: "Not just what you spent. Where you are going.",
+                text: "Budgets, spreadsheets and banking apps are useful, but they often remain tied to the past or to the current balance. SerenityLine focuses on forecasting: recurring items, deadlines, cards, portfolios and scenarios become part of an understandable timeline.",
+                without: {
+                    label: "Without SerenityLine",
+                    text: "I have €3,000 in my account. Can I feel safe?",
+                },
+                with: {
+                    label: "With SerenityLine",
+                    text: "In three months, after taxes, installments and deadlines, will my forecast liquidity still be sustainable?",
+                },
+            },
+            security: {
+                eyebrow: "Trust",
+                title: "Designed for sensitive data.",
+                text: "SerenityLine handles personal and financial information. That is why security is not an add-on: it is part of the project. The experience is designed to be clear, controllable and respectful of your data.",
+                cta: "Discover security",
+                items: [
+                    {
+                        title: "Privacy by design",
+                        text: "Sensitive financial data is not persistently stored in the browser.",
+                    },
+                    {
+                        title: "Protected access",
+                        text: "Operations are verified server-side and data access is separated by user and group.",
+                    },
+                    {
+                        title: "Data control",
+                        text: "Export and deletion functions are planned, so your space remains under your control.",
+                    },
+                ],
+            },
+            onboarding: {
+                eyebrow: "Start without making life complicated",
+                title: "Begin with the data that truly matters.",
+                paragraphs: [
+                    "You do not have to rebuild your entire financial life in one day. You can start from your main accounts and the most important recurring items: salary, rent, mortgage, bills, subscriptions and deadlines.",
+                    "When the foundation is ready, SerenityLine starts giving you perspective. Every added piece of data makes the forecast more useful.",
+                ],
+                checklist: [
+                    "Create your account.",
+                    "Add your main accounts.",
+                    "Enter the most important recurring items.",
+                    "View your first SerenityLine.",
+                    "Simulate a future choice.",
+                ],
+            },
+            faq: {
+                eyebrow: "FAQ",
+                title: "Before you start",
+                items: [
+                    {
+                        question: "Does SerenityLine replace my bank?",
+                        answer: "No. SerenityLine is not a bank and does not aim to replace your account. It helps you read your future liquidity and plan decisions better.",
+                    },
+                    {
+                        question: "Do I have to enter everything right away?",
+                        answer: "No. You can start from the essential data. The main recurring items are often the best place to begin.",
+                    },
+                    {
+                        question: "What are simulations for?",
+                        answer: "They help you compare possible futures. You can see how a choice may change your liquidity in the following months before actually making it.",
+                    },
+                    {
+                        question:
+                            "What is the difference between balance and SerenityLine liquidity?",
+                        answer: "The balance is what appears in your account. SerenityLine liquidity also considers commitments, cards, allocations and movements that matter for planning.",
+                    },
+                ],
+            },
+            final: {
+                eyebrow: "Your SerenityLine starts here",
+                title: "Understand today the impact of tomorrow's decisions.",
+                text: "Create your account, enter the first essential data and turn today's balance into a useful forecast for the future.",
+                primaryCta: "Start for free",
+                secondaryCta: "See how it works",
+                trustBadgesLabel: "Final trust elements",
+                trustBadges: [
+                    "No card required",
+                    "Data under control",
+                    "Export or delete your data",
+                ],
+            },
         },
         howItWorksPage: {
             hero: {
@@ -2678,38 +2994,6 @@ export const resources = {
                 selectedCount_other: "You are viewing {{count}} simulations.",
             },
         },
-        // dashboard: {
-        //     title: "Dashboard",
-        //     subtitle: "What should I know right now?",
-        //     loading: "Loading financial data...",
-        //     loadErrorTitle: "Could not load financial data.",
-        //     loadErrorFallback: "Please try again in a moment.",
-        //     emptyState: {
-        //         title: "You do not have financial data yet",
-        //         text: "Add your first account to start building your SerenityLine projection.",
-        //     },
-        //     metrics: {
-        //         accounts: "Accounts",
-        //         accountsDescription: "Accounts connected to your projection.",
-        //         buckets: "Portfolios",
-        //         bucketsDescription:
-        //             "Active portfolios used to organize liquidity.",
-        //         simulations: "Simulations",
-        //         simulationsDescription:
-        //             "Active scenarios for comparing decisions.",
-        //         categories: "Categories",
-        //         categoriesDescription:
-        //             "Active categories used to classify movements.",
-        //     },
-        //     sections: {
-        //         nextSteps: "Next steps",
-        //         nextStepsText:
-        //             "The dashboard will use this data as the foundation for balances, calendar, simulations and SerenityLine.",
-        //         priorities: "Financial priorities",
-        //         prioritiesText:
-        //             "{{count}} priorities are available to distinguish critical, essential and optional movements.",
-        //     },
-        // },
         dashboard: {
             title: "Your peace of mind, today",
             subtitle:
