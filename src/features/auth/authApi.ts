@@ -27,6 +27,8 @@ import type {
     RestoreAccountRequestDto,
     RestoreAccountResult,
     LoginUserDto,
+    CreateUserInvitationRequestDto,
+    UserInvitationResponseDto,
 } from "./authApiTypes";
 
 function isAuthenticatedResponse(
@@ -262,6 +264,16 @@ export async function acceptUserInvitation(
         method: "POST",
         body: request,
         includeCredentials: true,
+    });
+}
+
+export async function inviteUser(
+    request: CreateUserInvitationRequestDto,
+): Promise<UserInvitationResponseDto> {
+    return apiRequest<UserInvitationResponseDto>("/api/auth/user-invitations", {
+        method: "POST",
+        body: request,
+        requiresAuth: true,
     });
 }
 

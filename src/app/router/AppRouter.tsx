@@ -6,7 +6,6 @@ import { AppLayout } from "../../layouts/AppLayout";
 import { AuthLayout } from "../../layouts/AuthLayout";
 import { PublicLayout } from "../../layouts/PublicLayout";
 import { NotFoundPage } from "../../pages/NotFoundPage";
-import { AppPlaceholderPage } from "../../pages/app/AppPlaceholderPage";
 import { DashboardPage } from "../../pages/app/DashboardPage";
 import { Login2faPage } from "../../pages/auth/Login2faPage";
 import { LoginPage } from "../../pages/auth/LoginPage";
@@ -30,6 +29,7 @@ import { TransactionsPage } from "../../pages/app/TransactionsPage";
 import { CalendarPage } from "../../pages/app/CalendarPage";
 import { SerenityLinePage } from "../../pages/app/SerenityLinePage";
 import { BalancesPage } from "../../pages/app/BalancesPage";
+import { AdministrationPage } from "../../pages/app/AdministrationPage";
 
 export function AppRouter() {
     return (
@@ -129,9 +129,7 @@ export function AppRouter() {
                         <Route path="impostazioni" element={<SettingsPage />} />
                         <Route
                             path="amministrazione"
-                            element={
-                                <AppPlaceholderPage pageKey="administration" />
-                            }
+                            element={<AdministrationPage />}
                         />
                     </Route>
                 </Route>

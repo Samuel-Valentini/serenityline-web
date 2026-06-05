@@ -110,6 +110,26 @@ export type AcceptUserInvitationRequestDto = {
     password: string;
 };
 
+export type CreateUserInvitationRequestDto = {
+    userName: string;
+    email: string;
+    userRole: Exclude<UserRole, "OWNER">;
+    preferredLocale?: PreferredLocale;
+    paymentEmailRemindersEnabled?: boolean;
+    accountIds?: string[];
+};
+
+export type UserInvitationResponseDto = {
+    userId: string;
+    userName: string;
+    email: string;
+    userGroupId: string;
+    userGroupName: string;
+    userRole: UserRole;
+    preferredLocale: PreferredLocale;
+    accountIds: string[];
+};
+
 export type ResendEmailVerificationRequestDto = {
     emailVerificationResendToken: string;
 };

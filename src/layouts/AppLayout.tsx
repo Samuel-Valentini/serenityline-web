@@ -59,6 +59,7 @@ const appNavigationItems = [
     {
         to: ROUTES.app.administration,
         labelKey: "nav.administration",
+        ownerOnly: true,
     },
 ] as const;
 
@@ -78,6 +79,10 @@ export function AppLayout() {
         authUser?.userName ||
         authUser?.email ||
         t("userFallback");
+
+    const visibleNavigationItems = appNavigationItems.filter(
+        (item) => !("ownerOnly" in item) || currentUser?.userRole === "OWNER",
+    );
 
     return (
         <div className="sl-app-layout">
@@ -105,7 +110,7 @@ export function AppLayout() {
                     <nav
                         aria-label={t("navigationLabel")}
                         className="sl-app-nav">
-                        {appNavigationItems.map((item) => (
+                        {visibleNavigationItems.map((item) => (
                             <NavLink
                                 className={({ isActive }) =>
                                     isActive

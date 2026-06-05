@@ -1454,6 +1454,63 @@ export const resources = {
             goToLogin: "Vai al login",
             backHome: "Torna alla home",
         },
+        administration: {
+            eyebrow: "Gestione gruppo",
+            title: "Amministrazione",
+            subtitle:
+                "Invita collaboratori nel tuo gruppo SerenityLine e assegna il livello di accesso corretto.",
+            loading: "Caricamento dati utente...",
+            accountsLoading: "Caricamento conti...",
+            inviteErrorTitle: "Invito non inviato",
+            inviteErrorFallback:
+                "Non siamo riusciti a inviare l'invito. Controlla i dati e riprova.",
+            inviteSuccess:
+                "Invito creato per {{email}}. L'utente riceverà l'email con il link di accettazione.",
+            submit: "Invia invito",
+            submitting: "Invio invito...",
+            invite: {
+                eyebrow: "Nuovo collaboratore",
+                title: "Invita una persona",
+                subtitle:
+                    "L'invitato riceverà un link per impostare la password e accedere al gruppo.",
+            },
+            fields: {
+                userName: "Nome",
+                email: "Email",
+                role: "Ruolo",
+                locale: "Lingua invito",
+                paymentEmailReminders:
+                    "Attiva promemoria email per questo utente",
+            },
+            roles: {
+                SUPER_COLLABORATOR: "Collaboratore avanzato",
+                VIEWER_COLLABORATOR: "Collaboratore lettura",
+                COLLABORATOR: "Collaboratore su conti selezionati",
+            },
+            roleHints: {
+                SUPER_COLLABORATOR:
+                    "Accesso operativo al gruppo. Non richiede conti selezionati.",
+                VIEWER_COLLABORATOR:
+                    "Vede tutti i conti. Opera solo su conti selezionati.",
+                COLLABORATOR: "Accesso limitato ai soli conti selezionati.",
+            },
+            locales: {
+                "it-IT": "Italiano",
+                "en-US": "Inglese",
+            },
+            accounts: {
+                title: "Conti accessibili",
+                description:
+                    "Seleziona almeno un conto per un collaboratore limitato.",
+                empty: "Non ci sono conti disponibili.",
+            },
+            validation: {
+                userNameRequired: "Inserisci il nome dell'utente.",
+                emailRequired: "Inserisci l'email dell'utente.",
+                accountRequired:
+                    "Seleziona almeno un conto per invitare un collaboratore limitato.",
+            },
+        },
         settings: {
             eyebrow: "Account",
             title: "Impostazioni",
@@ -3022,6 +3079,62 @@ export const resources = {
             passwordTooShort: "Password must be at least 10 characters long.",
             goToLogin: "Go to login",
             backHome: "Back to home",
+        },
+        administration: {
+            eyebrow: "Group management",
+            title: "Administration",
+            subtitle:
+                "Invite collaborators into your SerenityLine group and assign the right access level.",
+            loading: "Loading user data...",
+            accountsLoading: "Loading accounts...",
+            inviteErrorTitle: "Invitation not sent",
+            inviteErrorFallback:
+                "We could not send the invitation. Check the details and try again.",
+            inviteSuccess:
+                "Invitation created for {{email}}. The user will receive the email with the acceptance link.",
+            submit: "Send invitation",
+            submitting: "Sending invitation...",
+            invite: {
+                eyebrow: "New collaborator",
+                title: "Invite someone",
+                subtitle:
+                    "The invited user will receive a link to set their password and access the group.",
+            },
+            fields: {
+                userName: "Name",
+                email: "Email",
+                role: "Role",
+                locale: "Invitation language",
+                paymentEmailReminders: "Enable email reminders for this user",
+            },
+            roles: {
+                SUPER_COLLABORATOR: "Advanced collaborator",
+                VIEWER_COLLABORATOR: "Read-only collaborator",
+                COLLABORATOR: "Collaborator on selected accounts",
+            },
+            roleHints: {
+                SUPER_COLLABORATOR:
+                    "Operational group access. No selected accounts required.",
+                VIEWER_COLLABORATOR:
+                    "See all accounts. Operate only on selected accounts.",
+                COLLABORATOR: "Limited access to selected accounts only.",
+            },
+            locales: {
+                "it-IT": "Italian",
+                "en-US": "English",
+            },
+            accounts: {
+                title: "Accessible accounts",
+                description:
+                    "Select at least one account for a limited collaborator.",
+                empty: "There are no accounts available.",
+            },
+            validation: {
+                userNameRequired: "Enter the user's name.",
+                emailRequired: "Enter the user's email.",
+                accountRequired:
+                    "Select at least one account to invite a limited collaborator.",
+            },
         },
         settings: {
             eyebrow: "Account",
