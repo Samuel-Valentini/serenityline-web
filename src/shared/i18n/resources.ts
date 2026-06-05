@@ -151,6 +151,14 @@ export const resources = {
             emptyValue: "—",
             loadErrorFallback:
                 "Non è stato possibile caricare la SerenityLine. Riprova tra qualche istante.",
+            buckets: {
+                title: "Portafogli",
+                description:
+                    "Accendi i portafogli da visualizzare come fasce sopra la SerenityLine.",
+                clear: "Nascondi tutti",
+                empty: "Non ci sono portafogli per questa valuta.",
+                band: "Fascia",
+            },
             simulations: {
                 title: "Simulazioni",
                 description:
@@ -1667,6 +1675,14 @@ export const resources = {
             emptyValue: "—",
             loadErrorFallback:
                 "We could not load SerenityLine. Please try again in a moment.",
+            buckets: {
+                title: "Portfolios",
+                description:
+                    "Toggle portfolios to display them as bands above the SerenityLine.",
+                clear: "Hide all",
+                empty: "There are no portfolios for this currency.",
+                band: "Band",
+            },
             simulations: {
                 title: "Simulations",
                 description:

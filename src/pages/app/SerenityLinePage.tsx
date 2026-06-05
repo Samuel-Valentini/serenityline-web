@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, UIEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
+    Area,
     CartesianGrid,
+    ComposedChart,
     Line,
-    LineChart,
     ReferenceDot,
     ReferenceLine,
     ResponsiveContainer,
@@ -29,6 +30,7 @@ import {
 } from "../../features/finance/dailyBalances/financeDailyBalancesTypes";
 import {
     selectAccounts,
+    selectBuckets,
     selectFinanceDataError,
     selectFinanceDataStatus,
     selectSimulationGroups,
@@ -41,7 +43,7 @@ type SerenityLineChartPoint = {
     serenitylineMinimum: number | null;
     serenitylineMaximumLabel?: string;
     serenitylineMinimumLabel?: string;
-    [key: string]: string | number | null | undefined;
+    [key: string]: string | number | [number, number] | null | undefined;
 };
 
 type SerenityLineMaximumMarker = SerenityLineChartPoint & {
@@ -92,7 +94,7 @@ type TooltipPayloadItem = {
     color?: string;
     dataKey?: string | number;
     name?: string | number;
-    value?: number;
+    value?: number | [number, number];
     payload?: SerenityLineChartPoint;
 };
 
@@ -111,6 +113,14 @@ const SERENITYLINE_SIMULATION_COLORS = [
     "#9eb2d6",
     "#d2b88f",
     "#b8bd8f",
+];
+const SERENITYLINE_BUCKET_COLORS = [
+    "#b9d8c6",
+    "#ead4a7",
+    "#c9c7e8",
+    "#f0c0b5",
+    "#bfd8e8",
+    "#d7d0ad",
 ];
 
 function getSelectedAccountsSerenityLineValue(
@@ -352,6 +362,51 @@ function getSimulationColor(index: number) {
     ];
 }
 
+function getBucketBandDataKey(bucketId: string) {
+    return `bucketBand_${bucketId}`;
+}
+
+function getBucketValueDataKey(bucketId: string) {
+    return `bucketValue_${bucketId}`;
+}
+
+function getBucketColor(index: number) {
+    return SERENITYLINE_BUCKET_COLORS[
+        index % SERENITYLINE_BUCKET_COLORS.length
+    ];
+}
+
+function getBucketDisplayName(bucket: { bucketName: string | null }) {
+    return bucket.bucketName?.trim() || "Portafoglio";
+}
+
+function getSelectedAccountsBucketBalanceValue(
+    balance: FinanceCalendarDailyBalanceResponseDto,
+    currency: string,
+    selectedAccountIds: string[],
+    bucketId: string,
+) {
+    if (selectedAccountIds.length === 0) {
+        return 0;
+    }
+
+    const selectedAccountIdsSet = new Set(selectedAccountIds);
+
+    return balance.accounts
+        .filter(
+            (account) =>
+                account.currency === currency &&
+                selectedAccountIdsSet.has(account.accountId),
+        )
+        .reduce((total, account) => {
+            const bucketBalance =
+                account.buckets.find((bucket) => bucket.bucketId === bucketId)
+                    ?.endOfDayBucketBalance ?? 0;
+
+            return total + Number(bucketBalance);
+        }, 0);
+}
+
 function SerenityLineTooltip({
     active,
     label,
@@ -384,16 +439,26 @@ function SerenityLineTooltip({
         <div className="sl-serenityline-tooltip">
             <strong>{dateFormatter(label)}</strong>
 
-            {visiblePayload.map((item) => (
-                <span key={String(item.dataKey)}>
-                    <i
-                        aria-hidden="true"
-                        className="sl-serenityline-tooltip-dot"
-                        style={{ backgroundColor: item.color }}
-                    />
-                    {item.name}: {amountFormatter.format(item.value ?? 0)}
-                </span>
-            ))}
+            {visiblePayload.map((item) => {
+                const value = Array.isArray(item.value)
+                    ? item.value[1] - item.value[0]
+                    : item.value;
+
+                if (typeof value !== "number") {
+                    return null;
+                }
+
+                return (
+                    <span key={String(item.dataKey)}>
+                        <i
+                            aria-hidden="true"
+                            className="sl-serenityline-tooltip-dot"
+                            style={{ backgroundColor: item.color }}
+                        />
+                        {item.name}: {amountFormatter.format(value)}
+                    </span>
+                );
+            })}
         </div>
     );
 }
@@ -425,6 +490,7 @@ export function SerenityLinePage() {
     );
 
     const simulationGroups = useAppSelector(selectSimulationGroups);
+    const buckets = useAppSelector(selectBuckets);
     const dailyBalanceScenarios = useAppSelector(
         (state) => state.financeDailyBalances.scenarios,
     );
@@ -452,6 +518,8 @@ export function SerenityLinePage() {
     const [simulationSelectionError, setSimulationSelectionError] = useState<
         string | null
     >(null);
+    const [selectedBucketIdsByCurrency, setSelectedBucketIdsByCurrency] =
+        useState<Record<string, string[]>>({});
 
     const accountCurrencies = useMemo(
         () => [...new Set(accounts.map((account) => account.currency))].sort(),
@@ -505,6 +573,45 @@ export function SerenityLinePage() {
     const currencyAccountIds = useMemo(
         () => currencyAccounts.map((account) => account.accountId),
         [currencyAccounts],
+    );
+
+    const currencyBuckets = useMemo(
+        () =>
+            buckets.filter(
+                (bucket) =>
+                    bucket.bucketClosedAt == null &&
+                    bucket.accountIds.some((accountId) =>
+                        currencyAccountIds.includes(accountId),
+                    ),
+            ),
+        [buckets, currencyAccountIds],
+    );
+
+    const currencyBucketIds = useMemo(
+        () => currencyBuckets.map((bucket) => bucket.bucketId),
+        [currencyBuckets],
+    );
+
+    const selectedBucketIds = useMemo(() => {
+        const selectedIds = selectedBucketIdsByCurrency[selectedCurrency] ?? [];
+        const validBucketIds = new Set(currencyBucketIds);
+
+        return selectedIds.filter((bucketId) => validBucketIds.has(bucketId));
+    }, [currencyBucketIds, selectedBucketIdsByCurrency, selectedCurrency]);
+
+    const selectedBuckets = useMemo(
+        () =>
+            selectedBucketIds
+                .map((bucketId) =>
+                    currencyBuckets.find(
+                        (bucket) => bucket.bucketId === bucketId,
+                    ),
+                )
+                .filter(
+                    (bucket): bucket is (typeof currencyBuckets)[number] =>
+                        bucket != null,
+                ),
+        [currencyBuckets, selectedBucketIds],
     );
 
     const selectedAccountIds = useMemo(() => {
@@ -607,6 +714,80 @@ export function SerenityLinePage() {
         [chartData, simulationLines],
     );
 
+    const balancesByDate = useMemo(
+        () => new Map(balances.map((balance) => [balance.date, balance])),
+        [balances],
+    );
+
+    const bucketBands = useMemo(
+        () =>
+            selectedBuckets.map((bucket, index) => ({
+                bucket,
+                color: getBucketColor(index),
+                dataKey: getBucketBandDataKey(bucket.bucketId),
+                name: getBucketDisplayName(bucket),
+                valueDataKey: getBucketValueDataKey(bucket.bucketId),
+            })),
+        [selectedBuckets],
+    );
+
+    const chartDataWithLayers = useMemo(
+        () =>
+            chartDataWithSimulations.map((point) => {
+                const layeredPoint: SerenityLineChartPoint = {
+                    ...point,
+                };
+
+                const dailyBalance = balancesByDate.get(point.date);
+
+                if (!dailyBalance || typeof point.serenityline !== "number") {
+                    bucketBands.forEach((bucketBand) => {
+                        layeredPoint[bucketBand.dataKey] = null;
+                        layeredPoint[bucketBand.valueDataKey] = null;
+                    });
+
+                    return layeredPoint;
+                }
+
+                let cumulativeTop = point.serenityline;
+
+                bucketBands.forEach((bucketBand) => {
+                    const bucketBalance = Math.max(
+                        0,
+                        getSelectedAccountsBucketBalanceValue(
+                            dailyBalance,
+                            selectedCurrency,
+                            selectedAccountIds,
+                            bucketBand.bucket.bucketId,
+                        ),
+                    );
+
+                    if (bucketBalance <= 0) {
+                        layeredPoint[bucketBand.dataKey] = null;
+                        layeredPoint[bucketBand.valueDataKey] = 0;
+                        return;
+                    }
+
+                    const lowerBound = cumulativeTop;
+                    const upperBound = cumulativeTop + bucketBalance;
+
+                    layeredPoint[bucketBand.dataKey] = [lowerBound, upperBound];
+                    layeredPoint[bucketBand.valueDataKey] = bucketBalance;
+
+                    cumulativeTop = upperBound;
+                });
+
+                return layeredPoint;
+            }),
+        [
+            balancesByDate,
+            bucketBands,
+            chartDataWithSimulations,
+            selectedAccountIds,
+            selectedCurrency,
+        ],
+    );
+
     const maximumMarkers = useMemo(
         () => chartData.filter(isSerenityLineMaximumMarker),
         [chartData],
@@ -619,9 +800,8 @@ export function SerenityLinePage() {
 
     const chartWidth = Math.max(
         SERENITYLINE_CHART_MIN_WIDTH_PX,
-        chartDataWithSimulations.length * SERENITYLINE_CHART_DAY_WIDTH_PX,
+        chartDataWithLayers.length * SERENITYLINE_CHART_DAY_WIDTH_PX,
     );
-
     const firstAccountOpeningDate = useMemo(
         () => getFirstAccountOpeningDateForCurrency(accounts, selectedCurrency),
         [accounts, selectedCurrency],
@@ -964,6 +1144,39 @@ export function SerenityLinePage() {
         return selectedSimulationGroupIds.includes(simulationGroupId);
     }
 
+    function handleToggleBucket(bucketId: string) {
+        setSelectedBucketIdsByCurrency((currentSelectedBucketIdsByCurrency) => {
+            const currentSelectedBucketIds =
+                currentSelectedBucketIdsByCurrency[selectedCurrency] ?? [];
+
+            const nextSelectedBucketIds = currentSelectedBucketIds.includes(
+                bucketId,
+            )
+                ? currentSelectedBucketIds.filter(
+                      (currentBucketId) => currentBucketId !== bucketId,
+                  )
+                : [...currentSelectedBucketIds, bucketId];
+
+            return {
+                ...currentSelectedBucketIdsByCurrency,
+                [selectedCurrency]: nextSelectedBucketIds,
+            };
+        });
+    }
+
+    function handleClearBuckets() {
+        setSelectedBucketIdsByCurrency(
+            (currentSelectedBucketIdsByCurrency) => ({
+                ...currentSelectedBucketIdsByCurrency,
+                [selectedCurrency]: [],
+            }),
+        );
+    }
+
+    function isBucketSelected(bucketId: string) {
+        return selectedBucketIds.includes(bucketId);
+    }
+
     return (
         <section className="sl-page sl-serenityline-page">
             <header className="sl-page-header">
@@ -1027,8 +1240,8 @@ export function SerenityLinePage() {
                                 className="sl-serenityline-chart-canvas"
                                 style={{ width: `${chartWidth}px` }}>
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart
-                                        data={chartDataWithSimulations}
+                                    <ComposedChart
+                                        data={chartDataWithLayers}
                                         margin={{
                                             top: 28,
                                             right: 40,
@@ -1095,6 +1308,21 @@ export function SerenityLinePage() {
                                             strokeDasharray="4 4"
                                             x={todayIsoDate}
                                         />
+                                        {bucketBands.map((bucketBand) => (
+                                            <Area
+                                                connectNulls={false}
+                                                dataKey={bucketBand.dataKey}
+                                                fill={bucketBand.color}
+                                                fillOpacity={0.28}
+                                                isAnimationActive={false}
+                                                key={bucketBand.dataKey}
+                                                name={bucketBand.name}
+                                                stroke={bucketBand.color}
+                                                strokeOpacity={0.85}
+                                                strokeWidth={1.2}
+                                                type="natural"
+                                            />
+                                        ))}
 
                                         <Line
                                             activeDot={{ r: 5 }}
@@ -1209,7 +1437,7 @@ export function SerenityLinePage() {
                                                 }}
                                             />
                                         ))}
-                                    </LineChart>
+                                    </ComposedChart>
                                 </ResponsiveContainer>
                             </div>
                         </div>
@@ -1310,6 +1538,67 @@ export function SerenityLinePage() {
                                             type="button">
                                             <span>{account.accountName}</span>
                                             <small>{account.currency}</small>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="sl-serenityline-control-section">
+                        <div className="sl-serenityline-control-section-heading">
+                            <div>
+                                <h3 className="h6">{t("buckets.title")}</h3>
+                                <p>{t("buckets.description")}</p>
+                            </div>
+
+                            <div className="sl-serenityline-control-actions">
+                                <button
+                                    className="btn btn-sm btn-outline-secondary"
+                                    onClick={handleClearBuckets}
+                                    type="button">
+                                    {t("buckets.clear")}
+                                </button>
+                            </div>
+                        </div>
+
+                        {currencyBuckets.length === 0 ? (
+                            <p className="text-muted mb-0">
+                                {t("buckets.empty")}
+                            </p>
+                        ) : (
+                            <div className="sl-serenityline-account-toggles">
+                                {currencyBuckets.map((bucket, index) => {
+                                    const isSelected = isBucketSelected(
+                                        bucket.bucketId,
+                                    );
+                                    const bucketColor = getBucketColor(index);
+
+                                    return (
+                                        <button
+                                            aria-pressed={isSelected}
+                                            className={
+                                                isSelected
+                                                    ? "sl-serenityline-toggle-chip sl-serenityline-bucket-chip is-selected"
+                                                    : "sl-serenityline-toggle-chip sl-serenityline-bucket-chip"
+                                            }
+                                            key={bucket.bucketId}
+                                            onClick={() =>
+                                                handleToggleBucket(
+                                                    bucket.bucketId,
+                                                )
+                                            }
+                                            style={
+                                                {
+                                                    "--sl-bucket-color":
+                                                        bucketColor,
+                                                } as CSSProperties
+                                            }
+                                            type="button">
+                                            <span>
+                                                {getBucketDisplayName(bucket)}
+                                            </span>
+                                            <small>{t("buckets.band")}</small>
                                         </button>
                                     );
                                 })}

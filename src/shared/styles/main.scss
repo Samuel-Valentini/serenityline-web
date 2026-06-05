@@ -982,3 +982,29 @@ h6 {
     stroke-width: 4px;
     stroke-linejoin: round;
 }
+
+.sl-serenityline-bucket-chip {
+    position: relative;
+}
+
+.sl-serenityline-bucket-chip::before {
+    width: 1.8rem;
+    height: 0.7rem;
+    border: 1px solid var(--sl-bucket-color, #b9d8c6);
+    border-radius: 999px;
+    background: color-mix(
+        in srgb,
+        var(--sl-bucket-color, #b9d8c6) 34%,
+        transparent
+    );
+    content: "";
+}
+
+.sl-serenityline-bucket-chip.is-selected {
+    border-color: var(--sl-bucket-color, #b9d8c6);
+    background: color-mix(
+        in srgb,
+        var(--sl-bucket-color, #b9d8c6) 16%,
+        var(--sl-color-card)
+    );
+}
