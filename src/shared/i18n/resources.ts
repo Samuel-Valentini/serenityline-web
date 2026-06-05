@@ -9,12 +9,15 @@ export const resources = {
                 "SerenityLine ti aiuta a visualizzare la tua liquidità futura e a prendere decisioni con più chiarezza.",
         },
         publicShell: {
+            brandLabel: "Vai alla homepage di SerenityLine",
             navigationLabel: "Navigazione pubblica",
             home: "Home",
             howItWorks: "Come funziona",
             security: "Sicurezza",
             login: "Accedi",
             register: "Crea account",
+            dashboard: "Dashboard",
+            logout: "Logout",
             footerClaim: "Pianifica, prevedi, vivi sereno.",
         },
         home: {
@@ -2223,12 +2226,15 @@ export const resources = {
                 "SerenityLine helps you visualize your future liquidity and make clearer decisions.",
         },
         publicShell: {
+            brandLabel: "Go to the SerenityLine homepage",
             navigationLabel: "Public navigation",
             home: "Home",
             howItWorks: "How it works",
             security: "Security",
             login: "Sign in",
             register: "Create account",
+            dashboard: "Dashboard",
+            logout: "Logout",
             footerClaim: "Plan, forecast, live with peace of mind.",
         },
         home: {

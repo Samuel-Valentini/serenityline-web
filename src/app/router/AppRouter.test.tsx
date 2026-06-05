@@ -130,6 +130,31 @@ describe("AppRouter", () => {
             }),
         ).toBeInTheDocument();
 
-        expect(screen.getByText("Sicurezza progettata, non promessa")).toBeInTheDocument();
+        expect(
+            screen.getByText("Sicurezza progettata, non promessa"),
+        ).toBeInTheDocument();
+    });
+
+    it("shows dashboard and logout in the public header for authenticated users", () => {
+        store.dispatch(authAuthenticated(user));
+
+        renderRouterAt("/");
+
+        expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute(
+            "href",
+            "/app/dashboard",
+        );
+
+        expect(
+            screen.getByRole("button", { name: "Logout" }),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByRole("link", { name: "Accedi" }),
+        ).not.toBeInTheDocument();
+
+        expect(
+            screen.queryByRole("link", { name: "Crea account" }),
+        ).not.toBeInTheDocument();
     });
 });
