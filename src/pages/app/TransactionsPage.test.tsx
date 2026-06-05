@@ -52,8 +52,6 @@ const category = {
     active: true,
 };
 
-
-
 const createdTransaction = {
     transactionId: "transaction-id",
     transactionDescription: "Affitto",
@@ -148,6 +146,38 @@ function renderPage() {
     );
 }
 
+function getTransactionRow(transactionDescription: string) {
+    const transactionCell = screen.getByText(transactionDescription);
+    const row = transactionCell.closest("tr");
+
+    if (!row) {
+        throw new Error(
+            `Transaction row not found for ${transactionDescription}`,
+        );
+    }
+
+    return row;
+}
+
+function getEditButtonForTransaction(transactionDescription: string) {
+    return within(getTransactionRow(transactionDescription)).getByRole(
+        "button",
+        { name: "Modifica" },
+    );
+}
+
+function getEditFormCell() {
+    const editFormCell = screen
+        .getByRole("heading", { name: "Modifica transazione" })
+        .closest("td");
+
+    if (!editFormCell) {
+        throw new Error("Edit form cell not found");
+    }
+
+    return editFormCell;
+}
+
 describe("TransactionsPage", () => {
     beforeEach(async () => {
         await i18n.changeLanguage("it");
@@ -203,7 +233,7 @@ describe("TransactionsPage", () => {
 
         expect(await screen.findByText("Affitto")).toBeInTheDocument();
         expect(screen.getByText("Confermata")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Modifica" })).toBeEnabled();
+        expect(getEditButtonForTransaction("Affitto")).toBeEnabled();
     });
 
     it("edits a transaction added in the current session", async () => {
@@ -235,26 +265,23 @@ describe("TransactionsPage", () => {
 
         expect(await screen.findByText("Affitto")).toBeInTheDocument();
 
-        fireEvent.click(screen.getByRole("button", { name: "Modifica" }));
+        fireEvent.click(getEditButtonForTransaction("Affitto"));
 
-        const editFormCell = screen
-            .getByRole("heading", { name: "Modifica transazione" })
-            .closest("td");
+        const editFormCell = getEditFormCell();
 
-        expect(editFormCell).not.toBeNull();
-
-        fireEvent.change(within(editFormCell!).getByLabelText("Descrizione"), {
+        fireEvent.change(within(editFormCell).getByLabelText("Descrizione"), {
             target: { value: "Affitto aggiornato" },
         });
-        fireEvent.change(within(editFormCell!).getByLabelText("Importo"), {
+        fireEvent.change(within(editFormCell).getByLabelText("Importo"), {
             target: { value: "-900,00" },
         });
 
         fireEvent.click(
-            within(editFormCell!).getByRole("button", {
+            within(editFormCell).getByRole("button", {
                 name: "Salva modifiche",
             }),
         );
+
         await waitFor(() => {
             expect(updateTransaction).toHaveBeenCalledWith(
                 "transaction-id",
@@ -314,23 +341,19 @@ describe("TransactionsPage", () => {
             screen.queryByText("Ricorrente confermata"),
         ).not.toBeInTheDocument();
 
-        fireEvent.click(screen.getByRole("button", { name: "Modifica" }));
+        fireEvent.click(getEditButtonForTransaction("Spesa farmacia"));
 
-        const editFormCell = screen
-            .getByRole("heading", { name: "Modifica transazione" })
-            .closest("td");
+        const editFormCell = getEditFormCell();
 
-        expect(editFormCell).not.toBeNull();
-
-        fireEvent.change(within(editFormCell!).getByLabelText("Descrizione"), {
+        fireEvent.change(within(editFormCell).getByLabelText("Descrizione"), {
             target: { value: "Spesa farmacia aggiornata" },
         });
-        fireEvent.change(within(editFormCell!).getByLabelText("Importo"), {
+        fireEvent.change(within(editFormCell).getByLabelText("Importo"), {
             target: { value: "-45,00" },
         });
 
         fireEvent.click(
-            within(editFormCell!).getByRole("button", {
+            within(editFormCell).getByRole("button", {
                 name: "Salva modifiche",
             }),
         );
@@ -379,23 +402,19 @@ describe("TransactionsPage", () => {
 
         expect(await screen.findByText("Affitto")).toBeInTheDocument();
 
-        fireEvent.click(screen.getByRole("button", { name: "Modifica" }));
+        fireEvent.click(getEditButtonForTransaction("Affitto"));
 
-        const editFormCell = screen
-            .getByRole("heading", { name: "Modifica transazione" })
-            .closest("td");
+        const editFormCell = getEditFormCell();
 
-        expect(editFormCell).not.toBeNull();
-
-        fireEvent.change(within(editFormCell!).getByLabelText(/Carta/i), {
+        fireEvent.change(within(editFormCell).getByLabelText(/Carta/i), {
             target: { value: "credit-card-id" },
         });
-        fireEvent.change(within(editFormCell!).getByLabelText(/Portafoglio/i), {
+        fireEvent.change(within(editFormCell).getByLabelText(/Portafoglio/i), {
             target: { value: "bucket-id" },
         });
 
         fireEvent.click(
-            within(editFormCell!).getByRole("button", {
+            within(editFormCell).getByRole("button", {
                 name: "Salva modifiche",
             }),
         );

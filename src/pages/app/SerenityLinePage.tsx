@@ -1682,10 +1682,6 @@ export function SerenityLinePage() {
                                 </div>
                             )}
                         </div>
-
-                        <div className="sl-serenityline-control-note">
-                            {t("controls.nextSteps")}
-                        </div>
                     </div>
 
                     <div className="sl-serenityline-control-section">

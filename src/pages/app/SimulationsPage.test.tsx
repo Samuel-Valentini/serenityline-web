@@ -14,13 +14,13 @@ import {
     createRecurringTransaction,
     createSimulationGroup,
     linkSimulationGroupAccount,
+    listRecurringTransactions,
+    listTransactions,
+    patchRecurringTransaction,
     restoreSimulationGroup,
     unlinkSimulationGroupAccount,
     updateSimulationGroup,
-    listRecurringTransactions,
-    listTransactions,
     updateTransaction,
-    patchRecurringTransaction,
 } from "../../features/finance/api/financeApi";
 import {
     financeDataCleared,
@@ -36,13 +36,13 @@ vi.mock("../../features/finance/api/financeApi", () => ({
     createSimulationGroup: vi.fn(),
     createTransaction: vi.fn(),
     linkSimulationGroupAccount: vi.fn(),
+    listRecurringTransactions: vi.fn(),
+    listTransactions: vi.fn(),
+    patchRecurringTransaction: vi.fn(),
     restoreSimulationGroup: vi.fn(),
     unlinkSimulationGroupAccount: vi.fn(),
     updateSimulationGroup: vi.fn(),
-    listRecurringTransactions: vi.fn(),
-    listTransactions: vi.fn(),
     updateTransaction: vi.fn(),
-    patchRecurringTransaction: vi.fn(),
 }));
 
 const category = {
@@ -154,6 +154,14 @@ const simulatedTransaction = {
     transactionUpdatedAt: "2026-06-05T10:00:00Z",
 };
 
+const updatedSimulatedTransaction = {
+    ...simulatedTransaction,
+    transactionDescription: "Spesa aggiornata",
+    transactionAmount: -75,
+    transactionChargeDate: "2026-06-06",
+    transactionUpdatedAt: "2026-06-06T10:00:00Z",
+};
+
 const simulatedRecurringTransaction = {
     recurringTransactionId: "recurring-transaction-id",
     recurringTransactionAmountIsAdjustable: false,
@@ -197,14 +205,6 @@ const updatedSimulatedRecurringTransaction = {
     recurringTransactionUpdatedAt: "2026-07-01T10:00:00Z",
 };
 
-const updatedSimulatedTransaction = {
-    ...simulatedTransaction,
-    transactionDescription: "Spesa aggiornata",
-    transactionAmount: -75,
-    transactionChargeDate: "2026-06-06",
-    transactionUpdatedAt: "2026-06-06T10:00:00Z",
-};
-
 const referenceData: FinanceReferenceData = {
     accounts: [account, secondAccount],
     creditCards: [creditCard],
@@ -213,6 +213,37 @@ const referenceData: FinanceReferenceData = {
     simulationGroups: [archivedSimulationGroup, simulationGroup],
     financialPriorities: [financialPriority],
 };
+
+function renderPage() {
+    render(
+        <AppProviders enableAuthBootstrap={false}>
+            <SimulationsPage />
+        </AppProviders>,
+    );
+}
+
+function getSimulationGroupRow(simulationGroupName: string) {
+    const nameCellContent = screen.getByText(simulationGroupName);
+    const row = nameCellContent.closest("tr");
+
+    if (!row) {
+        throw new Error(
+            `Simulation group row not found: ${simulationGroupName}`,
+        );
+    }
+
+    return row;
+}
+
+function getSimulationGroupActionButton(
+    simulationGroupName: string,
+    actionName: string,
+) {
+    return within(getSimulationGroupRow(simulationGroupName)).getByRole(
+        "button",
+        { name: actionName },
+    );
+}
 
 function submitSimulationRecurringForm() {
     const descriptionField = document.getElementById(
@@ -254,14 +285,6 @@ function fillRequiredSimulationRecurringFields() {
     changeSimulationRecurringField("account", "account-id");
 }
 
-function renderPage() {
-    render(
-        <AppProviders enableAuthBootstrap={false}>
-            <SimulationsPage />
-        </AppProviders>,
-    );
-}
-
 async function openSimulatedTransactionEditForm() {
     vi.mocked(listRecurringTransactions).mockResolvedValueOnce([]);
     vi.mocked(listTransactions).mockResolvedValueOnce([simulatedTransaction]);
@@ -269,9 +292,10 @@ async function openSimulatedTransactionEditForm() {
     renderPage();
 
     fireEvent.click(
-        screen.getByRole("button", {
-            name: "Visualizza movimenti collegati",
-        }),
+        getSimulationGroupActionButton(
+            "Scenario base",
+            "Visualizza movimenti collegati",
+        ),
     );
 
     const transactionDescription = await screen.findByText("Spesa simulata");
@@ -322,9 +346,10 @@ async function openSimulatedRecurringTransactionEditForm() {
     renderPage();
 
     fireEvent.click(
-        screen.getByRole("button", {
-            name: "Visualizza movimenti collegati",
-        }),
+        getSimulationGroupActionButton(
+            "Scenario base",
+            "Visualizza movimenti collegati",
+        ),
     );
 
     const recurringDescription = await screen.findByText("Affitto simulato");
@@ -510,20 +535,31 @@ describe("SimulationsPage", () => {
 
         renderPage();
 
-        fireEvent.click(screen.getByRole("button", { name: "Modifica" }));
+        const simulationGroupRow = getSimulationGroupRow("Scenario base");
 
-        const nameFields = screen.getAllByLabelText("Nome simulazione");
-        const descriptionFields = screen.getAllByLabelText(/Descrizione/i);
+        fireEvent.click(
+            within(simulationGroupRow).getByRole("button", {
+                name: "Modifica",
+            }),
+        );
 
-        fireEvent.change(nameFields[1], {
-            target: { value: "Scenario aggiornato" },
-        });
+        fireEvent.change(
+            within(simulationGroupRow).getByLabelText("Nome simulazione"),
+            {
+                target: { value: "Scenario aggiornato" },
+            },
+        );
 
-        fireEvent.change(descriptionFields[1], {
-            target: { value: "Descrizione aggiornata" },
-        });
+        fireEvent.change(
+            within(simulationGroupRow).getByLabelText(/Descrizione/i),
+            {
+                target: { value: "Descrizione aggiornata" },
+            },
+        );
 
-        fireEvent.click(screen.getByRole("button", { name: "Salva" }));
+        fireEvent.click(
+            within(simulationGroupRow).getByRole("button", { name: "Salva" }),
+        );
 
         await waitFor(() => {
             expect(updateSimulationGroup).toHaveBeenCalledWith(
@@ -552,15 +588,24 @@ describe("SimulationsPage", () => {
     it("shows validation error when edited simulation name is missing", async () => {
         renderPage();
 
-        fireEvent.click(screen.getByRole("button", { name: "Modifica" }));
+        const simulationGroupRow = getSimulationGroupRow("Scenario base");
 
-        const nameFields = screen.getAllByLabelText("Nome simulazione");
+        fireEvent.click(
+            within(simulationGroupRow).getByRole("button", {
+                name: "Modifica",
+            }),
+        );
 
-        fireEvent.change(nameFields[1], {
-            target: { value: "" },
-        });
+        fireEvent.change(
+            within(simulationGroupRow).getByLabelText("Nome simulazione"),
+            {
+                target: { value: "" },
+            },
+        );
 
-        fireEvent.click(screen.getByRole("button", { name: "Salva" }));
+        fireEvent.click(
+            within(simulationGroupRow).getByRole("button", { name: "Salva" }),
+        );
 
         expect(
             await screen.findByText("Inserisci un nome per la simulazione."),
@@ -580,7 +625,9 @@ describe("SimulationsPage", () => {
 
         renderPage();
 
-        fireEvent.click(screen.getByRole("button", { name: "Archivia" }));
+        fireEvent.click(
+            getSimulationGroupActionButton("Scenario base", "Archivia"),
+        );
 
         await waitFor(() => {
             expect(archiveSimulationGroup).toHaveBeenCalledWith(
@@ -614,7 +661,9 @@ describe("SimulationsPage", () => {
 
         renderPage();
 
-        fireEvent.click(screen.getByRole("button", { name: "Ripristina" }));
+        fireEvent.click(
+            getSimulationGroupActionButton("Scenario archiviato", "Ripristina"),
+        );
 
         await waitFor(() => {
             expect(restoreSimulationGroup).toHaveBeenCalledWith(
@@ -648,11 +697,17 @@ describe("SimulationsPage", () => {
 
         renderPage();
 
-        fireEvent.click(screen.getByRole("button", { name: "Gestisci conti" }));
+        const simulationGroupRow = getSimulationGroupRow("Scenario base");
 
-        const table = screen.getByRole("table");
+        fireEvent.click(
+            within(simulationGroupRow).getByRole("button", {
+                name: "Gestisci conti",
+            }),
+        );
 
-        fireEvent.click(within(table).getByLabelText("Conto riserva"));
+        fireEvent.click(
+            within(simulationGroupRow).getByLabelText("Conto riserva"),
+        );
 
         await waitFor(() => {
             expect(linkSimulationGroupAccount).toHaveBeenCalledWith(
@@ -701,11 +756,17 @@ describe("SimulationsPage", () => {
 
         renderPage();
 
-        fireEvent.click(screen.getByRole("button", { name: "Gestisci conti" }));
+        const simulationGroupRow = getSimulationGroupRow("Scenario base");
 
-        const table = screen.getByRole("table");
+        fireEvent.click(
+            within(simulationGroupRow).getByRole("button", {
+                name: "Gestisci conti",
+            }),
+        );
 
-        fireEvent.click(within(table).getByLabelText("Conto principale"));
+        fireEvent.click(
+            within(simulationGroupRow).getByLabelText("Conto principale"),
+        );
 
         await waitFor(() => {
             expect(unlinkSimulationGroupAccount).toHaveBeenCalledWith(
@@ -728,11 +789,17 @@ describe("SimulationsPage", () => {
     it("prevents unlinking the last account from an active simulation group", async () => {
         renderPage();
 
-        fireEvent.click(screen.getByRole("button", { name: "Gestisci conti" }));
+        const simulationGroupRow = getSimulationGroupRow("Scenario base");
 
-        const table = screen.getByRole("table");
+        fireEvent.click(
+            within(simulationGroupRow).getByRole("button", {
+                name: "Gestisci conti",
+            }),
+        );
 
-        fireEvent.click(within(table).getByLabelText("Conto principale"));
+        fireEvent.click(
+            within(simulationGroupRow).getByLabelText("Conto principale"),
+        );
 
         expect(
             await screen.findByText("Seleziona almeno un conto."),
@@ -745,20 +812,30 @@ describe("SimulationsPage", () => {
     it("closes account management mode", () => {
         renderPage();
 
-        fireEvent.click(screen.getByRole("button", { name: "Gestisci conti" }));
+        const simulationGroupRow = getSimulationGroupRow("Scenario base");
+
+        fireEvent.click(
+            within(simulationGroupRow).getByRole("button", {
+                name: "Gestisci conti",
+            }),
+        );
 
         expect(
-            screen.getByRole("button", { name: "Fine" }),
+            within(simulationGroupRow).getByRole("button", { name: "Fine" }),
         ).toBeInTheDocument();
 
-        fireEvent.click(screen.getByRole("button", { name: "Fine" }));
+        fireEvent.click(
+            within(simulationGroupRow).getByRole("button", { name: "Fine" }),
+        );
 
         expect(
-            screen.queryByRole("button", { name: "Fine" }),
+            within(simulationGroupRow).queryByRole("button", { name: "Fine" }),
         ).not.toBeInTheDocument();
 
         expect(
-            screen.getByRole("button", { name: "Gestisci conti" }),
+            within(simulationGroupRow).getByRole("button", {
+                name: "Gestisci conti",
+            }),
         ).toBeInTheDocument();
     });
 
@@ -766,7 +843,10 @@ describe("SimulationsPage", () => {
         renderPage();
 
         fireEvent.click(
-            screen.getByRole("button", { name: "Aggiungi ricorrente" }),
+            getSimulationGroupActionButton(
+                "Scenario base",
+                "Aggiungi ricorrente",
+            ),
         );
 
         expect(
@@ -792,7 +872,10 @@ describe("SimulationsPage", () => {
         renderPage();
 
         fireEvent.click(
-            screen.getByRole("button", { name: "Aggiungi ricorrente" }),
+            getSimulationGroupActionButton(
+                "Scenario base",
+                "Aggiungi ricorrente",
+            ),
         );
 
         fillRequiredSimulationRecurringFields();
@@ -843,7 +926,10 @@ describe("SimulationsPage", () => {
         renderPage();
 
         fireEvent.click(
-            screen.getByRole("button", { name: "Aggiungi ricorrente" }),
+            getSimulationGroupActionButton(
+                "Scenario base",
+                "Aggiungi ricorrente",
+            ),
         );
 
         fillRequiredSimulationRecurringFields();
@@ -892,11 +978,13 @@ describe("SimulationsPage", () => {
         renderPage();
 
         fireEvent.click(
-            screen.getByRole("button", { name: "Aggiungi ricorrente" }),
+            getSimulationGroupActionButton(
+                "Scenario base",
+                "Aggiungi ricorrente",
+            ),
         );
 
         fillRequiredSimulationRecurringFields();
-
         submitSimulationRecurringForm();
 
         expect(
@@ -989,7 +1077,6 @@ describe("SimulationsPage", () => {
         await openSimulatedTransactionEditForm();
 
         changeSimulationTransactionEditField("description", "Spesa aggiornata");
-
         submitSimulationTransactionEditForm();
 
         expect(
@@ -1097,7 +1184,6 @@ describe("SimulationsPage", () => {
         await openSimulatedRecurringTransactionEditForm();
 
         changeSimulationRecurringEditField("description", "Affitto aggiornato");
-
         submitSimulationRecurringEditForm();
 
         expect(

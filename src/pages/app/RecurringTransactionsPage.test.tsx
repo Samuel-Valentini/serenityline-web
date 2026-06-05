@@ -3,6 +3,7 @@ import {
     render,
     screen,
     waitFor,
+    within,
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -311,8 +312,21 @@ describe("RecurringTransactionsPage", () => {
 
         expect(await screen.findByText("Affitto")).toBeInTheDocument();
 
-        expect(screen.getByText("Essenziale")).toBeInTheDocument();
-        expect(screen.getByText("Spese indispensabili.")).toBeInTheDocument();
+        const prioritiesPanel = screen
+            .getByRole("heading", { name: "Priorità finanziarie" })
+            .closest("article");
+
+        expect(prioritiesPanel).not.toBeNull();
+
+        expect(
+            within(prioritiesPanel as HTMLElement).getByText("Essenziale"),
+        ).toBeInTheDocument();
+
+        expect(
+            within(prioritiesPanel as HTMLElement).getByText(
+                "Spese indispensabili.",
+            ),
+        ).toBeInTheDocument();
 
         expect(screen.getByText("Flusso ricorrente")).toBeInTheDocument();
         expect(

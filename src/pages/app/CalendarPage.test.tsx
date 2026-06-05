@@ -221,6 +221,24 @@ function renderPage() {
     );
 }
 
+function openFiltersPanel() {
+    const filtersToggle = screen.getByRole("button", { name: /Filtri/i });
+
+    if (filtersToggle.getAttribute("aria-expanded") !== "true") {
+        fireEvent.click(filtersToggle);
+    }
+}
+
+function openSimulationGroupsPanel() {
+    const simulationsToggle = screen.getByRole("button", {
+        name: /Scenari simulati/i,
+    });
+
+    if (simulationsToggle.getAttribute("aria-expanded") !== "true") {
+        fireEvent.click(simulationsToggle);
+    }
+}
+
 describe("CalendarPage", () => {
     beforeEach(async () => {
         await i18n.changeLanguage("it");
@@ -300,6 +318,8 @@ describe("CalendarPage", () => {
         expect(screen.getByText("Affitto previsto")).toBeInTheDocument();
         expect(screen.getByText("Addebito carta previsto")).toBeInTheDocument();
 
+        openFiltersPanel();
+
         fireEvent.change(screen.getByLabelText("Cerca"), {
             target: { value: "affitto" },
         });
@@ -323,6 +343,8 @@ describe("CalendarPage", () => {
 
         expect(await screen.findByText("Stipendio")).toBeInTheDocument();
         expect(screen.getByText("Affitto previsto")).toBeInTheDocument();
+
+        openFiltersPanel();
 
         fireEvent.change(screen.getByLabelText("Stato conferma"), {
             target: { value: "unconfirmed" },
@@ -463,6 +485,8 @@ describe("CalendarPage", () => {
 
         expect(await screen.findByText("Stipendio")).toBeInTheDocument();
 
+        openSimulationGroupsPanel();
+
         fireEvent.click(
             screen.getByRole("button", { name: "Scenario vacanza" }),
         );
@@ -497,6 +521,8 @@ describe("CalendarPage", () => {
         renderPage();
 
         expect(await screen.findByText("Stipendio")).toBeInTheDocument();
+
+        openSimulationGroupsPanel();
 
         fireEvent.click(
             screen.getByRole("button", { name: "Scenario vacanza" }),
