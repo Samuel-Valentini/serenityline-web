@@ -19,6 +19,7 @@ export const resources = {
             dashboard: "Dashboard",
             logout: "Logout",
             footerClaim: "Pianifica, prevedi, vivi sereno.",
+            languageSwitcherLabel: "Selezione lingua",
         },
         home: {
             hero: {
@@ -2236,6 +2237,7 @@ export const resources = {
             dashboard: "Dashboard",
             logout: "Logout",
             footerClaim: "Plan, forecast, live with peace of mind.",
+            languageSwitcherLabel: "Language selection",
         },
         home: {
             hero: {

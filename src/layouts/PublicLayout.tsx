@@ -9,9 +9,11 @@ import {
 import { logoutUser } from "../features/auth/authThunks";
 import { ROUTES } from "../shared/constants/routes";
 import serenityLineLogo from "../assets/serenityline-logo.svg";
+import type { SupportedLanguage } from "../shared/i18n/resources";
+import { setStoredAnonymousLanguage } from "../app/providers/appLocale";
 
 export function PublicLayout() {
-    const { t } = useTranslation("publicShell");
+    const { t, i18n } = useTranslation("publicShell");
     const dispatch = useAppDispatch();
 
     const authStatus = useAppSelector(selectAuthStatus);
@@ -21,6 +23,17 @@ export function PublicLayout() {
 
     function handleLogout() {
         void dispatch(logoutUser());
+    }
+
+    const currentLanguage: SupportedLanguage =
+        i18n.resolvedLanguage === "en" ? "en" : "it";
+
+    function handleLanguageChange(language: SupportedLanguage) {
+        setStoredAnonymousLanguage(language);
+
+        if (i18n.language !== language) {
+            void i18n.changeLanguage(language);
+        }
     }
 
     return (
@@ -93,6 +106,35 @@ export function PublicLayout() {
                         </>
                     ) : (
                         <>
+                            <div
+                                className="sl-public-language-switch"
+                                role="group"
+                                aria-label={t("languageSwitcherLabel")}>
+                                <button
+                                    className={
+                                        currentLanguage === "it"
+                                            ? "sl-public-language-button active"
+                                            : "sl-public-language-button"
+                                    }
+                                    type="button"
+                                    aria-pressed={currentLanguage === "it"}
+                                    onClick={() => handleLanguageChange("it")}>
+                                    IT
+                                </button>
+
+                                <button
+                                    className={
+                                        currentLanguage === "en"
+                                            ? "sl-public-language-button active"
+                                            : "sl-public-language-button"
+                                    }
+                                    type="button"
+                                    aria-pressed={currentLanguage === "en"}
+                                    onClick={() => handleLanguageChange("en")}>
+                                    EN
+                                </button>
+                            </div>
+
                             <Link
                                 className="btn btn-outline-primary btn-sm"
                                 to={ROUTES.auth.login}>

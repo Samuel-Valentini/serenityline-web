@@ -366,6 +366,29 @@ h6 {
     gap: 0.5rem;
 }
 
+.sl-public-language-button {
+    min-width: 2.15rem;
+    min-height: 1.85rem;
+    padding: 0.25rem 0.55rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--sl-color-text-muted);
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+}
+
+.sl-public-language-button:hover {
+    color: var(--sl-color-green-900);
+    background: rgba(216, 195, 155, 0.18);
+}
+
+.sl-public-language-button.active {
+    background: var(--sl-color-green-900);
+    color: var(--sl-color-card);
+}
+
 .sl-public-footer {
     display: flex;
     justify-content: space-between;
@@ -911,6 +934,20 @@ h6 {
 
     .sl-public-actions {
         flex-wrap: wrap;
+    }
+
+    .sl-public-language-switch {
+        order: -1;
+    }
+
+    .sl-public-language-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.15rem;
+        padding: 0.18rem;
+        border: 1px solid var(--sl-color-border);
+        border-radius: 999px;
+        background: rgba(255, 253, 248, 0.72);
     }
 
     .sl-public-footer {
