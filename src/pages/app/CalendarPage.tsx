@@ -147,6 +147,9 @@ export function CalendarPage() {
 
     const [selectedSimulationGroupIds, setSelectedSimulationGroupIds] =
         useState<string[]>([]);
+    const [isSimulationGroupsPanelOpen, setSimulationGroupsPanelOpen] =
+        useState(false);
+    const [isFiltersPanelOpen, setFiltersPanelOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
         [],
@@ -814,218 +817,304 @@ export function CalendarPage() {
                     </button>
                 </div>
 
-                <div className="sl-calendar-simulations mt-3">
-                    <div>
-                        <h3 className="h5">{t("simulations.title")}</h3>
-                        <p className="text-muted mb-0">
-                            {t("simulations.description")}
-                        </p>
-                    </div>
+                <section className="sl-calendar-accordion mt-3">
+                    <button
+                        className="sl-calendar-accordion-toggle"
+                        type="button"
+                        aria-expanded={isSimulationGroupsPanelOpen}
+                        aria-controls="calendarSimulationGroupsPanel"
+                        onClick={() =>
+                            setSimulationGroupsPanelOpen(
+                                (currentValue) => !currentValue,
+                            )
+                        }>
+                        <span>
+                            <span className="sl-calendar-accordion-title">
+                                {t("simulations.title")}
+                            </span>
+                            <span className="sl-calendar-accordion-summary">
+                                {selectedSimulationGroupIds.length > 0
+                                    ? t("simulations.selectedCount", {
+                                          count: selectedSimulationGroupIds.length,
+                                      })
+                                    : t("simulations.realScenarioActive")}
+                            </span>
+                        </span>
 
-                    {activeSimulationGroups.length === 0 ? (
-                        <p className="text-muted mb-0">
-                            {t("simulations.empty")}
-                        </p>
-                    ) : (
-                        <div className="sl-calendar-simulation-buttons">
-                            <button
-                                className={
-                                    selectedSimulationGroupIds.length === 0
-                                        ? "btn btn-sm btn-primary"
-                                        : "btn btn-sm btn-outline-primary"
-                                }
-                                onClick={handleClearSimulationGroups}
-                                type="button">
-                                {t("simulations.realScenario")}
-                            </button>
+                        <span
+                            aria-hidden="true"
+                            className="sl-calendar-accordion-icon">
+                            {isSimulationGroupsPanelOpen ? "−" : "+"}
+                        </span>
+                    </button>
 
-                            {activeSimulationGroups.map((simulationGroup) => {
-                                const isSelected = isSimulationGroupSelected(
-                                    simulationGroup.simulationGroupId,
-                                );
+                    {isSimulationGroupsPanelOpen ? (
+                        <div
+                            className="sl-calendar-accordion-panel sl-calendar-simulations"
+                            id="calendarSimulationGroupsPanel">
+                            <div>
+                                <p className="text-muted mb-0">
+                                    {t("simulations.description")}
+                                </p>
+                            </div>
 
-                                return (
+                            {activeSimulationGroups.length === 0 ? (
+                                <p className="text-muted mb-0">
+                                    {t("simulations.empty")}
+                                </p>
+                            ) : (
+                                <div className="sl-calendar-simulation-buttons">
                                     <button
-                                        aria-pressed={isSelected}
                                         className={
-                                            isSelected
+                                            selectedSimulationGroupIds.length ===
+                                            0
                                                 ? "btn btn-sm btn-primary"
                                                 : "btn btn-sm btn-outline-primary"
                                         }
-                                        key={simulationGroup.simulationGroupId}
-                                        onClick={() =>
-                                            handleToggleSimulationGroup(
-                                                simulationGroup.simulationGroupId,
+                                        onClick={handleClearSimulationGroups}
+                                        type="button">
+                                        {t("simulations.realScenario")}
+                                    </button>
+
+                                    {activeSimulationGroups.map(
+                                        (simulationGroup) => {
+                                            const isSelected =
+                                                isSimulationGroupSelected(
+                                                    simulationGroup.simulationGroupId,
+                                                );
+
+                                            return (
+                                                <button
+                                                    aria-pressed={isSelected}
+                                                    className={
+                                                        isSelected
+                                                            ? "btn btn-sm btn-primary"
+                                                            : "btn btn-sm btn-outline-primary"
+                                                    }
+                                                    key={
+                                                        simulationGroup.simulationGroupId
+                                                    }
+                                                    onClick={() =>
+                                                        handleToggleSimulationGroup(
+                                                            simulationGroup.simulationGroupId,
+                                                        )
+                                                    }
+                                                    type="button">
+                                                    {
+                                                        simulationGroup.simulationGroupName
+                                                    }
+                                                </button>
+                                            );
+                                        },
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ) : null}
+                </section>
+
+                <section className="sl-calendar-accordion mt-3">
+                    <button
+                        className="sl-calendar-accordion-toggle"
+                        type="button"
+                        aria-expanded={isFiltersPanelOpen}
+                        aria-controls="calendarFiltersPanel"
+                        onClick={() =>
+                            setFiltersPanelOpen((currentValue) => !currentValue)
+                        }>
+                        <span>
+                            <span className="sl-calendar-accordion-title">
+                                {t("filters.title")}
+                            </span>
+                            <span className="sl-calendar-accordion-summary">
+                                {hasActiveFilters
+                                    ? t("filters.resultCount", {
+                                          filtered: filteredMovements.length,
+                                          total: movements.length,
+                                      })
+                                    : t("filters.description")}
+                            </span>
+                        </span>
+
+                        <span
+                            aria-hidden="true"
+                            className="sl-calendar-accordion-icon">
+                            {isFiltersPanelOpen ? "−" : "+"}
+                        </span>
+                    </button>
+
+                    {isFiltersPanelOpen ? (
+                        <div
+                            className="sl-calendar-accordion-panel sl-calendar-filters"
+                            id="calendarFiltersPanel">
+                            <div className="sl-calendar-filter-heading">
+                                <div>
+                                    <p className="text-muted mb-0">
+                                        {t("filters.description")}
+                                    </p>
+                                </div>
+
+                                <button
+                                    className="btn btn-sm btn-outline-secondary"
+                                    disabled={!hasActiveFilters}
+                                    onClick={handleClearFilters}
+                                    type="button">
+                                    {t("filters.clear")}
+                                </button>
+                            </div>
+
+                            <div className="row g-3">
+                                <div className="col-12 col-lg-4">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="calendarSearchQuery">
+                                        {t("filters.search")}
+                                    </label>
+                                    <input
+                                        className="form-control"
+                                        id="calendarSearchQuery"
+                                        onChange={(event) =>
+                                            setSearchQuery(event.target.value)
+                                        }
+                                        placeholder={t(
+                                            "filters.searchPlaceholder",
+                                        )}
+                                        type="search"
+                                        value={searchQuery}
+                                    />
+                                </div>
+
+                                <div className="col-12 col-md-6 col-lg-4">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="calendarCategoryFilter">
+                                        {t("filters.categories")}
+                                    </label>
+                                    <select
+                                        className="form-select"
+                                        id="calendarCategoryFilter"
+                                        multiple
+                                        onChange={(event) =>
+                                            setSelectedCategoryIds(
+                                                getSelectedValues(
+                                                    event.target
+                                                        .selectedOptions,
+                                                ),
                                             )
                                         }
-                                        type="button">
-                                        {simulationGroup.simulationGroupName}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
+                                        value={selectedCategoryIds}>
+                                        {categories.map((category) => (
+                                            <option
+                                                key={category.categoryId}
+                                                value={category.categoryId}>
+                                                {category.categoryName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                <div className="sl-calendar-filters mt-3">
-                    <div className="sl-calendar-filter-heading">
-                        <div>
-                            <h3 className="h5">{t("filters.title")}</h3>
-                            <p className="text-muted mb-0">
-                                {t("filters.description")}
-                            </p>
-                        </div>
+                                <div className="col-12 col-md-6 col-lg-4">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="calendarAccountFilter">
+                                        {t("filters.accounts")}
+                                    </label>
+                                    <select
+                                        className="form-select"
+                                        id="calendarAccountFilter"
+                                        multiple
+                                        onChange={(event) =>
+                                            setSelectedAccountIds(
+                                                getSelectedValues(
+                                                    event.target
+                                                        .selectedOptions,
+                                                ),
+                                            )
+                                        }
+                                        value={selectedAccountIds}>
+                                        {accounts.map((account) => (
+                                            <option
+                                                key={account.accountId}
+                                                value={account.accountId}>
+                                                {account.accountName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                        <button
-                            className="btn btn-sm btn-outline-secondary"
-                            disabled={!hasActiveFilters}
-                            onClick={handleClearFilters}
-                            type="button">
-                            {t("filters.clear")}
-                        </button>
-                    </div>
+                                <div className="col-12 col-md-6 col-lg-4">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="calendarBucketFilter">
+                                        {t("filters.buckets")}
+                                    </label>
+                                    <select
+                                        className="form-select"
+                                        id="calendarBucketFilter"
+                                        multiple
+                                        onChange={(event) =>
+                                            setSelectedBucketIds(
+                                                getSelectedValues(
+                                                    event.target
+                                                        .selectedOptions,
+                                                ),
+                                            )
+                                        }
+                                        value={selectedBucketIds}>
+                                        {buckets.map((bucket) => (
+                                            <option
+                                                key={bucket.bucketId}
+                                                value={bucket.bucketId}>
+                                                {bucket.bucketName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                    <div className="row g-3">
-                        <div className="col-12 col-lg-4">
-                            <label
-                                className="form-label"
-                                htmlFor="calendarSearchQuery">
-                                {t("filters.search")}
-                            </label>
-                            <input
-                                className="form-control"
-                                id="calendarSearchQuery"
-                                onChange={(event) =>
-                                    setSearchQuery(event.target.value)
-                                }
-                                placeholder={t("filters.searchPlaceholder")}
-                                type="search"
-                                value={searchQuery}
-                            />
-                        </div>
+                                <div className="col-12 col-md-6 col-lg-4">
+                                    <label
+                                        className="form-label"
+                                        htmlFor="calendarConfirmedFilter">
+                                        {t("filters.confirmed")}
+                                    </label>
+                                    <select
+                                        className="form-select"
+                                        id="calendarConfirmedFilter"
+                                        onChange={(event) =>
+                                            setConfirmedFilter(
+                                                event.target
+                                                    .value as CalendarConfirmedFilter,
+                                            )
+                                        }
+                                        value={confirmedFilter}>
+                                        <option value="all">
+                                            {t("filters.confirmedOptions.all")}
+                                        </option>
+                                        <option value="confirmed">
+                                            {t(
+                                                "filters.confirmedOptions.confirmed",
+                                            )}
+                                        </option>
+                                        <option value="unconfirmed">
+                                            {t(
+                                                "filters.confirmedOptions.unconfirmed",
+                                            )}
+                                        </option>
+                                    </select>
+                                </div>
 
-                        <div className="col-12 col-md-6 col-lg-4">
-                            <label
-                                className="form-label"
-                                htmlFor="calendarCategoryFilter">
-                                {t("filters.categories")}
-                            </label>
-                            <select
-                                className="form-select"
-                                id="calendarCategoryFilter"
-                                multiple
-                                onChange={(event) =>
-                                    setSelectedCategoryIds(
-                                        getSelectedValues(
-                                            event.target.selectedOptions,
-                                        ),
-                                    )
-                                }
-                                value={selectedCategoryIds}>
-                                {categories.map((category) => (
-                                    <option
-                                        key={category.categoryId}
-                                        value={category.categoryId}>
-                                        {category.categoryName}
-                                    </option>
-                                ))}
-                            </select>
+                                <div className="col-12 col-lg-4 d-flex align-items-end">
+                                    <p className="text-muted mb-0">
+                                        {t("filters.resultCount", {
+                                            filtered: filteredMovements.length,
+                                            total: movements.length,
+                                        })}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-
-                        <div className="col-12 col-md-6 col-lg-4">
-                            <label
-                                className="form-label"
-                                htmlFor="calendarAccountFilter">
-                                {t("filters.accounts")}
-                            </label>
-                            <select
-                                className="form-select"
-                                id="calendarAccountFilter"
-                                multiple
-                                onChange={(event) =>
-                                    setSelectedAccountIds(
-                                        getSelectedValues(
-                                            event.target.selectedOptions,
-                                        ),
-                                    )
-                                }
-                                value={selectedAccountIds}>
-                                {accounts.map((account) => (
-                                    <option
-                                        key={account.accountId}
-                                        value={account.accountId}>
-                                        {account.accountName}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="col-12 col-md-6 col-lg-4">
-                            <label
-                                className="form-label"
-                                htmlFor="calendarBucketFilter">
-                                {t("filters.buckets")}
-                            </label>
-                            <select
-                                className="form-select"
-                                id="calendarBucketFilter"
-                                multiple
-                                onChange={(event) =>
-                                    setSelectedBucketIds(
-                                        getSelectedValues(
-                                            event.target.selectedOptions,
-                                        ),
-                                    )
-                                }
-                                value={selectedBucketIds}>
-                                {buckets.map((bucket) => (
-                                    <option
-                                        key={bucket.bucketId}
-                                        value={bucket.bucketId}>
-                                        {bucket.bucketName}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="col-12 col-md-6 col-lg-4">
-                            <label
-                                className="form-label"
-                                htmlFor="calendarConfirmedFilter">
-                                {t("filters.confirmed")}
-                            </label>
-                            <select
-                                className="form-select"
-                                id="calendarConfirmedFilter"
-                                onChange={(event) =>
-                                    setConfirmedFilter(
-                                        event.target
-                                            .value as CalendarConfirmedFilter,
-                                    )
-                                }
-                                value={confirmedFilter}>
-                                <option value="all">
-                                    {t("filters.confirmedOptions.all")}
-                                </option>
-                                <option value="confirmed">
-                                    {t("filters.confirmedOptions.confirmed")}
-                                </option>
-                                <option value="unconfirmed">
-                                    {t("filters.confirmedOptions.unconfirmed")}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div className="col-12 col-lg-4 d-flex align-items-end">
-                            <p className="text-muted mb-0">
-                                {t("filters.resultCount", {
-                                    filtered: filteredMovements.length,
-                                    total: movements.length,
-                                })}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                    ) : null}
+                </section>
 
                 {confirmationSuccess ? (
                     <div className="alert alert-success mt-3" role="status">
