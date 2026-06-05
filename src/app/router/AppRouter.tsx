@@ -29,6 +29,7 @@ import { RecurringTransactionsPage } from "../../pages/app/RecurringTransactions
 import { TransactionsPage } from "../../pages/app/TransactionsPage";
 import { CalendarPage } from "../../pages/app/CalendarPage";
 import { SerenityLinePage } from "../../pages/app/SerenityLinePage";
+import { BalancesPage } from "../../pages/app/BalancesPage";
 
 export function AppRouter() {
     return (
@@ -123,10 +124,7 @@ export function AppRouter() {
                         <Route path="portafogli" element={<BucketsPage />} />
                         <Route path="conti" element={<AccountsPage />} />
                         <Route path="carte" element={<CreditCardsPage />} />
-                        <Route
-                            path="saldi"
-                            element={<AppPlaceholderPage pageKey="balances" />}
-                        />
+                        <Route path="saldi" element={<BalancesPage />} />
                         <Route path="categorie" element={<CategoriesPage />} />
                         <Route path="impostazioni" element={<SettingsPage />} />
                         <Route

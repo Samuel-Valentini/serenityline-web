@@ -1024,3 +1024,94 @@ h6 {
     border-color: var(--sl-analytics-color, #7da892);
     background: rgba(255, 253, 248, 0.92);
 }
+
+.sl-balances-page {
+    width: min(100%, 92rem);
+}
+
+.sl-balances-toolbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.sl-balances-currency-control {
+    min-width: 12rem;
+}
+
+.sl-balances-currency-pill {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 0.75rem;
+    background: var(--sl-color-card);
+    color: var(--sl-color-green-900);
+    font-weight: 800;
+}
+
+.sl-balances-window {
+    max-height: min(70vh, 760px);
+    overflow: auto;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1rem;
+    background: var(--sl-color-card);
+    scroll-behavior: smooth;
+}
+
+.sl-balances-table {
+    min-width: 64rem;
+    margin-bottom: 0;
+}
+
+.sl-balances-table th,
+.sl-balances-table td {
+    white-space: nowrap;
+}
+
+.sl-balances-table thead th {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    background: var(--sl-color-cream);
+}
+
+.sl-balances-sticky-date {
+    position: sticky;
+    z-index: 3;
+    left: 0;
+    background: var(--sl-color-card);
+    box-shadow: 1px 0 0 var(--sl-color-border);
+}
+
+.sl-balances-table thead .sl-balances-sticky-date {
+    z-index: 4;
+    background: var(--sl-color-cream);
+}
+
+.sl-balances-amount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.sl-balances-today-row {
+    outline: 2px solid rgba(167, 123, 45, 0.35);
+    outline-offset: -2px;
+    background: rgba(216, 195, 155, 0.12);
+}
+
+.sl-balances-edge-loader {
+    padding: 0.75rem 1rem;
+    text-align: center;
+    color: var(--sl-color-text-muted);
+    background: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 767.98px) {
+    .sl-balances-toolbar {
+        flex-direction: column;
+    }
+
+    .sl-balances-currency-control {
+        width: 100%;
+    }
+}

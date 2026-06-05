@@ -217,6 +217,37 @@ export const resources = {
                     "Per ora visualizzi la linea base. I controlli avanzati arriveranno nei prossivi step.",
             },
         },
+        balances: {
+            eyebrow: "Saldi giornalieri",
+            title: "Saldi",
+            subtitle:
+                "Consulta giorno per giorno la liquidità SerenityLine, il saldo totale e il saldo di ogni conto.",
+            referenceDataLoading: "Caricamento dati finanziari...",
+            referenceDataLoadErrorTitle:
+                "Impossibile caricare i dati finanziari.",
+            referenceDataLoadErrorFallback: "Riprova tra qualche istante.",
+            loading: "Caricamento saldi...",
+            empty: "Nessun saldo nel periodo caricato.",
+            loadErrorFallback:
+                "Non è stato possibile caricare i saldi. Riprova tra qualche istante.",
+            currency: {
+                label: "Valuta",
+            },
+            timeline: {
+                eyebrow: "Vista caricata",
+                title: "Saldi passati e futuri",
+                initialRange: "Periodo iniziale: {{from}} - {{to}}.",
+                loadedRange: "Periodo caricato: {{from}} - {{to}}.",
+                windowLabel: "Finestra scorrevole dei saldi giornalieri",
+                loadingPrevious: "Caricamento saldi precedenti...",
+                loadingNext: "Caricamento saldi successivi...",
+            },
+            table: {
+                date: "Giorno",
+                serenityline: "SerenityLine",
+                totalBalance: "Saldo totale",
+            },
+        },
         calendar: {
             eyebrow: "Calendario finanziario",
             title: "Calendario",
@@ -1752,6 +1783,36 @@ export const resources = {
                     "In the next steps you will be able to toggle accounts, simulations, portfolios and analytical indicators.",
                 nextSteps:
                     "For now you are viewing the base line. Advanced controls will be added in the next steps.",
+            },
+        },
+        balances: {
+            eyebrow: "Daily balances",
+            title: "Balances",
+            subtitle:
+                "Review your SerenityLine liquidity, total balance and account balances day by day.",
+            referenceDataLoading: "Loading finance data...",
+            referenceDataLoadErrorTitle: "Unable to load finance data.",
+            referenceDataLoadErrorFallback: "Please try again in a moment.",
+            loading: "Loading balances...",
+            empty: "No balances in the loaded period.",
+            loadErrorFallback:
+                "We could not load balances. Please try again in a moment.",
+            currency: {
+                label: "Currency",
+            },
+            timeline: {
+                eyebrow: "Loaded view",
+                title: "Past and future balances",
+                initialRange: "Initial period: {{from}} - {{to}}.",
+                loadedRange: "Loaded period: {{from}} - {{to}}.",
+                windowLabel: "Scrollable daily balances window",
+                loadingPrevious: "Loading previous balances...",
+                loadingNext: "Loading next balances...",
+            },
+            table: {
+                date: "Day",
+                serenityline: "SerenityLine",
+                totalBalance: "Total balance",
             },
         },
         calendar: {
