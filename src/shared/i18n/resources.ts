@@ -106,37 +106,160 @@ export const resources = {
             },
         },
         dashboard: {
-            title: "Dashboard",
-            subtitle: "Cosa devo sapere adesso?",
+            title: "La tua serenità, oggi",
+            subtitle:
+                "Una vista essenziale per capire dove sei, dove stai andando e quale azione fare adesso.",
             loading: "Caricamento dati finanziari...",
             loadErrorTitle: "Impossibile caricare i dati finanziari.",
             loadErrorFallback: "Riprova tra qualche istante.",
-            emptyState: {
-                title: "Non hai ancora dati finanziari",
-                text: "Aggiungi il primo conto per iniziare a costruire la tua proiezione SerenityLine.",
+            dailyBalancesErrorFallback:
+                "Non è stato possibile aggiornare la proiezione dei saldi.",
+            hero: {
+                eyebrow: "SerenityLine",
+                quickTransaction: "Inserisci movimento",
+            },
+            currency: {
+                label: "Valuta",
+            },
+            status: {
+                eyebrow: "Segnale principale",
+                noAccounts: {
+                    title: "Inizia dal primo conto",
+                    text: "La SerenityLine nasce dai tuoi conti: aggiungine uno per trasformare un saldo statico in una previsione utile.",
+                    cta: "Aggiungi conto",
+                },
+                loading: {
+                    title: "Sto preparando la tua linea",
+                    text: "Carico i saldi giornalieri per trasformare i dati in indicazioni operative.",
+                    cta: "Apri SerenityLine",
+                },
+                risk: {
+                    title: "C'è una soglia critica nel futuro",
+                    text: "La SerenityLine scende sotto zero il {{date}} arrivando a {{amount}}. Questo è il punto da guardare prima di prendere nuove decisioni.",
+                    cta: "Controlla calendario",
+                },
+                lowMargin: {
+                    title: "Il margine futuro è sottile",
+                    text: "Il punto più basso caricato è {{amount}} il {{date}}. Non è necessariamente un problema, ma merita attenzione.",
+                    cta: "Analizza SerenityLine",
+                },
+                notEnoughData: {
+                    title: "Servono più movimenti",
+                    text: "Hai iniziato la configurazione. Inserisci movimenti e ricorrenze per rendere la previsione davvero utile.",
+                    cta: "Inserisci movimento",
+                },
+                positive: {
+                    title: "La traiettoria caricata è sostenibile",
+                    text: "Nel periodo caricato non emergono soglie negative. Ora puoi usare simulazioni e portafogli per decidere con più lucidità.",
+                    cta: "Apri SerenityLine",
+                },
             },
             metrics: {
-                accounts: "Conti",
-                accountsDescription: "Conti collegati alla tua proiezione.",
-                buckets: "Portafogli",
-                bucketsDescription:
-                    "Portafogli attivi per organizzare la liquidità.",
-                simulations: "Simulazioni",
-                simulationsDescription:
-                    "Scenari attivi per confrontare decisioni.",
-                categories: "Categorie",
-                categoriesDescription:
-                    "Categorie attive per classificare i movimenti.",
+                serenityLineToday: "SerenityLine oggi",
+                totalBalance: "Saldo totale",
+                totalBalanceDescription:
+                    "Il saldo contabile complessivo dei conti selezionati.",
+                futureMinimum: "Minimo futuro",
+                yearEnd: "Fine anno",
+                accountBalanceUnavailable:
+                    "Confronto con il saldo totale non ancora disponibile.",
+                accountBalanceAligned: "Allineata al saldo totale dei conti.",
+                accountBalanceDifference:
+                    "Differenza rispetto al saldo totale: {{amount}}.",
+                minimumOn: "Punto più basso il {{date}}.",
+                yearEndOn: "Proiezione al {{date}}.",
+                noProjection: "Proiezione non ancora disponibile.",
             },
-            sections: {
-                nextSteps: "Prossimi passi",
-                nextStepsText:
-                    "La dashboard userà questi dati come base per saldi, calendario, simulazioni e SerenityLine.",
-                priorities: "Priorità finanziarie",
-                prioritiesText:
-                    "Sono disponibili {{count}} priorità per distinguere movimenti critici, essenziali e opzionali.",
+            gettingStarted: {
+                eyebrow: "Guida rapida",
+                title: "Rendi la previsione affidabile",
+                subtitle:
+                    "SerenityLine diventa utile quando conosce conti, categorie, movimenti ricorrenti e scenari possibili.",
+                done: "Fatto",
+                open: "Apri",
+                steps: {
+                    accounts: {
+                        title: "Aggiungi i conti",
+                        text: "Sono la base della liquidità reale.",
+                    },
+                    categories: {
+                        title: "Crea le categorie",
+                        text: "Servono per leggere meglio entrate e uscite.",
+                    },
+                    transactions: {
+                        title: "Inserisci i movimenti",
+                        text: "Registra ciò che cambia davvero la tua situazione.",
+                    },
+                    recurring: {
+                        title: "Configura le ricorrenze",
+                        text: "Sono il cuore della previsione futura.",
+                    },
+                    buckets: {
+                        title: "Organizza i portafogli",
+                        text: "Separa liquidità libera e somme già destinate.",
+                    },
+                    simulations: {
+                        title: "Prova una simulazione",
+                        text: "Confronta una scelta con la traiettoria attuale.",
+                    },
+                },
+            },
+            value: {
+                eyebrow: "Perché conta",
+                title: "Non è solo saldo: è prospettiva",
+                text: "Il saldo totale dice cosa c'è sui conti. La SerenityLine prova a dirti cosa sarà davvero disponibile, tenendo conto di scadenze, carte, portafogli e ricorrenze.",
+                accounts: "Conti",
+                creditCards: "Carte",
+                buckets: "Portafogli",
+                simulations: "Simulazioni",
+                priorities: "Priorità",
+                loadedDays: "Giorni caricati",
+            },
+            quickActions: {
+                eyebrow: "Azioni rapide",
+                title: "Vai dove serve",
+                subtitle:
+                    "La dashboard ti orienta, ma il valore nasce dalle sezioni operative.",
+                serenityline: "Apri SerenityLine",
+                calendar: "Vedi calendario",
+                transactions: "Nuovo movimento",
+                recurring: "Gestisci ricorrenze",
+                balances: "Consulta saldi",
+                simulations: "Confronta scenari",
             },
         },
+        // dashboard: {
+        //     title: "Dashboard",
+        //     subtitle: "Cosa devo sapere adesso?",
+        //     loading: "Caricamento dati finanziari...",
+        //     loadErrorTitle: "Impossibile caricare i dati finanziari.",
+        //     loadErrorFallback: "Riprova tra qualche istante.",
+        //     emptyState: {
+        //         title: "Non hai ancora dati finanziari",
+        //         text: "Aggiungi il primo conto per iniziare a costruire la tua proiezione SerenityLine.",
+        //     },
+        //     metrics: {
+        //         accounts: "Conti",
+        //         accountsDescription: "Conti collegati alla tua proiezione.",
+        //         buckets: "Portafogli",
+        //         bucketsDescription:
+        //             "Portafogli attivi per organizzare la liquidità.",
+        //         simulations: "Simulazioni",
+        //         simulationsDescription:
+        //             "Scenari attivi per confrontare decisioni.",
+        //         categories: "Categorie",
+        //         categoriesDescription:
+        //             "Categorie attive per classificare i movimenti.",
+        //     },
+        //     sections: {
+        //         nextSteps: "Prossimi passi",
+        //         nextStepsText:
+        //             "La dashboard userà questi dati come base per saldi, calendario, simulazioni e SerenityLine.",
+        //         priorities: "Priorità finanziarie",
+        //         prioritiesText:
+        //             "Sono disponibili {{count}} priorità per distinguere movimenti critici, essenziali e opzionali.",
+        //     },
+        // },
         serenityline: {
             eyebrow: "Previsione strategica",
             title: "SerenityLine",
@@ -1975,36 +2098,159 @@ export const resources = {
                 selectedCount_other: "You are viewing {{count}} simulations.",
             },
         },
+        // dashboard: {
+        //     title: "Dashboard",
+        //     subtitle: "What should I know right now?",
+        //     loading: "Loading financial data...",
+        //     loadErrorTitle: "Could not load financial data.",
+        //     loadErrorFallback: "Please try again in a moment.",
+        //     emptyState: {
+        //         title: "You do not have financial data yet",
+        //         text: "Add your first account to start building your SerenityLine projection.",
+        //     },
+        //     metrics: {
+        //         accounts: "Accounts",
+        //         accountsDescription: "Accounts connected to your projection.",
+        //         buckets: "Portfolios",
+        //         bucketsDescription:
+        //             "Active portfolios used to organize liquidity.",
+        //         simulations: "Simulations",
+        //         simulationsDescription:
+        //             "Active scenarios for comparing decisions.",
+        //         categories: "Categories",
+        //         categoriesDescription:
+        //             "Active categories used to classify movements.",
+        //     },
+        //     sections: {
+        //         nextSteps: "Next steps",
+        //         nextStepsText:
+        //             "The dashboard will use this data as the foundation for balances, calendar, simulations and SerenityLine.",
+        //         priorities: "Financial priorities",
+        //         prioritiesText:
+        //             "{{count}} priorities are available to distinguish critical, essential and optional movements.",
+        //     },
+        // },
         dashboard: {
-            title: "Dashboard",
-            subtitle: "What should I know right now?",
+            title: "Your peace of mind, today",
+            subtitle:
+                "A focused view to understand where you are, where you are heading and what to do next.",
             loading: "Loading financial data...",
             loadErrorTitle: "Could not load financial data.",
             loadErrorFallback: "Please try again in a moment.",
-            emptyState: {
-                title: "You do not have financial data yet",
-                text: "Add your first account to start building your SerenityLine projection.",
+            dailyBalancesErrorFallback:
+                "We could not refresh the daily balance projection.",
+            hero: {
+                eyebrow: "SerenityLine",
+                quickTransaction: "Add movement",
+            },
+            currency: {
+                label: "Currency",
+            },
+            status: {
+                eyebrow: "Main signal",
+                noAccounts: {
+                    title: "Start with your first account",
+                    text: "SerenityLine starts from your accounts: add one to turn a static balance into a useful projection.",
+                    cta: "Add account",
+                },
+                loading: {
+                    title: "Preparing your line",
+                    text: "Loading daily balances to turn your data into operational guidance.",
+                    cta: "Open SerenityLine",
+                },
+                risk: {
+                    title: "There is a critical threshold ahead",
+                    text: "SerenityLine drops below zero on {{date}}, reaching {{amount}}. This is the point to check before making new decisions.",
+                    cta: "Check calendar",
+                },
+                lowMargin: {
+                    title: "Future margin is thin",
+                    text: "The lowest loaded point is {{amount}} on {{date}}. It is not necessarily a problem, but it deserves attention.",
+                    cta: "Analyze SerenityLine",
+                },
+                notEnoughData: {
+                    title: "More movements are needed",
+                    text: "You have started the setup. Add movements and recurring items to make the projection truly useful.",
+                    cta: "Add movement",
+                },
+                positive: {
+                    title: "The loaded trajectory is sustainable",
+                    text: "No negative threshold appears in the loaded period. You can now use simulations and portfolios to decide more clearly.",
+                    cta: "Open SerenityLine",
+                },
             },
             metrics: {
-                accounts: "Accounts",
-                accountsDescription: "Accounts connected to your projection.",
-                buckets: "Portfolios",
-                bucketsDescription:
-                    "Active portfolios used to organize liquidity.",
-                simulations: "Simulations",
-                simulationsDescription:
-                    "Active scenarios for comparing decisions.",
-                categories: "Categories",
-                categoriesDescription:
-                    "Active categories used to classify movements.",
+                serenityLineToday: "SerenityLine today",
+                totalBalance: "Total balance",
+                totalBalanceDescription:
+                    "The overall accounting balance of your accounts.",
+                futureMinimum: "Future low point",
+                yearEnd: "Year end",
+                accountBalanceUnavailable:
+                    "Comparison with total balance is not available yet.",
+                accountBalanceAligned: "Aligned with total account balance.",
+                accountBalanceDifference:
+                    "Difference from total account balance: {{amount}}.",
+                minimumOn: "Lowest point on {{date}}.",
+                yearEndOn: "Projection on {{date}}.",
+                noProjection: "Projection not available yet.",
             },
-            sections: {
-                nextSteps: "Next steps",
-                nextStepsText:
-                    "The dashboard will use this data as the foundation for balances, calendar, simulations and SerenityLine.",
-                priorities: "Financial priorities",
-                prioritiesText:
-                    "{{count}} priorities are available to distinguish critical, essential and optional movements.",
+            gettingStarted: {
+                eyebrow: "Quick guide",
+                title: "Make the projection reliable",
+                subtitle:
+                    "SerenityLine becomes useful when it knows accounts, categories, recurring movements and possible scenarios.",
+                done: "Done",
+                open: "Open",
+                steps: {
+                    accounts: {
+                        title: "Add accounts",
+                        text: "They are the foundation of real liquidity.",
+                    },
+                    categories: {
+                        title: "Create categories",
+                        text: "They help you read income and expenses.",
+                    },
+                    transactions: {
+                        title: "Add movements",
+                        text: "Record what really changes your position.",
+                    },
+                    recurring: {
+                        title: "Configure recurring items",
+                        text: "They are the heart of the future projection.",
+                    },
+                    buckets: {
+                        title: "Organize portfolios",
+                        text: "Separate free liquidity from already allocated money.",
+                    },
+                    simulations: {
+                        title: "Try a simulation",
+                        text: "Compare a decision with the current trajectory.",
+                    },
+                },
+            },
+            value: {
+                eyebrow: "Why it matters",
+                title: "Not just balance: perspective",
+                text: "Total balance tells you what is in the accounts. SerenityLine tries to tell you what will truly be available, considering due dates, cards, portfolios and recurring items.",
+                accounts: "Accounts",
+                creditCards: "Cards",
+                buckets: "Portfolios",
+                simulations: "Simulations",
+                priorities: "Priorities",
+                loadedDays: "Loaded days",
+            },
+            quickActions: {
+                eyebrow: "Quick actions",
+                title: "Go where it matters",
+                subtitle:
+                    "The dashboard guides you, but the value comes from the operational sections.",
+                serenityline: "Open SerenityLine",
+                calendar: "View calendar",
+                transactions: "New movement",
+                recurring: "Manage recurring",
+                balances: "Check balances",
+                simulations: "Compare scenarios",
             },
         },
 

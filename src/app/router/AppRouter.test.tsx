@@ -80,7 +80,7 @@ describe("AppRouter", () => {
 
         expect(
             await screen.findByRole("heading", {
-                name: "Dashboard",
+                name: "La tua serenità, oggi",
             }),
         ).toBeInTheDocument();
     });
@@ -92,32 +92,32 @@ describe("AppRouter", () => {
 
         expect(
             screen.getByRole("heading", {
-                name: "Dashboard",
+                name: "La tua serenità, oggi",
             }),
         ).toBeInTheDocument();
     });
 
     it("renders the current user from account state in the app shell", () => {
-    store.dispatch(authAuthenticated(user));
-    store.dispatch(
-        accountLoaded({
-            userId: "account-user-id",
-            userName: "Utente da api me",
-            email: "account-user@example.com",
-            userGroupId: "group-id",
-            userGroupName: "Famiglia Valentini",
-            userRole: "OWNER",
-            userPlatformRole: "USER",
-            preferredLocale: "it-IT",
-            preferredTheme: "DEFAULT",
-            wantsInvoice: false,
-            emailTwoFactorEnabled: false,
-            paymentEmailRemindersEnabled: true,
-        }),
-    );
+        store.dispatch(authAuthenticated(user));
+        store.dispatch(
+            accountLoaded({
+                userId: "account-user-id",
+                userName: "Utente da api me",
+                email: "account-user@example.com",
+                userGroupId: "group-id",
+                userGroupName: "Famiglia Valentini",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+                emailTwoFactorEnabled: false,
+                paymentEmailRemindersEnabled: true,
+            }),
+        );
 
-    renderRouterAt("/app/dashboard");
+        renderRouterAt("/app/dashboard");
 
-    expect(screen.getByText("Utente da api me")).toBeInTheDocument();
-});
+        expect(screen.getByText("Utente da api me")).toBeInTheDocument();
+    });
 });
