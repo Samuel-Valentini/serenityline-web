@@ -188,4 +188,20 @@ describe("SerenityLinePage", () => {
             ),
         ).toBeInTheDocument();
     });
+
+    it("toggles analytical indicators", async () => {
+        vi.mocked(listDailyBalances).mockResolvedValue(dailyBalances);
+
+        renderPage();
+
+        const movingAverageButton = await screen.findByRole("button", {
+            name: /Media mobile 50/i,
+        });
+
+        expect(movingAverageButton).toHaveAttribute("aria-pressed", "false");
+
+        fireEvent.click(movingAverageButton);
+
+        expect(movingAverageButton).toHaveAttribute("aria-pressed", "true");
+    });
 });

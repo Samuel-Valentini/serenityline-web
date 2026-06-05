@@ -151,6 +151,20 @@ export const resources = {
             emptyValue: "—",
             loadErrorFallback:
                 "Non è stato possibile caricare la SerenityLine. Riprova tra qualche istante.",
+            analytics: {
+                title: "Indicatori",
+                description:
+                    "Accendi livelli analitici calcolati sulla SerenityLine corrente.",
+                movingAverage50: "Media mobile 50",
+                movingAverage50Description: "Media degli ultimi 50 giorni",
+                pastLinearTrend: "Trend passato",
+                pastLinearTrendDescription: "Linea dal passato fino a oggi",
+                totalLinearTrend: "Trend totale",
+                totalLinearTrendDescription:
+                    "Linea su tutto il periodo caricato",
+                futureLinearTrend: "Trend futuro",
+                futureLinearTrendDescription: "Linea da oggi in avanti",
+            },
             buckets: {
                 title: "Portafogli",
                 description:
@@ -1675,6 +1689,20 @@ export const resources = {
             emptyValue: "—",
             loadErrorFallback:
                 "We could not load SerenityLine. Please try again in a moment.",
+            analytics: {
+                title: "Indicators",
+                description:
+                    "Toggle analytical layers calculated on the current SerenityLine.",
+                movingAverage50: "Moving average 50",
+                movingAverage50Description: "Average over the last 50 days",
+                pastLinearTrend: "Past trend",
+                pastLinearTrendDescription: "Line from the past up to today",
+                totalLinearTrend: "Total trend",
+                totalLinearTrendDescription:
+                    "Line over the whole loaded period",
+                futureLinearTrend: "Future trend",
+                futureLinearTrendDescription: "Line from today onward",
+            },
             buckets: {
                 title: "Portfolios",
                 description:

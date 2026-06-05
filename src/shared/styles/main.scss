@@ -1008,3 +1008,19 @@ h6 {
         var(--sl-color-card)
     );
 }
+
+.sl-serenityline-analytics-chip {
+    position: relative;
+}
+
+.sl-serenityline-analytics-chip::before {
+    width: 1.8rem;
+    height: 0;
+    border-top: 2px solid var(--sl-analytics-color, #7da892);
+    content: "";
+}
+
+.sl-serenityline-analytics-chip.is-selected {
+    border-color: var(--sl-analytics-color, #7da892);
+    background: rgba(255, 253, 248, 0.92);
+}

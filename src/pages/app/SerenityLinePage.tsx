@@ -43,6 +43,10 @@ type SerenityLineChartPoint = {
     serenitylineMinimum: number | null;
     serenitylineMaximumLabel?: string;
     serenitylineMinimumLabel?: string;
+    movingAverage50: number | null;
+    totalLinearTrend: number | null;
+    pastLinearTrend: number | null;
+    futureLinearTrend: number | null;
     [key: string]: string | number | [number, number] | null | undefined;
 };
 
@@ -98,6 +102,22 @@ type TooltipPayloadItem = {
     payload?: SerenityLineChartPoint;
 };
 
+type SerenityLineAnalyticalIndicatorKey =
+    | "movingAverage50"
+    | "totalLinearTrend"
+    | "pastLinearTrend"
+    | "futureLinearTrend";
+
+type SerenityLineAnalyticalIndicatorsState = Record<
+    SerenityLineAnalyticalIndicatorKey,
+    boolean
+>;
+
+type RegressionInputPoint = {
+    index: number;
+    value: number;
+};
+
 const SERENITYLINE_PREVIOUS_RANGE_MONTHS = 6;
 const SERENITYLINE_NEXT_RANGE_MONTHS = 6;
 const SERENITYLINE_SCROLL_LOAD_THRESHOLD_PX = 900;
@@ -122,6 +142,14 @@ const SERENITYLINE_BUCKET_COLORS = [
     "#bfd8e8",
     "#d7d0ad",
 ];
+const SERENITYLINE_MOVING_AVERAGE_PERIOD = 50;
+
+const SERENITYLINE_ANALYTICS_COLORS = {
+    movingAverage50: "#7da892",
+    totalLinearTrend: "#a5a0c9",
+    pastLinearTrend: "#c5a56f",
+    futureLinearTrend: "#8aa9c7",
+};
 
 function getSelectedAccountsSerenityLineValue(
     balance: FinanceCalendarDailyBalanceResponseDto,
@@ -463,6 +491,123 @@ function SerenityLineTooltip({
     );
 }
 
+function calculateMovingAverage(
+    points: SerenityLineChartPoint[],
+    period: number,
+) {
+    return points.map((point, index) => {
+        if (point.serenityline == null) {
+            return null;
+        }
+
+        const windowPoints = points
+            .slice(Math.max(0, index - period + 1), index + 1)
+            .map((windowPoint) => windowPoint.serenityline)
+            .filter((value): value is number => value != null);
+
+        if (windowPoints.length === 0) {
+            return null;
+        }
+
+        const total = windowPoints.reduce(
+            (sum, currentValue) => sum + currentValue,
+            0,
+        );
+
+        return total / windowPoints.length;
+    });
+}
+
+function calculateLinearRegression(points: RegressionInputPoint[]) {
+    if (points.length < 2) {
+        return null;
+    }
+
+    const count = points.length;
+    const sumX = points.reduce((total, point) => total + point.index, 0);
+    const sumY = points.reduce((total, point) => total + point.value, 0);
+    const sumXY = points.reduce(
+        (total, point) => total + point.index * point.value,
+        0,
+    );
+    const sumXX = points.reduce(
+        (total, point) => total + point.index * point.index,
+        0,
+    );
+
+    const denominator = count * sumXX - sumX * sumX;
+
+    if (denominator === 0) {
+        return null;
+    }
+
+    const slope = (count * sumXY - sumX * sumY) / denominator;
+    const intercept = (sumY - slope * sumX) / count;
+
+    return {
+        intercept,
+        slope,
+    };
+}
+
+function getRegressionValue(
+    regression: { intercept: number; slope: number } | null,
+    index: number,
+) {
+    if (!regression) {
+        return null;
+    }
+
+    return regression.intercept + regression.slope * index;
+}
+
+function addSerenityLineAnalyticalIndicators(
+    points: SerenityLineChartPoint[],
+    todayIsoDate: string,
+): SerenityLineChartPoint[] {
+    const movingAverageValues = calculateMovingAverage(
+        points,
+        SERENITYLINE_MOVING_AVERAGE_PERIOD,
+    );
+
+    const regressionInput = points
+        .map((point, index) =>
+            point.serenityline == null
+                ? null
+                : {
+                      index,
+                      value: point.serenityline,
+                  },
+        )
+        .filter((point): point is RegressionInputPoint => point != null);
+
+    const pastRegressionInput = regressionInput.filter(
+        (point) => points[point.index]?.date <= todayIsoDate,
+    );
+
+    const futureRegressionInput = regressionInput.filter(
+        (point) => points[point.index]?.date >= todayIsoDate,
+    );
+
+    const totalRegression = calculateLinearRegression(regressionInput);
+    const pastRegression = calculateLinearRegression(pastRegressionInput);
+    const futureRegression = calculateLinearRegression(futureRegressionInput);
+
+    return points.map((point, index) => ({
+        ...point,
+        movingAverage50: movingAverageValues[index],
+        totalLinearTrend: getRegressionValue(totalRegression, index),
+        pastLinearTrend:
+            point.date <= todayIsoDate
+                ? getRegressionValue(pastRegression, index)
+                : null,
+        futureLinearTrend:
+            point.date >= todayIsoDate
+                ? getRegressionValue(futureRegression, index)
+                : null,
+    }));
+}
+
 export function SerenityLinePage() {
     const { i18n, t } = useTranslation("serenityline");
     const dispatch = useAppDispatch();
@@ -520,6 +665,13 @@ export function SerenityLinePage() {
     >(null);
     const [selectedBucketIdsByCurrency, setSelectedBucketIdsByCurrency] =
         useState<Record<string, string[]>>({});
+    const [analyticalIndicators, setAnalyticalIndicators] =
+        useState<SerenityLineAnalyticalIndicatorsState>({
+            movingAverage50: false,
+            totalLinearTrend: false,
+            pastLinearTrend: false,
+            futureLinearTrend: false,
+        });
 
     const accountCurrencies = useMemo(
         () => [...new Set(accounts.map((account) => account.currency))].sort(),
@@ -647,6 +799,10 @@ export function SerenityLinePage() {
                     ),
                     serenitylineMaximum: null,
                     serenitylineMinimum: null,
+                    movingAverage50: null,
+                    totalLinearTrend: null,
+                    pastLinearTrend: null,
+                    futureLinearTrend: null,
                 }))
                 .filter((point) => point.serenityline !== null),
         [balances, selectedAccountIds, selectedCurrency],
@@ -655,6 +811,11 @@ export function SerenityLinePage() {
     const chartData = useMemo(
         () => addSerenityLineExtremaMarkers(baseChartData, amountFormatter),
         [amountFormatter, baseChartData],
+    );
+
+    const chartDataWithAnalytics = useMemo(
+        () => addSerenityLineAnalyticalIndicators(chartData, todayIsoDate),
+        [chartData, todayIsoDate],
     );
 
     const simulationLines = useMemo(
@@ -699,7 +860,7 @@ export function SerenityLinePage() {
 
     const chartDataWithSimulations = useMemo(
         () =>
-            chartData.map((point) => {
+            chartDataWithAnalytics.map((point) => {
                 const pointWithSimulations: SerenityLineChartPoint = {
                     ...point,
                 };
@@ -711,7 +872,7 @@ export function SerenityLinePage() {
 
                 return pointWithSimulations;
             }),
-        [chartData, simulationLines],
+        [chartDataWithAnalytics, simulationLines],
     );
 
     const balancesByDate = useMemo(
@@ -1177,6 +1338,15 @@ export function SerenityLinePage() {
         return selectedBucketIds.includes(bucketId);
     }
 
+    function handleToggleAnalyticalIndicator(
+        indicatorKey: SerenityLineAnalyticalIndicatorKey,
+    ) {
+        setAnalyticalIndicators((currentIndicators) => ({
+            ...currentIndicators,
+            [indicatorKey]: !currentIndicators[indicatorKey],
+        }));
+    }
+
     return (
         <section className="sl-page sl-serenityline-page">
             <header className="sl-page-header">
@@ -1336,6 +1506,86 @@ export function SerenityLinePage() {
                                             strokeWidth={6}
                                             type="natural"
                                         />
+
+                                        {analyticalIndicators.movingAverage50 ? (
+                                            <Line
+                                                activeDot={false}
+                                                dataKey="movingAverage50"
+                                                dot={false}
+                                                isAnimationActive={false}
+                                                name={t(
+                                                    "analytics.movingAverage50",
+                                                )}
+                                                stroke={
+                                                    SERENITYLINE_ANALYTICS_COLORS.movingAverage50
+                                                }
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                type="monotone"
+                                            />
+                                        ) : null}
+
+                                        {analyticalIndicators.totalLinearTrend ? (
+                                            <Line
+                                                activeDot={false}
+                                                dataKey="totalLinearTrend"
+                                                dot={false}
+                                                isAnimationActive={false}
+                                                name={t(
+                                                    "analytics.totalLinearTrend",
+                                                )}
+                                                stroke={
+                                                    SERENITYLINE_ANALYTICS_COLORS.totalLinearTrend
+                                                }
+                                                strokeDasharray="10 7"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                type="linear"
+                                            />
+                                        ) : null}
+
+                                        {analyticalIndicators.pastLinearTrend ? (
+                                            <Line
+                                                activeDot={false}
+                                                dataKey="pastLinearTrend"
+                                                dot={false}
+                                                isAnimationActive={false}
+                                                name={t(
+                                                    "analytics.pastLinearTrend",
+                                                )}
+                                                stroke={
+                                                    SERENITYLINE_ANALYTICS_COLORS.pastLinearTrend
+                                                }
+                                                strokeDasharray="7 6"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                type="linear"
+                                            />
+                                        ) : null}
+
+                                        {analyticalIndicators.futureLinearTrend ? (
+                                            <Line
+                                                activeDot={false}
+                                                dataKey="futureLinearTrend"
+                                                dot={false}
+                                                isAnimationActive={false}
+                                                name={t(
+                                                    "analytics.futureLinearTrend",
+                                                )}
+                                                stroke={
+                                                    SERENITYLINE_ANALYTICS_COLORS.futureLinearTrend
+                                                }
+                                                strokeDasharray="4 7"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                type="linear"
+                                            />
+                                        ) : null}
+
                                         {simulationLines.map(
                                             (simulationLine) => (
                                                 <Line
@@ -1680,6 +1930,127 @@ export function SerenityLinePage() {
                                 )}
                             </div>
                         )}
+                    </div>
+
+                    <div className="sl-serenityline-control-section">
+                        <div className="sl-serenityline-control-section-heading">
+                            <div>
+                                <h3 className="h6">{t("analytics.title")}</h3>
+                                <p>{t("analytics.description")}</p>
+                            </div>
+                        </div>
+
+                        <div className="sl-serenityline-account-toggles">
+                            <button
+                                aria-pressed={
+                                    analyticalIndicators.movingAverage50
+                                }
+                                className={
+                                    analyticalIndicators.movingAverage50
+                                        ? "sl-serenityline-toggle-chip sl-serenityline-analytics-chip is-selected"
+                                        : "sl-serenityline-toggle-chip sl-serenityline-analytics-chip"
+                                }
+                                onClick={() =>
+                                    handleToggleAnalyticalIndicator(
+                                        "movingAverage50",
+                                    )
+                                }
+                                style={
+                                    {
+                                        "--sl-analytics-color":
+                                            SERENITYLINE_ANALYTICS_COLORS.movingAverage50,
+                                    } as CSSProperties
+                                }
+                                type="button">
+                                <span>{t("analytics.movingAverage50")}</span>
+                                <small>
+                                    {t("analytics.movingAverage50Description")}
+                                </small>
+                            </button>
+
+                            <button
+                                aria-pressed={
+                                    analyticalIndicators.pastLinearTrend
+                                }
+                                className={
+                                    analyticalIndicators.pastLinearTrend
+                                        ? "sl-serenityline-toggle-chip sl-serenityline-analytics-chip is-selected"
+                                        : "sl-serenityline-toggle-chip sl-serenityline-analytics-chip"
+                                }
+                                onClick={() =>
+                                    handleToggleAnalyticalIndicator(
+                                        "pastLinearTrend",
+                                    )
+                                }
+                                style={
+                                    {
+                                        "--sl-analytics-color":
+                                            SERENITYLINE_ANALYTICS_COLORS.pastLinearTrend,
+                                    } as CSSProperties
+                                }
+                                type="button">
+                                <span>{t("analytics.pastLinearTrend")}</span>
+                                <small>
+                                    {t("analytics.pastLinearTrendDescription")}
+                                </small>
+                            </button>
+
+                            <button
+                                aria-pressed={
+                                    analyticalIndicators.totalLinearTrend
+                                }
+                                className={
+                                    analyticalIndicators.totalLinearTrend
+                                        ? "sl-serenityline-toggle-chip sl-serenityline-analytics-chip is-selected"
+                                        : "sl-serenityline-toggle-chip sl-serenityline-analytics-chip"
+                                }
+                                onClick={() =>
+                                    handleToggleAnalyticalIndicator(
+                                        "totalLinearTrend",
+                                    )
+                                }
+                                style={
+                                    {
+                                        "--sl-analytics-color":
+                                            SERENITYLINE_ANALYTICS_COLORS.totalLinearTrend,
+                                    } as CSSProperties
+                                }
+                                type="button">
+                                <span>{t("analytics.totalLinearTrend")}</span>
+                                <small>
+                                    {t("analytics.totalLinearTrendDescription")}
+                                </small>
+                            </button>
+
+                            <button
+                                aria-pressed={
+                                    analyticalIndicators.futureLinearTrend
+                                }
+                                className={
+                                    analyticalIndicators.futureLinearTrend
+                                        ? "sl-serenityline-toggle-chip sl-serenityline-analytics-chip is-selected"
+                                        : "sl-serenityline-toggle-chip sl-serenityline-analytics-chip"
+                                }
+                                onClick={() =>
+                                    handleToggleAnalyticalIndicator(
+                                        "futureLinearTrend",
+                                    )
+                                }
+                                style={
+                                    {
+                                        "--sl-analytics-color":
+                                            SERENITYLINE_ANALYTICS_COLORS.futureLinearTrend,
+                                    } as CSSProperties
+                                }
+                                type="button">
+                                <span>{t("analytics.futureLinearTrend")}</span>
+                                <small>
+                                    {t(
+                                        "analytics.futureLinearTrendDescription",
+                                    )}
+                                </small>
+                            </button>
+                        </div>
                     </div>
                 </article>
             </div>
