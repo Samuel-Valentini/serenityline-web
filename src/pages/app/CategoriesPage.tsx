@@ -44,7 +44,25 @@ const initialFormState: CategoryFormState = {
     categoryDescription: "",
 };
 
-const WORKSPACE_SCROLL_OFFSET_PX = 96;
+const WORKSPACE_SCROLL_FALLBACK_OFFSET_PX = 96;
+const WORKSPACE_SCROLL_EXTRA_GAP_PX = 16;
+
+function getWorkspaceScrollOffsetPx() {
+    if (typeof document === "undefined") {
+        return WORKSPACE_SCROLL_FALLBACK_OFFSET_PX;
+    }
+
+    const appTopbar = document.querySelector<HTMLElement>(".sl-app-topbar");
+
+    if (!appTopbar) {
+        return WORKSPACE_SCROLL_FALLBACK_OFFSET_PX;
+    }
+
+    return Math.ceil(
+        appTopbar.getBoundingClientRect().height +
+            WORKSPACE_SCROLL_EXTRA_GAP_PX,
+    );
+}
 
 function getErrorMessage(error: unknown, fallback: string) {
     if (error instanceof ApiError) {
@@ -140,7 +158,7 @@ export function CategoriesPage() {
                 const workspaceTop =
                     workspaceElement.getBoundingClientRect().top +
                     window.scrollY -
-                    WORKSPACE_SCROLL_OFFSET_PX;
+                    getWorkspaceScrollOffsetPx();
 
                 window.scrollTo({
                     behavior: "smooth",
