@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, UIEvent } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Area,
@@ -25,7 +25,6 @@ import {
     addMonthsToIsoDate,
     BASE_DAILY_BALANCES_SCENARIO_KEY,
     getDailyBalancesScenarioKey,
-    getInitialSerenityLineRange,
     getTodayIsoDate,
 } from "../../features/finance/dailyBalances/financeDailyBalancesTypes";
 import {
@@ -118,14 +117,15 @@ type RegressionInputPoint = {
     value: number;
 };
 
-const SERENITYLINE_PREVIOUS_RANGE_MONTHS = 6;
-const SERENITYLINE_NEXT_RANGE_MONTHS = 6;
-const SERENITYLINE_SCROLL_LOAD_THRESHOLD_PX = 900;
-const SERENITYLINE_CHART_DAY_WIDTH_PX = 2;
-const SERENITYLINE_CHART_MIN_WIDTH_PX = 1200;
-const SERENITYLINE_MAX_EXTREMA_MARKERS = 12;
+type SerenityLineViewYears = 1 | 2 | 4;
+
+const SERENITYLINE_VIEW_OPTIONS: SerenityLineViewYears[] = [1, 2, 4];
+const SERENITYLINE_TODAY_POSITION_RATIO = 0.25;
+const SERENITYLINE_MONTHS_IN_YEAR = 12;
+
+const SERENITYLINE_MAX_EXTREMA_MARKERS = 15;
 const SERENITYLINE_EXTREMA_MIN_ABSOLUTE_PROMINENCE = 50;
-const SERENITYLINE_EXTREMA_RELATIVE_PROMINENCE = 0.01;
+const SERENITYLINE_EXTREMA_RELATIVE_PROMINENCE = 0.035;
 const SERENITYLINE_MAX_ACTIVE_SIMULATIONS = 5;
 const SERENITYLINE_SIMULATION_COLORS = [
     "#8fb8a8",
@@ -208,75 +208,167 @@ function getSerenityLineValueRuns(
 
     return runs;
 }
-
 function getSerenityLineExtremumCandidates(
     points: SerenityLineChartPoint[],
 ): SerenityLineExtremumCandidate[] {
     const runs = getSerenityLineValueRuns(points);
 
-    return runs
-        .map((run, runIndex): SerenityLineExtremumCandidate | null => {
-            const previousRun = runs[runIndex - 1];
-            const nextRun = runs[runIndex + 1];
+    if (runs.length < 2) {
+        return [];
+    }
 
-            if (previousRun && nextRun) {
-                if (
-                    run.value > previousRun.value &&
-                    run.value > nextRun.value
-                ) {
-                    return {
-                        index: run.markerIndex,
+    const values = runs.map((run) => run.value);
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+    const verticalRange = maxValue - minValue;
+
+    const minimumProminence = Math.max(
+        SERENITYLINE_EXTREMA_MIN_ABSOLUTE_PROMINENCE,
+        verticalRange * SERENITYLINE_EXTREMA_RELATIVE_PROMINENCE,
+    );
+
+    if (verticalRange < minimumProminence) {
+        return [];
+    }
+
+    const candidates: SerenityLineExtremumCandidate[] = [];
+
+    let highestRun = runs[0];
+    let lowestRun = runs[0];
+    let currentExtremeRun = runs[0];
+    let direction: "rising" | "falling" | null = null;
+
+    runs.slice(1).forEach((run) => {
+        if (direction === null) {
+            if (run.value >= highestRun.value) {
+                highestRun = run;
+            }
+
+            if (run.value <= lowestRun.value) {
+                lowestRun = run;
+            }
+
+            const firstSwing = highestRun.value - lowestRun.value;
+
+            if (firstSwing >= minimumProminence) {
+                if (highestRun.startIndex < lowestRun.startIndex) {
+                    candidates.push({
+                        index: highestRun.endIndex,
                         type: "maximum",
-                        value: run.value,
-                        prominence: Math.min(
-                            run.value - previousRun.value,
-                            run.value - nextRun.value,
-                        ),
-                    };
-                }
+                        value: highestRun.value,
+                        prominence: firstSwing,
+                    });
 
-                if (
-                    run.value < previousRun.value &&
-                    run.value < nextRun.value
-                ) {
-                    return {
-                        index: run.markerIndex,
+                    direction = "falling";
+                    currentExtremeRun = lowestRun;
+                } else {
+                    candidates.push({
+                        index: lowestRun.startIndex,
                         type: "minimum",
-                        value: run.value,
-                        prominence: Math.min(
-                            previousRun.value - run.value,
-                            nextRun.value - run.value,
-                        ),
-                    };
+                        value: lowestRun.value,
+                        prominence: firstSwing,
+                    });
+
+                    direction = "rising";
+                    currentExtremeRun = highestRun;
                 }
-
-                return null;
             }
 
-            if (!previousRun && nextRun && run.value !== nextRun.value) {
-                return {
-                    index: run.markerIndex,
-                    type: run.value > nextRun.value ? "maximum" : "minimum",
-                    value: run.value,
-                    prominence: Math.abs(run.value - nextRun.value),
-                };
+            return;
+        }
+
+        if (direction === "rising") {
+            if (run.value >= currentExtremeRun.value) {
+                currentExtremeRun = run;
+                return;
             }
 
-            if (previousRun && !nextRun && run.value !== previousRun.value) {
-                return {
-                    index: run.markerIndex,
-                    type: run.value > previousRun.value ? "maximum" : "minimum",
-                    value: run.value,
-                    prominence: Math.abs(run.value - previousRun.value),
-                };
+            const reversal = currentExtremeRun.value - run.value;
+
+            if (reversal >= minimumProminence) {
+                candidates.push({
+                    index: currentExtremeRun.endIndex,
+                    type: "maximum",
+                    value: currentExtremeRun.value,
+                    prominence: reversal,
+                });
+
+                direction = "falling";
+                currentExtremeRun = run;
             }
 
-            return null;
-        })
-        .filter(
-            (candidate): candidate is SerenityLineExtremumCandidate =>
-                candidate != null,
-        );
+            return;
+        }
+
+        if (run.value <= currentExtremeRun.value) {
+            currentExtremeRun = run;
+            return;
+        }
+
+        const reversal = run.value - currentExtremeRun.value;
+
+        if (reversal >= minimumProminence) {
+            candidates.push({
+                index: currentExtremeRun.startIndex,
+                type: "minimum",
+                value: currentExtremeRun.value,
+                prominence: reversal,
+            });
+
+            direction = "rising";
+            currentExtremeRun = run;
+        }
+    });
+
+    const lastCandidate = candidates[candidates.length - 1];
+
+    if (direction === "rising") {
+        const previousMinimum = [...candidates]
+            .reverse()
+            .find((candidate) => candidate.type === "minimum");
+
+        const prominence =
+            previousMinimum == null
+                ? verticalRange
+                : currentExtremeRun.value - previousMinimum.value;
+
+        if (
+            prominence >= minimumProminence &&
+            lastCandidate?.index !== currentExtremeRun.endIndex
+        ) {
+            candidates.push({
+                index: currentExtremeRun.endIndex,
+                type: "maximum",
+                value: currentExtremeRun.value,
+                prominence,
+            });
+        }
+    }
+
+    if (direction === "falling") {
+        const previousMaximum = [...candidates]
+            .reverse()
+            .find((candidate) => candidate.type === "maximum");
+
+        const prominence =
+            previousMaximum == null
+                ? verticalRange
+                : previousMaximum.value - currentExtremeRun.value;
+
+        if (
+            prominence >= minimumProminence &&
+            lastCandidate?.index !== currentExtremeRun.startIndex
+        ) {
+            candidates.push({
+                index: currentExtremeRun.startIndex,
+                type: "minimum",
+                value: currentExtremeRun.value,
+                prominence,
+            });
+        }
+    }
+
+    return candidates.sort((first, second) => first.index - second.index);
 }
 function addSerenityLineExtremaMarkers(
     points: SerenityLineChartPoint[],
@@ -301,11 +393,38 @@ function addSerenityLineExtremaMarkers(
 
     const candidates = getSerenityLineExtremumCandidates(points)
         .filter((candidate) => candidate.prominence >= minimumProminence)
-        .sort((first, second) => second.prominence - first.prominence)
-        .slice(0, SERENITYLINE_MAX_EXTREMA_MARKERS);
+        .sort((first, second) => first.index - second.index);
+
+    const alternatingCandidates = candidates.reduce<
+        SerenityLineExtremumCandidate[]
+    >((selectedCandidates, candidate) => {
+        const previousCandidate =
+            selectedCandidates[selectedCandidates.length - 1];
+
+        if (!previousCandidate) {
+            selectedCandidates.push(candidate);
+            return selectedCandidates;
+        }
+
+        if (previousCandidate.type !== candidate.type) {
+            selectedCandidates.push(candidate);
+            return selectedCandidates;
+        }
+
+        if (candidate.prominence > previousCandidate.prominence) {
+            selectedCandidates[selectedCandidates.length - 1] = candidate;
+        }
+
+        return selectedCandidates;
+    }, []);
+
+    const selectedCandidates = alternatingCandidates.slice(
+        0,
+        SERENITYLINE_MAX_EXTREMA_MARKERS,
+    );
 
     const selectedCandidatesByIndex = new Map(
-        candidates.map((candidate) => [candidate.index, candidate]),
+        selectedCandidates.map((candidate) => [candidate.index, candidate]),
     );
 
     return points.map((point, index) => {
@@ -339,6 +458,22 @@ function formatIsoDateForDisplay(date: string, language: string) {
     );
 }
 
+function getSerenityLineFixedRange(
+    todayIsoDate: string,
+    viewYears: SerenityLineViewYears,
+) {
+    const totalMonths = viewYears * SERENITYLINE_MONTHS_IN_YEAR;
+    const monthsBeforeToday = Math.round(
+        totalMonths * SERENITYLINE_TODAY_POSITION_RATIO,
+    );
+    const monthsAfterToday = totalMonths - monthsBeforeToday;
+
+    return {
+        from: addMonthsToIsoDate(todayIsoDate, -monthsBeforeToday),
+        to: addMonthsToIsoDate(todayIsoDate, monthsAfterToday),
+    };
+}
+
 function getAvailableCurrencies(
     balances: FinanceCalendarDailyBalanceResponseDto[],
     accountCurrencies: string[],
@@ -356,18 +491,6 @@ function getAvailableCurrencies(
     });
 
     return [...currencies].sort();
-}
-
-function getFirstAccountOpeningDateForCurrency(
-    accounts: { currency: string; openingBalanceDate: string }[],
-    currency: string,
-) {
-    return (
-        accounts
-            .filter((account) => account.currency === currency)
-            .map((account) => account.openingBalanceDate)
-            .sort()[0] ?? null
-    );
 }
 
 function getSimulationLineDataKey(simulationGroupId: string) {
@@ -614,11 +737,13 @@ export function SerenityLinePage() {
 
     const displayLanguage = i18n.resolvedLanguage || i18n.language || "it";
     const todayIsoDate = useMemo(() => getTodayIsoDate(), []);
-    const initialRange = useMemo(
-        () => getInitialSerenityLineRange(todayIsoDate),
-        [todayIsoDate],
-    );
 
+    const [selectedViewYears, setSelectedViewYears] =
+        useState<SerenityLineViewYears>(1);
+    const visibleRange = useMemo(
+        () => getSerenityLineFixedRange(todayIsoDate, selectedViewYears),
+        [selectedViewYears, todayIsoDate],
+    );
     const financeDataStatus = useAppSelector(selectFinanceDataStatus);
     const financeDataError = useAppSelector(selectFinanceDataError);
     const accounts = useAppSelector(selectAccounts);
@@ -647,17 +772,6 @@ export function SerenityLinePage() {
     const [selectedAccountIdsByCurrency, setSelectedAccountIdsByCurrency] =
         useState<Record<string, string[]>>({});
 
-    const hasRequestedInitialRangeRef = useRef(false);
-
-    const chartWindowRef = useRef<HTMLDivElement | null>(null);
-    const hasScrolledToTodayRef = useRef(false);
-    const isLoadingPreviousRangeRef = useRef(false);
-    const isLoadingNextRangeRef = useRef(false);
-    const previousRangeArmedRef = useRef(true);
-    const nextRangeArmedRef = useRef(true);
-
-    const [isLoadingPreviousRange, setIsLoadingPreviousRange] = useState(false);
-    const [isLoadingNextRange, setIsLoadingNextRange] = useState(false);
     const [selectedSimulationGroupIds, setSelectedSimulationGroupIds] =
         useState<string[]>([]);
     const [simulationSelectionError, setSimulationSelectionError] = useState<
@@ -787,9 +901,37 @@ export function SerenityLinePage() {
         [displayLanguage, selectedCurrency],
     );
 
+    const getSimulationGroupDisplayColor = useCallback(
+        (simulationGroupId: string) => {
+            const simulationGroupIndex = activeSimulationGroups.findIndex(
+                (simulationGroup) =>
+                    simulationGroup.simulationGroupId === simulationGroupId,
+            );
+
+            return getSimulationColor(Math.max(0, simulationGroupIndex));
+        },
+        [activeSimulationGroups],
+    );
+
+    const getBucketDisplayColor = useCallback(
+        (bucketId: string) => {
+            const bucketIndex = currencyBuckets.findIndex(
+                (bucket) => bucket.bucketId === bucketId,
+            );
+
+            return getBucketColor(Math.max(0, bucketIndex));
+        },
+        [currencyBuckets],
+    );
+
     const baseChartData = useMemo<SerenityLineChartPoint[]>(
         () =>
             balances
+                .filter(
+                    (balance) =>
+                        balance.date >= visibleRange.from &&
+                        balance.date <= visibleRange.to,
+                )
                 .map((balance) => ({
                     date: balance.date,
                     serenityline: getSelectedAccountsSerenityLineValue(
@@ -805,7 +947,13 @@ export function SerenityLinePage() {
                     futureLinearTrend: null,
                 }))
                 .filter((point) => point.serenityline !== null),
-        [balances, selectedAccountIds, selectedCurrency],
+        [
+            balances,
+            selectedAccountIds,
+            selectedCurrency,
+            visibleRange.from,
+            visibleRange.to,
+        ],
     );
 
     const chartData = useMemo(
@@ -820,7 +968,7 @@ export function SerenityLinePage() {
 
     const simulationLines = useMemo(
         () =>
-            selectedSimulationGroups.map((simulationGroup, index) => {
+            selectedSimulationGroups.map((simulationGroup) => {
                 const scenarioKey = getDailyBalancesScenarioKey([
                     simulationGroup.simulationGroupId,
                 ]);
@@ -841,7 +989,9 @@ export function SerenityLinePage() {
                 );
 
                 return {
-                    color: getSimulationColor(index),
+                    color: getSimulationGroupDisplayColor(
+                        simulationGroup.simulationGroupId,
+                    ),
                     dataKey: getSimulationLineDataKey(
                         simulationGroup.simulationGroupId,
                     ),
@@ -852,6 +1002,7 @@ export function SerenityLinePage() {
             }),
         [
             dailyBalanceScenarios,
+            getSimulationGroupDisplayColor,
             selectedAccountIds,
             selectedCurrency,
             selectedSimulationGroups,
@@ -882,14 +1033,14 @@ export function SerenityLinePage() {
 
     const bucketBands = useMemo(
         () =>
-            selectedBuckets.map((bucket, index) => ({
+            selectedBuckets.map((bucket) => ({
                 bucket,
-                color: getBucketColor(index),
+                color: getBucketDisplayColor(bucket.bucketId),
                 dataKey: getBucketBandDataKey(bucket.bucketId),
                 name: getBucketDisplayName(bucket),
                 valueDataKey: getBucketValueDataKey(bucket.bucketId),
             })),
-        [selectedBuckets],
+        [getBucketDisplayColor, selectedBuckets],
     );
 
     const chartDataWithLayers = useMemo(
@@ -959,279 +1110,31 @@ export function SerenityLinePage() {
         [chartData],
     );
 
-    const chartWidth = Math.max(
-        SERENITYLINE_CHART_MIN_WIDTH_PX,
-        chartDataWithLayers.length * SERENITYLINE_CHART_DAY_WIDTH_PX,
-    );
-    const firstAccountOpeningDate = useMemo(
-        () => getFirstAccountOpeningDateForCurrency(accounts, selectedCurrency),
-        [accounts, selectedCurrency],
-    );
-
     useEffect(() => {
-        if (hasRequestedInitialRangeRef.current) {
-            return;
-        }
-
-        hasRequestedInitialRangeRef.current = true;
         void dispatch(
             loadDailyBalancesRange({
-                range: initialRange,
+                range: visibleRange,
             }),
         );
-    }, [dispatch, initialRange]);
+    }, [dispatch, visibleRange]);
 
     const isLoading = cacheEntry.status === "loading";
     const errorMessage = cacheEntry.error?.message ?? t("loadErrorFallback");
-
-    function getPreviousDailyBalancesRange() {
-        if (!cacheEntry.loadedFrom) {
-            return null;
-        }
-
-        if (
-            firstAccountOpeningDate &&
-            cacheEntry.loadedFrom <= firstAccountOpeningDate
-        ) {
-            return null;
-        }
-
-        const candidateFrom = addMonthsToIsoDate(
-            cacheEntry.loadedFrom,
-            -SERENITYLINE_PREVIOUS_RANGE_MONTHS,
-        );
-
-        const from =
-            firstAccountOpeningDate && candidateFrom < firstAccountOpeningDate
-                ? firstAccountOpeningDate
-                : candidateFrom;
-
-        if (from >= cacheEntry.loadedFrom) {
-            return null;
-        }
-
-        return {
-            from,
-            to: cacheEntry.loadedFrom,
-        };
-    }
-
-    function getNextDailyBalancesRange() {
-        if (!cacheEntry.loadedTo) {
-            return null;
-        }
-
-        return {
-            from: cacheEntry.loadedTo,
-            to: addMonthsToIsoDate(
-                cacheEntry.loadedTo,
-                SERENITYLINE_NEXT_RANGE_MONTHS,
-            ),
-        };
-    }
-
-    async function loadPreviousDailyBalancesRange() {
-        if (isLoadingPreviousRangeRef.current) {
-            return;
-        }
-
-        const previousRange = getPreviousDailyBalancesRange();
-
-        if (!previousRange) {
-            return;
-        }
-
-        const chartWindow = chartWindowRef.current;
-        const previousScrollWidth = chartWindow?.scrollWidth ?? 0;
-        const previousScrollLeft = chartWindow?.scrollLeft ?? 0;
-
-        isLoadingPreviousRangeRef.current = true;
-        setIsLoadingPreviousRange(true);
-
-        try {
-            await Promise.all([
-                dispatch(
-                    loadDailyBalancesRange({
-                        range: previousRange,
-                    }),
-                ),
-                ...selectedSimulationGroupIds.map((simulationGroupId) =>
-                    dispatch(
-                        loadDailyBalancesRange({
-                            range: previousRange,
-                            simulationGroupIds: [simulationGroupId],
-                        }),
-                    ),
-                ),
-            ]);
-
-            window.requestAnimationFrame(() => {
-                if (!chartWindow) {
-                    return;
-                }
-
-                const newScrollWidth = chartWindow.scrollWidth;
-                chartWindow.scrollLeft =
-                    previousScrollLeft + newScrollWidth - previousScrollWidth;
-            });
-        } finally {
-            isLoadingPreviousRangeRef.current = false;
-            setIsLoadingPreviousRange(false);
-        }
-    }
-
-    async function loadNextDailyBalancesRange() {
-        if (isLoadingNextRangeRef.current) {
-            return;
-        }
-
-        const nextRange = getNextDailyBalancesRange();
-
-        if (!nextRange) {
-            return;
-        }
-
-        isLoadingNextRangeRef.current = true;
-        setIsLoadingNextRange(true);
-
-        try {
-            await Promise.all([
-                dispatch(
-                    loadDailyBalancesRange({
-                        range: nextRange,
-                    }),
-                ),
-                ...selectedSimulationGroupIds.map((simulationGroupId) =>
-                    dispatch(
-                        loadDailyBalancesRange({
-                            range: nextRange,
-                            simulationGroupIds: [simulationGroupId],
-                        }),
-                    ),
-                ),
-            ]);
-        } finally {
-            isLoadingNextRangeRef.current = false;
-            setIsLoadingNextRange(false);
-        }
-    }
-
-    function handleChartWindowScroll(event: UIEvent<HTMLDivElement>) {
-        const chartWindow = event.currentTarget;
-        const thresholdPx = Math.max(
-            SERENITYLINE_SCROLL_LOAD_THRESHOLD_PX,
-            chartWindow.clientWidth * 1.25,
-        );
-
-        const distanceFromRight =
-            chartWindow.scrollWidth -
-            chartWindow.scrollLeft -
-            chartWindow.clientWidth;
-
-        const isNearLeft = chartWindow.scrollLeft < thresholdPx;
-        const isNearRight = distanceFromRight < thresholdPx;
-
-        if (!isNearLeft) {
-            previousRangeArmedRef.current = true;
-        }
-
-        if (!isNearRight) {
-            nextRangeArmedRef.current = true;
-        }
-
-        if (isNearLeft && previousRangeArmedRef.current) {
-            previousRangeArmedRef.current = false;
-            void loadPreviousDailyBalancesRange();
-        }
-
-        if (isNearRight && nextRangeArmedRef.current) {
-            nextRangeArmedRef.current = false;
-            void loadNextDailyBalancesRange();
-        }
-    }
-
-    useEffect(() => {
-        if (
-            hasScrolledToTodayRef.current ||
-            chartData.length === 0 ||
-            cacheEntry.loadedFrom == null ||
-            cacheEntry.loadedTo == null
-        ) {
-            return;
-        }
-
-        const todayIndex = chartData.findIndex(
-            (point) => point.date >= todayIsoDate,
-        );
-
-        if (todayIndex < 0) {
-            return;
-        }
-
-        const animationFrameId = window.requestAnimationFrame(() => {
-            const chartWindow = chartWindowRef.current;
-
-            if (!chartWindow) {
-                return;
-            }
-
-            const maxScrollLeft = Math.max(
-                0,
-                chartWindow.scrollWidth - chartWindow.clientWidth,
-            );
-
-            const targetLeft =
-                todayIndex * SERENITYLINE_CHART_DAY_WIDTH_PX -
-                chartWindow.clientWidth / 4;
-
-            chartWindow.scrollLeft = Math.min(
-                Math.max(0, targetLeft),
-                maxScrollLeft,
-            );
-
-            hasScrolledToTodayRef.current = true;
-        });
-
-        return () => window.cancelAnimationFrame(animationFrameId);
-    }, [
-        cacheEntry.loadedFrom,
-        cacheEntry.loadedTo,
-        chartData,
-        chartWidth,
-        todayIsoDate,
-    ]);
-
-    useEffect(() => {
-        hasScrolledToTodayRef.current = false;
-        previousRangeArmedRef.current = true;
-        nextRangeArmedRef.current = true;
-    }, [selectedCurrency]);
 
     useEffect(() => {
         if (selectedSimulationGroupIds.length === 0) {
             return;
         }
 
-        const range = {
-            from: cacheEntry.loadedFrom ?? initialRange.from,
-            to: cacheEntry.loadedTo ?? initialRange.to,
-        };
-
         selectedSimulationGroupIds.forEach((simulationGroupId) => {
             void dispatch(
                 loadDailyBalancesRange({
-                    range,
+                    range: visibleRange,
                     simulationGroupIds: [simulationGroupId],
                 }),
             );
         });
-    }, [
-        cacheEntry.loadedFrom,
-        cacheEntry.loadedTo,
-        dispatch,
-        initialRange,
-        selectedSimulationGroupIds,
-    ]);
+    }, [dispatch, selectedSimulationGroupIds, visibleRange]);
 
     function handleToggleAccount(accountId: string) {
         setSelectedAccountIdsByCurrency(
@@ -1390,305 +1293,353 @@ export function SerenityLinePage() {
                     ) : null}
 
                     {chartData.length > 0 ? (
-                        <div
-                            aria-label={t("chart.accessibleLabel")}
-                            className="sl-serenityline-chart-window"
-                            onScroll={handleChartWindowScroll}
-                            ref={chartWindowRef}>
-                            {isLoadingPreviousRange ? (
-                                <div className="sl-serenityline-edge-loader sl-serenityline-edge-loader-left">
-                                    {t("chart.loadingPrevious")}
-                                </div>
-                            ) : null}
-
-                            {isLoadingNextRange ? (
-                                <div className="sl-serenityline-edge-loader sl-serenityline-edge-loader-right">
-                                    {t("chart.loadingNext")}
-                                </div>
-                            ) : null}
+                        <div className="sl-serenityline-chart-shell">
                             <div
-                                className="sl-serenityline-chart-canvas"
-                                style={{ width: `${chartWidth}px` }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <ComposedChart
-                                        data={chartDataWithLayers}
-                                        margin={{
-                                            top: 28,
-                                            right: 40,
-                                            bottom: 24,
-                                            left: 16,
-                                        }}>
-                                        <CartesianGrid
-                                            stroke="var(--sl-chart-grid)"
-                                            vertical={false}
-                                        />
-                                        <XAxis
-                                            dataKey="date"
-                                            minTickGap={42}
-                                            tickFormatter={(date) =>
-                                                formatIsoDateForDisplay(
-                                                    String(date),
-                                                    displayLanguage,
-                                                )
-                                            }
-                                        />
-                                        <YAxis
-                                            tickFormatter={(value) =>
-                                                amountFormatter.format(
-                                                    Number(value),
-                                                )
-                                            }
-                                            width={88}
-                                        />
-                                        <Tooltip
-                                            content={({
-                                                active,
-                                                label,
-                                                payload,
-                                            }) => (
-                                                <SerenityLineTooltip
-                                                    active={active}
-                                                    amountFormatter={
-                                                        amountFormatter
-                                                    }
-                                                    dateFormatter={(date) =>
-                                                        formatIsoDateForDisplay(
-                                                            date,
-                                                            displayLanguage,
-                                                        )
-                                                    }
-                                                    label={String(label)}
-                                                    payload={
-                                                        payload as unknown as readonly TooltipPayloadItem[]
-                                                    }
-                                                />
-                                            )}
-                                        />
-                                        <ReferenceLine
-                                            ifOverflow="extendDomain"
-                                            label="0 €"
-                                            stroke="var(--sl-chart-zero)"
-                                            strokeDasharray="6 6"
-                                            y={0}
-                                        />
-                                        <ReferenceLine
-                                            ifOverflow="extendDomain"
-                                            label={t("chart.today")}
-                                            stroke="var(--sl-chart-today)"
-                                            strokeDasharray="4 4"
-                                            x={todayIsoDate}
-                                        />
-                                        {bucketBands.map((bucketBand) => (
-                                            <Area
-                                                connectNulls={false}
-                                                dataKey={bucketBand.dataKey}
-                                                fill={bucketBand.color}
-                                                fillOpacity={0.28}
-                                                isAnimationActive={false}
-                                                key={bucketBand.dataKey}
-                                                name={bucketBand.name}
-                                                stroke={bucketBand.color}
-                                                strokeOpacity={0.85}
-                                                strokeWidth={1.2}
-                                                type="natural"
+                                aria-label={t("chart.accessibleLabel")}
+                                className="sl-serenityline-chart-window">
+                                <div className="sl-serenityline-chart-canvas">
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height="100%">
+                                        <ComposedChart
+                                            data={chartDataWithLayers}
+                                            margin={{
+                                                top: 28,
+                                                right: 40,
+                                                bottom: 42,
+                                                left: 16,
+                                            }}>
+                                            <CartesianGrid
+                                                stroke="var(--sl-chart-grid)"
+                                                vertical={false}
                                             />
-                                        ))}
-
-                                        <Line
-                                            activeDot={{ r: 5 }}
-                                            dataKey="serenityline"
-                                            dot={false}
-                                            isAnimationActive={false}
-                                            name={t("chart.serenityLine")}
-                                            stroke="var(--sl-chart-serenityline)"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={6}
-                                            type="natural"
-                                        />
-
-                                        {analyticalIndicators.movingAverage50 ? (
-                                            <Line
-                                                activeDot={false}
-                                                dataKey="movingAverage50"
-                                                dot={false}
-                                                isAnimationActive={false}
-                                                name={t(
-                                                    "analytics.movingAverage50",
-                                                )}
-                                                stroke={
-                                                    SERENITYLINE_ANALYTICS_COLORS.movingAverage50
+                                            <XAxis
+                                                dataKey="date"
+                                                height={42}
+                                                minTickGap={48}
+                                                tickMargin={12}
+                                                tickFormatter={(date) =>
+                                                    new Intl.DateTimeFormat(
+                                                        displayLanguage,
+                                                        {
+                                                            month: "short",
+                                                            year: "2-digit",
+                                                        },
+                                                    ).format(
+                                                        new Date(
+                                                            `${String(date)}T00:00:00`,
+                                                        ),
+                                                    )
                                                 }
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                type="monotone"
                                             />
-                                        ) : null}
-
-                                        {analyticalIndicators.totalLinearTrend ? (
-                                            <Line
-                                                activeDot={false}
-                                                dataKey="totalLinearTrend"
-                                                dot={false}
-                                                isAnimationActive={false}
-                                                name={t(
-                                                    "analytics.totalLinearTrend",
-                                                )}
-                                                stroke={
-                                                    SERENITYLINE_ANALYTICS_COLORS.totalLinearTrend
+                                            <YAxis
+                                                tick={{
+                                                    fontSize: 10,
+                                                }}
+                                                tickFormatter={(value) =>
+                                                    amountFormatter.format(
+                                                        Number(value),
+                                                    )
                                                 }
-                                                strokeDasharray="10 7"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                type="linear"
+                                                width={72}
                                             />
-                                        ) : null}
-
-                                        {analyticalIndicators.pastLinearTrend ? (
-                                            <Line
-                                                activeDot={false}
-                                                dataKey="pastLinearTrend"
-                                                dot={false}
-                                                isAnimationActive={false}
-                                                name={t(
-                                                    "analytics.pastLinearTrend",
+                                            <Tooltip
+                                                content={({
+                                                    active,
+                                                    label,
+                                                    payload,
+                                                }) => (
+                                                    <SerenityLineTooltip
+                                                        active={active}
+                                                        amountFormatter={
+                                                            amountFormatter
+                                                        }
+                                                        dateFormatter={(date) =>
+                                                            formatIsoDateForDisplay(
+                                                                date,
+                                                                displayLanguage,
+                                                            )
+                                                        }
+                                                        label={String(label)}
+                                                        payload={
+                                                            payload as unknown as readonly TooltipPayloadItem[]
+                                                        }
+                                                    />
                                                 )}
-                                                stroke={
-                                                    SERENITYLINE_ANALYTICS_COLORS.pastLinearTrend
-                                                }
-                                                strokeDasharray="7 6"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                type="linear"
                                             />
-                                        ) : null}
-
-                                        {analyticalIndicators.futureLinearTrend ? (
-                                            <Line
-                                                activeDot={false}
-                                                dataKey="futureLinearTrend"
-                                                dot={false}
-                                                isAnimationActive={false}
-                                                name={t(
-                                                    "analytics.futureLinearTrend",
-                                                )}
-                                                stroke={
-                                                    SERENITYLINE_ANALYTICS_COLORS.futureLinearTrend
-                                                }
-                                                strokeDasharray="4 7"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                type="linear"
+                                            <ReferenceLine
+                                                ifOverflow="extendDomain"
+                                                label="0 €"
+                                                stroke="var(--sl-chart-zero)"
+                                                strokeDasharray="6 6"
+                                                y={0}
                                             />
-                                        ) : null}
-
-                                        {simulationLines.map(
-                                            (simulationLine) => (
-                                                <Line
-                                                    activeDot={{ r: 4 }}
-                                                    dataKey={
-                                                        simulationLine.dataKey
-                                                    }
-                                                    dot={false}
+                                            <ReferenceLine
+                                                ifOverflow="extendDomain"
+                                                label={t("chart.today")}
+                                                stroke="var(--sl-chart-today)"
+                                                strokeDasharray="4 4"
+                                                x={todayIsoDate}
+                                            />
+                                            {bucketBands.map((bucketBand) => (
+                                                <Area
+                                                    connectNulls={false}
+                                                    dataKey={bucketBand.dataKey}
+                                                    fill={bucketBand.color}
+                                                    fillOpacity={0.28}
                                                     isAnimationActive={false}
-                                                    key={simulationLine.dataKey}
-                                                    name={simulationLine.name}
-                                                    stroke={
-                                                        simulationLine.color
-                                                    }
-                                                    strokeDasharray="8 7"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2.2}
+                                                    key={bucketBand.dataKey}
+                                                    name={bucketBand.name}
+                                                    stroke={bucketBand.color}
+                                                    strokeOpacity={0.85}
+                                                    strokeWidth={1.2}
                                                     type="natural"
                                                 />
-                                            ),
-                                        )}
-                                        {simulationLines.map(
-                                            (simulationLine) => {
-                                                const lastPoint = [
-                                                    ...chartDataWithSimulations,
-                                                ]
-                                                    .reverse()
-                                                    .find(
-                                                        (point) =>
-                                                            typeof point[
-                                                                simulationLine
-                                                                    .dataKey
-                                                            ] === "number",
-                                                    );
+                                            ))}
 
-                                                if (!lastPoint) {
-                                                    return null;
-                                                }
+                                            <Line
+                                                activeDot={{ r: 5 }}
+                                                dataKey="serenityline"
+                                                dot={false}
+                                                isAnimationActive={false}
+                                                name={t("chart.serenityLine")}
+                                                stroke="var(--sl-chart-serenityline)"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={4}
+                                                type="natural"
+                                            />
 
-                                                return (
-                                                    <ReferenceDot
-                                                        fill="transparent"
-                                                        ifOverflow="extendDomain"
-                                                        key={`simulation-label-${simulationLine.dataKey}`}
-                                                        r={0}
-                                                        stroke="transparent"
-                                                        x={lastPoint.date}
-                                                        y={
-                                                            lastPoint[
-                                                                simulationLine
-                                                                    .dataKey
-                                                            ] as number
+                                            {analyticalIndicators.movingAverage50 ? (
+                                                <Line
+                                                    activeDot={false}
+                                                    dataKey="movingAverage50"
+                                                    dot={false}
+                                                    isAnimationActive={false}
+                                                    name={t(
+                                                        "analytics.movingAverage50",
+                                                    )}
+                                                    stroke={
+                                                        SERENITYLINE_ANALYTICS_COLORS.movingAverage50
+                                                    }
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    type="monotone"
+                                                />
+                                            ) : null}
+
+                                            {analyticalIndicators.totalLinearTrend ? (
+                                                <Line
+                                                    activeDot={false}
+                                                    dataKey="totalLinearTrend"
+                                                    dot={false}
+                                                    isAnimationActive={false}
+                                                    name={t(
+                                                        "analytics.totalLinearTrend",
+                                                    )}
+                                                    stroke={
+                                                        SERENITYLINE_ANALYTICS_COLORS.totalLinearTrend
+                                                    }
+                                                    strokeDasharray="10 7"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    type="linear"
+                                                />
+                                            ) : null}
+
+                                            {analyticalIndicators.pastLinearTrend ? (
+                                                <Line
+                                                    activeDot={false}
+                                                    dataKey="pastLinearTrend"
+                                                    dot={false}
+                                                    isAnimationActive={false}
+                                                    name={t(
+                                                        "analytics.pastLinearTrend",
+                                                    )}
+                                                    stroke={
+                                                        SERENITYLINE_ANALYTICS_COLORS.pastLinearTrend
+                                                    }
+                                                    strokeDasharray="7 6"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    type="linear"
+                                                />
+                                            ) : null}
+
+                                            {analyticalIndicators.futureLinearTrend ? (
+                                                <Line
+                                                    activeDot={false}
+                                                    dataKey="futureLinearTrend"
+                                                    dot={false}
+                                                    isAnimationActive={false}
+                                                    name={t(
+                                                        "analytics.futureLinearTrend",
+                                                    )}
+                                                    stroke={
+                                                        SERENITYLINE_ANALYTICS_COLORS.futureLinearTrend
+                                                    }
+                                                    strokeDasharray="4 7"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    type="linear"
+                                                />
+                                            ) : null}
+
+                                            {simulationLines.map(
+                                                (simulationLine) => (
+                                                    <Line
+                                                        activeDot={{ r: 4 }}
+                                                        dataKey={
+                                                            simulationLine.dataKey
                                                         }
-                                                        label={{
-                                                            value: simulationLine.name,
-                                                            position: "right",
-                                                            className:
-                                                                "sl-serenityline-simulation-line-label",
-                                                        }}
+                                                        dot={false}
+                                                        isAnimationActive={
+                                                            false
+                                                        }
+                                                        key={
+                                                            simulationLine.dataKey
+                                                        }
+                                                        name={
+                                                            simulationLine.name
+                                                        }
+                                                        stroke={
+                                                            simulationLine.color
+                                                        }
+                                                        strokeDasharray="8 7"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2.2}
+                                                        type="natural"
                                                     />
-                                                );
-                                            },
-                                        )}
-                                        {maximumMarkers.map((marker) => (
-                                            <ReferenceDot
-                                                fill="var(--sl-color-card)"
-                                                ifOverflow="extendDomain"
-                                                key={`maximum-${marker.date}`}
-                                                r={6}
-                                                stroke="var(--sl-chart-maximum)"
-                                                strokeWidth={2}
-                                                x={marker.date}
-                                                y={marker.serenitylineMaximum}
-                                                label={{
-                                                    value: marker.serenitylineMaximumLabel,
-                                                    position: "top",
-                                                    className:
-                                                        "sl-serenityline-extremum-label sl-serenityline-extremum-label-maximum",
-                                                }}
-                                            />
-                                        ))}
+                                                ),
+                                            )}
+                                            {simulationLines.map(
+                                                (simulationLine) => {
+                                                    const lastPoint = [
+                                                        ...chartDataWithSimulations,
+                                                    ]
+                                                        .reverse()
+                                                        .find(
+                                                            (point) =>
+                                                                typeof point[
+                                                                    simulationLine
+                                                                        .dataKey
+                                                                ] === "number",
+                                                        );
 
-                                        {minimumMarkers.map((marker) => (
-                                            <ReferenceDot
-                                                fill="var(--sl-color-card)"
-                                                ifOverflow="extendDomain"
-                                                key={`minimum-${marker.date}`}
-                                                r={6}
-                                                stroke="var(--sl-chart-minimum)"
-                                                strokeWidth={2}
-                                                x={marker.date}
-                                                y={marker.serenitylineMinimum}
-                                                label={{
-                                                    value: marker.serenitylineMinimumLabel,
-                                                    position: "bottom",
-                                                    className:
-                                                        "sl-serenityline-extremum-label sl-serenityline-extremum-label-minimum",
-                                                }}
-                                            />
-                                        ))}
-                                    </ComposedChart>
-                                </ResponsiveContainer>
+                                                    if (!lastPoint) {
+                                                        return null;
+                                                    }
+
+                                                    return (
+                                                        <ReferenceDot
+                                                            fill="transparent"
+                                                            ifOverflow="extendDomain"
+                                                            key={`simulation-label-${simulationLine.dataKey}`}
+                                                            r={0}
+                                                            stroke="transparent"
+                                                            x={lastPoint.date}
+                                                            y={
+                                                                lastPoint[
+                                                                    simulationLine
+                                                                        .dataKey
+                                                                ] as number
+                                                            }
+                                                            label={{
+                                                                value: simulationLine.name,
+                                                                position:
+                                                                    "right",
+                                                                className:
+                                                                    "sl-serenityline-simulation-line-label",
+                                                            }}
+                                                        />
+                                                    );
+                                                },
+                                            )}
+                                            {maximumMarkers.map((marker) => (
+                                                <ReferenceDot
+                                                    fill="var(--sl-color-card)"
+                                                    ifOverflow="extendDomain"
+                                                    key={`maximum-${marker.date}`}
+                                                    r={6}
+                                                    stroke="var(--sl-chart-maximum)"
+                                                    strokeWidth={2}
+                                                    x={marker.date}
+                                                    y={
+                                                        marker.serenitylineMaximum
+                                                    }
+                                                    label={{
+                                                        value: marker.serenitylineMaximumLabel,
+                                                        position: "top",
+                                                        className:
+                                                            "sl-serenityline-extremum-label sl-serenityline-extremum-label-maximum",
+                                                    }}
+                                                />
+                                            ))}
+
+                                            {minimumMarkers.map((marker) => (
+                                                <ReferenceDot
+                                                    fill="var(--sl-color-card)"
+                                                    ifOverflow="extendDomain"
+                                                    key={`minimum-${marker.date}`}
+                                                    r={6}
+                                                    stroke="var(--sl-chart-minimum)"
+                                                    strokeWidth={2}
+                                                    x={marker.date}
+                                                    y={
+                                                        marker.serenitylineMinimum
+                                                    }
+                                                    label={{
+                                                        value: marker.serenitylineMinimumLabel,
+                                                        position: "bottom",
+                                                        className:
+                                                            "sl-serenityline-extremum-label sl-serenityline-extremum-label-minimum",
+                                                    }}
+                                                />
+                                            ))}
+                                        </ComposedChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+
+                            <div className="sl-serenityline-range-toggle-wrap">
+                                <span className="sl-serenityline-range-toggle-label">
+                                    Anni
+                                </span>
+
+                                <div
+                                    className="sl-serenityline-range-toggle"
+                                    role="group"
+                                    aria-label="Intervallo visualizzato">
+                                    {SERENITYLINE_VIEW_OPTIONS.map(
+                                        (viewYears) => (
+                                            <button
+                                                aria-pressed={
+                                                    selectedViewYears ===
+                                                    viewYears
+                                                }
+                                                className={
+                                                    selectedViewYears ===
+                                                    viewYears
+                                                        ? "sl-serenityline-range-toggle-button is-selected"
+                                                        : "sl-serenityline-range-toggle-button"
+                                                }
+                                                key={viewYears}
+                                                onClick={() =>
+                                                    setSelectedViewYears(
+                                                        viewYears,
+                                                    )
+                                                }
+                                                type="button">
+                                                {viewYears}
+                                            </button>
+                                        ),
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ) : null}
@@ -1818,11 +1769,13 @@ export function SerenityLinePage() {
                             </p>
                         ) : (
                             <div className="sl-serenityline-account-toggles">
-                                {currencyBuckets.map((bucket, index) => {
+                                {currencyBuckets.map((bucket) => {
                                     const isSelected = isBucketSelected(
                                         bucket.bucketId,
                                     );
-                                    const bucketColor = getBucketColor(index);
+                                    const bucketColor = getBucketDisplayColor(
+                                        bucket.bucketId,
+                                    );
 
                                     return (
                                         <button
@@ -1883,13 +1836,15 @@ export function SerenityLinePage() {
                         ) : (
                             <div className="sl-serenityline-account-toggles">
                                 {activeSimulationGroups.map(
-                                    (simulationGroup, index) => {
+                                    (simulationGroup) => {
                                         const isSelected =
                                             isSimulationGroupSelected(
                                                 simulationGroup.simulationGroupId,
                                             );
                                         const simulationColor =
-                                            getSimulationColor(index);
+                                            getSimulationGroupDisplayColor(
+                                                simulationGroup.simulationGroupId,
+                                            );
 
                                         return (
                                             <button
