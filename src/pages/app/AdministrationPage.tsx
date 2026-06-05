@@ -211,7 +211,7 @@ export function AdministrationPage() {
                 <p className="lead">{t("subtitle")}</p>
             </header>
 
-            <article className="sl-panel">
+            <article className="sl-panel" id="admin-form">
                 <div className="sl-section-heading">
                     <div>
                         <p className="sl-eyebrow">{t("invite.eyebrow")}</p>
