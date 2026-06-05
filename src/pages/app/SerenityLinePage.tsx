@@ -13,10 +13,7 @@ import {
 } from "recharts";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
-import type {
-    FinanceCalendarDailyBalanceResponseDto,
-    MoneyAmount,
-} from "../../features/finance/api/financeApiTypes";
+import type { FinanceCalendarDailyBalanceResponseDto } from "../../features/finance/api/financeApiTypes";
 import {
     selectDailyBalancesForScenario,
     selectDailyBalancesScenarioEntry,
@@ -36,7 +33,7 @@ import {
 
 type SerenityLineChartPoint = {
     date: string;
-    serenityline: MoneyAmount | null;
+    serenityline: number | null;
 };
 
 type TooltipPayloadItem = {
@@ -50,13 +47,30 @@ const SERENITYLINE_SCROLL_LOAD_THRESHOLD_PX = 900;
 const SERENITYLINE_CHART_DAY_WIDTH_PX = 2;
 const SERENITYLINE_CHART_MIN_WIDTH_PX = 1200;
 
-function getCurrencySerenityLineValue(
+function getSelectedAccountsSerenityLineValue(
     balance: FinanceCalendarDailyBalanceResponseDto,
     currency: string,
+    selectedAccountIds: string[],
 ) {
-    return (
-        balance.totalsByCurrency.find((total) => total.currency === currency)
-            ?.endOfDaySerenityline ?? null
+    if (selectedAccountIds.length === 0) {
+        return null;
+    }
+
+    const selectedAccountIdsSet = new Set(selectedAccountIds);
+
+    const selectedAccounts = balance.accounts.filter(
+        (account) =>
+            account.currency === currency &&
+            selectedAccountIdsSet.has(account.accountId),
+    );
+
+    if (selectedAccounts.length === 0) {
+        return null;
+    }
+
+    return selectedAccounts.reduce(
+        (total, account) => total + Number(account.endOfDaySerenityline),
+        0,
     );
 }
 
@@ -162,6 +176,9 @@ export function SerenityLinePage() {
         null,
     );
 
+    const [selectedAccountIdsByCurrency, setSelectedAccountIdsByCurrency] =
+        useState<Record<string, string[]>>({});
+
     const hasRequestedInitialRangeRef = useRef(false);
 
     const chartWindowRef = useRef<HTMLDivElement | null>(null);
@@ -189,6 +206,28 @@ export function SerenityLinePage() {
             ? preferredCurrency
             : (availableCurrencies[0] ?? "EUR");
 
+    const currencyAccounts = useMemo(
+        () =>
+            accounts.filter((account) => account.currency === selectedCurrency),
+        [accounts, selectedCurrency],
+    );
+
+    const currencyAccountIds = useMemo(
+        () => currencyAccounts.map((account) => account.accountId),
+        [currencyAccounts],
+    );
+
+    const selectedAccountIds = useMemo(() => {
+        const selectedIds =
+            selectedAccountIdsByCurrency[selectedCurrency] ??
+            currencyAccountIds;
+        const validAccountIds = new Set(currencyAccountIds);
+
+        return selectedIds.filter((accountId) =>
+            validAccountIds.has(accountId),
+        );
+    }, [currencyAccountIds, selectedAccountIdsByCurrency, selectedCurrency]);
+
     const amountFormatter = useMemo(
         () =>
             new Intl.NumberFormat(displayLanguage, {
@@ -204,13 +243,14 @@ export function SerenityLinePage() {
             balances
                 .map((balance) => ({
                     date: balance.date,
-                    serenityline: getCurrencySerenityLineValue(
+                    serenityline: getSelectedAccountsSerenityLineValue(
                         balance,
                         selectedCurrency,
+                        selectedAccountIds,
                     ),
                 }))
                 .filter((point) => point.serenityline !== null),
-        [balances, selectedCurrency],
+        [balances, selectedAccountIds, selectedCurrency],
     );
 
     const chartWidth = Math.max(
@@ -442,6 +482,51 @@ export function SerenityLinePage() {
         nextRangeArmedRef.current = true;
     }, [selectedCurrency]);
 
+    function handleToggleAccount(accountId: string) {
+        setSelectedAccountIdsByCurrency(
+            (currentSelectedAccountIdsByCurrency) => {
+                const currentSelectedAccountIds =
+                    currentSelectedAccountIdsByCurrency[selectedCurrency] ??
+                    currencyAccountIds;
+
+                const nextSelectedAccountIds =
+                    currentSelectedAccountIds.includes(accountId)
+                        ? currentSelectedAccountIds.filter(
+                              (currentAccountId) =>
+                                  currentAccountId !== accountId,
+                          )
+                        : [...currentSelectedAccountIds, accountId];
+
+                return {
+                    ...currentSelectedAccountIdsByCurrency,
+                    [selectedCurrency]: nextSelectedAccountIds,
+                };
+            },
+        );
+    }
+
+    function handleSelectAllAccounts() {
+        setSelectedAccountIdsByCurrency(
+            (currentSelectedAccountIdsByCurrency) => ({
+                ...currentSelectedAccountIdsByCurrency,
+                [selectedCurrency]: currencyAccountIds,
+            }),
+        );
+    }
+
+    function handleClearAccounts() {
+        setSelectedAccountIdsByCurrency(
+            (currentSelectedAccountIdsByCurrency) => ({
+                ...currentSelectedAccountIdsByCurrency,
+                [selectedCurrency]: [],
+            }),
+        );
+    }
+
+    function isAccountSelected(accountId: string) {
+        return selectedAccountIds.includes(accountId);
+    }
+
     return (
         <section className="sl-page sl-serenityline-page">
             <header className="sl-page-header">
@@ -629,6 +714,64 @@ export function SerenityLinePage() {
                         <div className="sl-serenityline-control-note">
                             {t("controls.nextSteps")}
                         </div>
+                    </div>
+
+                    <div className="sl-serenityline-control-section">
+                        <div className="sl-serenityline-control-section-heading">
+                            <div>
+                                <h3 className="h6">{t("accounts.title")}</h3>
+                                <p>{t("accounts.description")}</p>
+                            </div>
+
+                            <div className="sl-serenityline-control-actions">
+                                <button
+                                    className="btn btn-sm btn-outline-primary"
+                                    onClick={handleSelectAllAccounts}
+                                    type="button">
+                                    {t("accounts.selectAll")}
+                                </button>
+                                <button
+                                    className="btn btn-sm btn-outline-secondary"
+                                    onClick={handleClearAccounts}
+                                    type="button">
+                                    {t("accounts.clear")}
+                                </button>
+                            </div>
+                        </div>
+
+                        {currencyAccounts.length === 0 ? (
+                            <p className="text-muted mb-0">
+                                {t("accounts.empty")}
+                            </p>
+                        ) : (
+                            <div className="sl-serenityline-account-toggles">
+                                {currencyAccounts.map((account) => {
+                                    const isSelected = isAccountSelected(
+                                        account.accountId,
+                                    );
+
+                                    return (
+                                        <button
+                                            aria-pressed={isSelected}
+                                            className={
+                                                isSelected
+                                                    ? "sl-serenityline-toggle-chip is-selected"
+                                                    : "sl-serenityline-toggle-chip"
+                                            }
+                                            key={account.accountId}
+                                            onClick={() =>
+                                                handleToggleAccount(
+                                                    account.accountId,
+                                                )
+                                            }
+                                            type="button">
+                                            <span>{account.accountName}</span>
+                                            <small>{account.currency}</small>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </article>
             </div>

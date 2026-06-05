@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppProviders } from "../../app/providers/AppProviders";
@@ -122,6 +122,9 @@ describe("SerenityLinePage", () => {
                 name: "SerenityLine",
             }),
         ).toBeInTheDocument();
+        expect(
+            screen.getByRole("button", { name: /Conto principale/i }),
+        ).toBeInTheDocument();
     });
 
     it("reuses cached daily balances when mounted again", async () => {
@@ -154,5 +157,35 @@ describe("SerenityLinePage", () => {
         ).toBeInTheDocument();
 
         expect(listDailyBalances).toHaveBeenCalledTimes(1);
+    });
+
+    it("filters the SerenityLine by selected accounts", async () => {
+        vi.mocked(listDailyBalances).mockResolvedValue(dailyBalances);
+
+        renderPage();
+
+        expect(
+            await screen.findByRole("button", {
+                name: /Conto principale/i,
+            }),
+        ).toHaveAttribute("aria-pressed", "true");
+
+        fireEvent.click(
+            screen.getByRole("button", {
+                name: /Conto principale/i,
+            }),
+        );
+
+        expect(
+            screen.getByRole("button", {
+                name: /Conto principale/i,
+            }),
+        ).toHaveAttribute("aria-pressed", "false");
+
+        expect(
+            screen.getByText(
+                "Non ci sono dati SerenityLine nel periodo caricato.",
+            ),
+        ).toBeInTheDocument();
     });
 });

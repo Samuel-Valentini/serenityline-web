@@ -151,6 +151,14 @@ export const resources = {
             emptyValue: "—",
             loadErrorFallback:
                 "Non è stato possibile caricare la SerenityLine. Riprova tra qualche istante.",
+            accounts: {
+                title: "Conti",
+                description:
+                    "Accendi o spegni i conti da includere nella SerenityLine.",
+                selectAll: "Tutti",
+                clear: "Nessuno",
+                empty: "Non ci sono conti per questa valuta.",
+            },
             currency: {
                 label: "Valuta",
             },
@@ -1650,6 +1658,14 @@ export const resources = {
             emptyValue: "—",
             loadErrorFallback:
                 "We could not load SerenityLine. Please try again in a moment.",
+            accounts: {
+                title: "Accounts",
+                description:
+                    "Toggle the accounts included in the SerenityLine.",
+                selectAll: "All",
+                clear: "None",
+                empty: "There are no accounts for this currency.",
+            },
             currency: {
                 label: "Currency",
             },
