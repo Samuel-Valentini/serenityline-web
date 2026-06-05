@@ -32,6 +32,15 @@ $border-radius-lg: 1.125rem;
     --sl-color-text-main: #10231c;
     --sl-color-text-muted: #6f706b;
     --sl-color-border: #e7dfd0;
+    --sl-chart-maximum: #5f9f82;
+    --sl-chart-minimum: #c79a4b;
+    --sl-chart-serenityline: #2f8064;
+    --sl-chart-serenityline-soft: rgba(47, 128, 100, 0.12);
+    --sl-chart-grid: rgba(16, 35, 28, 0.09);
+    --sl-chart-today: rgba(167, 123, 45, 0.72);
+    --sl-chart-maximum: #5f9f82;
+    --sl-chart-minimum: #c79a4b;
+    --sl-chart-zero: rgba(16, 35, 28, 0.38);
 }
 
 body {
@@ -635,13 +644,6 @@ h6 {
     }
 }
 
-:root {
-    --sl-chart-serenityline: #2f8064;
-    --sl-chart-serenityline-soft: rgba(47, 128, 100, 0.12);
-    --sl-chart-grid: rgba(16, 35, 28, 0.09);
-    --sl-chart-today: rgba(167, 123, 45, 0.72);
-}
-
 .sl-serenityline-page {
     width: 100%;
     max-width: none;
@@ -914,4 +916,22 @@ h6 {
 .sl-serenityline-toggle-chip small {
     color: var(--sl-color-text-muted);
     font-size: 0.75rem;
+}
+
+.sl-serenityline-extremum-label {
+    fill: var(--sl-color-text-main);
+    font-size: 0.78rem;
+    font-weight: 700;
+    paint-order: stroke;
+    stroke: var(--sl-color-card);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+}
+
+.sl-serenityline-extremum-label-maximum {
+    fill: var(--sl-chart-maximum);
+}
+
+.sl-serenityline-extremum-label-minimum {
+    fill: var(--sl-chart-minimum);
 }

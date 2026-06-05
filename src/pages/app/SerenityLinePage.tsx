@@ -5,6 +5,7 @@ import {
     CartesianGrid,
     Line,
     LineChart,
+    ReferenceDot,
     ReferenceLine,
     ResponsiveContainer,
     Tooltip,
@@ -34,6 +35,54 @@ import {
 type SerenityLineChartPoint = {
     date: string;
     serenityline: number | null;
+    serenitylineMaximum: number | null;
+    serenitylineMinimum: number | null;
+    serenitylineMaximumLabel?: string;
+    serenitylineMinimumLabel?: string;
+};
+
+type SerenityLineMaximumMarker = SerenityLineChartPoint & {
+    serenitylineMaximum: number;
+    serenitylineMaximumLabel: string;
+};
+
+type SerenityLineMinimumMarker = SerenityLineChartPoint & {
+    serenitylineMinimum: number;
+    serenitylineMinimumLabel: string;
+};
+
+function isSerenityLineMaximumMarker(
+    point: SerenityLineChartPoint,
+): point is SerenityLineMaximumMarker {
+    return (
+        point.serenitylineMaximum != null &&
+        typeof point.serenitylineMaximumLabel === "string"
+    );
+}
+
+function isSerenityLineMinimumMarker(
+    point: SerenityLineChartPoint,
+): point is SerenityLineMinimumMarker {
+    return (
+        point.serenitylineMinimum != null &&
+        typeof point.serenitylineMinimumLabel === "string"
+    );
+}
+
+type SerenityLineExtremumType = "maximum" | "minimum";
+
+type SerenityLineExtremumCandidate = {
+    index: number;
+    type: SerenityLineExtremumType;
+    value: number;
+    prominence: number;
+};
+
+type SerenityLineValueRun = {
+    startIndex: number;
+    endIndex: number;
+    markerIndex: number;
+    value: number;
 };
 
 type TooltipPayloadItem = {
@@ -46,6 +95,9 @@ const SERENITYLINE_NEXT_RANGE_MONTHS = 6;
 const SERENITYLINE_SCROLL_LOAD_THRESHOLD_PX = 900;
 const SERENITYLINE_CHART_DAY_WIDTH_PX = 2;
 const SERENITYLINE_CHART_MIN_WIDTH_PX = 1200;
+const SERENITYLINE_MAX_EXTREMA_MARKERS = 12;
+const SERENITYLINE_EXTREMA_MIN_ABSOLUTE_PROMINENCE = 50;
+const SERENITYLINE_EXTREMA_RELATIVE_PROMINENCE = 0.01;
 
 function getSelectedAccountsSerenityLineValue(
     balance: FinanceCalendarDailyBalanceResponseDto,
@@ -72,6 +124,161 @@ function getSelectedAccountsSerenityLineValue(
         (total, account) => total + Number(account.endOfDaySerenityline),
         0,
     );
+}
+
+function getSerenityLineValueRuns(
+    points: SerenityLineChartPoint[],
+): SerenityLineValueRun[] {
+    const runs: SerenityLineValueRun[] = [];
+
+    points.forEach((point, index) => {
+        if (point.serenityline == null) {
+            return;
+        }
+
+        const lastRun = runs[runs.length - 1];
+
+        if (lastRun && lastRun.value === point.serenityline) {
+            lastRun.endIndex = index;
+            lastRun.markerIndex = Math.floor(
+                (lastRun.startIndex + lastRun.endIndex) / 2,
+            );
+            return;
+        }
+
+        runs.push({
+            startIndex: index,
+            endIndex: index,
+            markerIndex: index,
+            value: point.serenityline,
+        });
+    });
+
+    return runs;
+}
+
+function getSerenityLineExtremumCandidates(
+    points: SerenityLineChartPoint[],
+): SerenityLineExtremumCandidate[] {
+    const runs = getSerenityLineValueRuns(points);
+
+    return runs
+        .map((run, runIndex): SerenityLineExtremumCandidate | null => {
+            const previousRun = runs[runIndex - 1];
+            const nextRun = runs[runIndex + 1];
+
+            if (previousRun && nextRun) {
+                if (
+                    run.value > previousRun.value &&
+                    run.value > nextRun.value
+                ) {
+                    return {
+                        index: run.markerIndex,
+                        type: "maximum",
+                        value: run.value,
+                        prominence: Math.min(
+                            run.value - previousRun.value,
+                            run.value - nextRun.value,
+                        ),
+                    };
+                }
+
+                if (
+                    run.value < previousRun.value &&
+                    run.value < nextRun.value
+                ) {
+                    return {
+                        index: run.markerIndex,
+                        type: "minimum",
+                        value: run.value,
+                        prominence: Math.min(
+                            previousRun.value - run.value,
+                            nextRun.value - run.value,
+                        ),
+                    };
+                }
+
+                return null;
+            }
+
+            if (!previousRun && nextRun && run.value !== nextRun.value) {
+                return {
+                    index: run.markerIndex,
+                    type: run.value > nextRun.value ? "maximum" : "minimum",
+                    value: run.value,
+                    prominence: Math.abs(run.value - nextRun.value),
+                };
+            }
+
+            if (previousRun && !nextRun && run.value !== previousRun.value) {
+                return {
+                    index: run.markerIndex,
+                    type: run.value > previousRun.value ? "maximum" : "minimum",
+                    value: run.value,
+                    prominence: Math.abs(run.value - previousRun.value),
+                };
+            }
+
+            return null;
+        })
+        .filter(
+            (candidate): candidate is SerenityLineExtremumCandidate =>
+                candidate != null,
+        );
+}
+function addSerenityLineExtremaMarkers(
+    points: SerenityLineChartPoint[],
+    amountFormatter: Intl.NumberFormat,
+): SerenityLineChartPoint[] {
+    const numericValues = points
+        .map((point) => point.serenityline)
+        .filter((value): value is number => value != null);
+
+    if (numericValues.length < 3) {
+        return points;
+    }
+
+    const minValue = Math.min(...numericValues);
+    const maxValue = Math.max(...numericValues);
+    const verticalRange = maxValue - minValue;
+
+    const minimumProminence = Math.max(
+        SERENITYLINE_EXTREMA_MIN_ABSOLUTE_PROMINENCE,
+        verticalRange * SERENITYLINE_EXTREMA_RELATIVE_PROMINENCE,
+    );
+
+    const candidates = getSerenityLineExtremumCandidates(points)
+        .filter((candidate) => candidate.prominence >= minimumProminence)
+        .sort((first, second) => second.prominence - first.prominence)
+        .slice(0, SERENITYLINE_MAX_EXTREMA_MARKERS);
+
+    const selectedCandidatesByIndex = new Map(
+        candidates.map((candidate) => [candidate.index, candidate]),
+    );
+
+    return points.map((point, index) => {
+        const candidate = selectedCandidatesByIndex.get(index);
+
+        if (!candidate) {
+            return point;
+        }
+
+        if (candidate.type === "maximum") {
+            return {
+                ...point,
+                serenitylineMaximum: candidate.value,
+                serenitylineMaximumLabel: amountFormatter.format(
+                    candidate.value,
+                ),
+            };
+        }
+
+        return {
+            ...point,
+            serenitylineMinimum: candidate.value,
+            serenitylineMinimumLabel: amountFormatter.format(candidate.value),
+        };
+    });
 }
 
 function formatIsoDateForDisplay(date: string, language: string) {
@@ -238,7 +445,7 @@ export function SerenityLinePage() {
         [displayLanguage, selectedCurrency],
     );
 
-    const chartData = useMemo<SerenityLineChartPoint[]>(
+    const baseChartData = useMemo<SerenityLineChartPoint[]>(
         () =>
             balances
                 .map((balance) => ({
@@ -248,9 +455,26 @@ export function SerenityLinePage() {
                         selectedCurrency,
                         selectedAccountIds,
                     ),
+                    serenitylineMaximum: null,
+                    serenitylineMinimum: null,
                 }))
                 .filter((point) => point.serenityline !== null),
         [balances, selectedAccountIds, selectedCurrency],
+    );
+
+    const chartData = useMemo(
+        () => addSerenityLineExtremaMarkers(baseChartData, amountFormatter),
+        [amountFormatter, baseChartData],
+    );
+
+    const maximumMarkers = useMemo(
+        () => chartData.filter(isSerenityLineMaximumMarker),
+        [chartData],
+    );
+
+    const minimumMarkers = useMemo(
+        () => chartData.filter(isSerenityLineMinimumMarker),
+        [chartData],
     );
 
     const chartWidth = Math.max(
@@ -649,11 +873,19 @@ export function SerenityLinePage() {
                                         />
                                         <ReferenceLine
                                             ifOverflow="extendDomain"
+                                            label="0 €"
+                                            stroke="var(--sl-chart-zero)"
+                                            strokeDasharray="6 6"
+                                            y={0}
+                                        />
+                                        <ReferenceLine
+                                            ifOverflow="extendDomain"
                                             label={t("chart.today")}
                                             stroke="var(--sl-chart-today)"
                                             strokeDasharray="4 4"
                                             x={todayIsoDate}
                                         />
+
                                         <Line
                                             activeDot={{ r: 5 }}
                                             dataKey="serenityline"
@@ -666,6 +898,43 @@ export function SerenityLinePage() {
                                             strokeWidth={6}
                                             type="natural"
                                         />
+                                        {maximumMarkers.map((marker) => (
+                                            <ReferenceDot
+                                                fill="var(--sl-color-card)"
+                                                ifOverflow="extendDomain"
+                                                key={`maximum-${marker.date}`}
+                                                r={6}
+                                                stroke="var(--sl-chart-maximum)"
+                                                strokeWidth={2}
+                                                x={marker.date}
+                                                y={marker.serenitylineMaximum}
+                                                label={{
+                                                    value: marker.serenitylineMaximumLabel,
+                                                    position: "top",
+                                                    className:
+                                                        "sl-serenityline-extremum-label sl-serenityline-extremum-label-maximum",
+                                                }}
+                                            />
+                                        ))}
+
+                                        {minimumMarkers.map((marker) => (
+                                            <ReferenceDot
+                                                fill="var(--sl-color-card)"
+                                                ifOverflow="extendDomain"
+                                                key={`minimum-${marker.date}`}
+                                                r={6}
+                                                stroke="var(--sl-chart-minimum)"
+                                                strokeWidth={2}
+                                                x={marker.date}
+                                                y={marker.serenitylineMinimum}
+                                                label={{
+                                                    value: marker.serenitylineMinimumLabel,
+                                                    position: "bottom",
+                                                    className:
+                                                        "sl-serenityline-extremum-label sl-serenityline-extremum-label-minimum",
+                                                }}
+                                            />
+                                        ))}
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
