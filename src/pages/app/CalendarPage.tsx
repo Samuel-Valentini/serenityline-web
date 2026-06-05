@@ -185,6 +185,11 @@ export function CalendarPage() {
     const [isLoadingPreviousRange, setIsLoadingPreviousRange] = useState(false);
     const [isLoadingNextRange, setIsLoadingNextRange] = useState(false);
 
+    const isLoadingPreviousRangeRef = useRef(false);
+    const isLoadingNextRangeRef = useRef(false);
+    const previousRangeArmedRef = useRef(true);
+    const nextRangeArmedRef = useRef(true);
+
     const accountsById = useMemo(
         () => new Map(accounts.map((account) => [account.accountId, account])),
         [accounts],
@@ -298,6 +303,8 @@ export function CalendarPage() {
     useEffect(() => {
         hasRequestedInitialRangeRef.current = false;
         hasScrolledToTodayRef.current = false;
+        previousRangeArmedRef.current = true;
+        nextRangeArmedRef.current = true;
     }, [selectedSimulationGroupIdsKey]);
 
     useEffect(() => {
@@ -392,6 +399,8 @@ export function CalendarPage() {
 
     function handleRefreshCalendar() {
         hasScrolledToTodayRef.current = false;
+        previousRangeArmedRef.current = true;
+        nextRangeArmedRef.current = true;
         void refreshRange(initialRange);
     }
 
@@ -565,7 +574,7 @@ export function CalendarPage() {
     }
 
     async function loadPreviousCalendarRange() {
-        if (isLoadingPreviousRange || !loadedFrom) {
+        if (isLoadingPreviousRangeRef.current || !loadedFrom) {
             return;
         }
 
@@ -578,6 +587,7 @@ export function CalendarPage() {
         const calendarWindow = calendarWindowRef.current;
         const previousScrollHeight = calendarWindow?.scrollHeight ?? 0;
 
+        isLoadingPreviousRangeRef.current = true;
         setIsLoadingPreviousRange(true);
 
         try {
@@ -593,12 +603,13 @@ export function CalendarPage() {
                     newScrollHeight - previousScrollHeight;
             });
         } finally {
+            isLoadingPreviousRangeRef.current = false;
             setIsLoadingPreviousRange(false);
         }
     }
 
     async function loadNextCalendarRange() {
-        if (isLoadingNextRange || !loadedTo) {
+        if (isLoadingNextRangeRef.current || !loadedTo) {
             return;
         }
 
@@ -608,11 +619,13 @@ export function CalendarPage() {
             return;
         }
 
+        isLoadingNextRangeRef.current = true;
         setIsLoadingNextRange(true);
 
         try {
             await loadRange(nextRange);
         } finally {
+            isLoadingNextRangeRef.current = false;
             setIsLoadingNextRange(false);
         }
     }
@@ -629,11 +642,24 @@ export function CalendarPage() {
             calendarWindow.scrollTop -
             calendarWindow.clientHeight;
 
-        if (calendarWindow.scrollTop < thresholdPx) {
+        const isNearTop = calendarWindow.scrollTop < thresholdPx;
+        const isNearBottom = distanceFromBottom < thresholdPx;
+
+        if (!isNearTop) {
+            previousRangeArmedRef.current = true;
+        }
+
+        if (!isNearBottom) {
+            nextRangeArmedRef.current = true;
+        }
+
+        if (isNearTop && previousRangeArmedRef.current) {
+            previousRangeArmedRef.current = false;
             void loadPreviousCalendarRange();
         }
 
-        if (distanceFromBottom < thresholdPx) {
+        if (isNearBottom && nextRangeArmedRef.current) {
+            nextRangeArmedRef.current = false;
             void loadNextCalendarRange();
         }
     }
