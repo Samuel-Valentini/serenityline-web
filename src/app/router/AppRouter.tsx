@@ -32,10 +32,12 @@ import { BalancesPage } from "../../pages/app/BalancesPage";
 import { AdministrationPage } from "../../pages/app/AdministrationPage";
 import { SecurityPage } from "../../pages/public/SecurityPage";
 import { HowItWorksPage } from "../../pages/public/HowItWorksPage";
+import { ScrollToTop } from "./ScrollToTop";
 
 export function AppRouter() {
     return (
         <BrowserRouter>
+            <ScrollToTop />
             <Routes>
                 <Route element={<PublicLayout />}>
                     <Route index element={<HomePage />} />
