@@ -151,6 +151,15 @@ export const resources = {
             emptyValue: "—",
             loadErrorFallback:
                 "Non è stato possibile caricare la SerenityLine. Riprova tra qualche istante.",
+            simulations: {
+                title: "Simulazioni",
+                description:
+                    "Accendi fino a {{count}} simulazioni. Ogni simulazione appare come una linea tratteggiata pastello.",
+                empty: "Non ci sono simulazioni attive.",
+                dashedLine: "Linea tratteggiata",
+                limitReached:
+                    "Puoi visualizzare fino a 5 simulazioni alla volta.",
+            },
             accounts: {
                 title: "Conti",
                 description:
@@ -1658,6 +1667,14 @@ export const resources = {
             emptyValue: "—",
             loadErrorFallback:
                 "We could not load SerenityLine. Please try again in a moment.",
+            simulations: {
+                title: "Simulations",
+                description:
+                    "Toggle up to {{count}} simulations. Each simulation appears as a pastel dashed line.",
+                empty: "There are no active simulations.",
+                dashedLine: "Dashed line",
+                limitReached: "You can display up to 5 simulations at a time.",
+            },
             accounts: {
                 title: "Accounts",
                 description:

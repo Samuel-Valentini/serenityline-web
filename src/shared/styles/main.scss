@@ -935,3 +935,50 @@ h6 {
 .sl-serenityline-extremum-label-minimum {
     fill: var(--sl-chart-minimum);
 }
+
+.sl-serenityline-tooltip span {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.sl-serenityline-tooltip-dot {
+    width: 0.65rem;
+    height: 0.65rem;
+    flex: 0 0 auto;
+    border-radius: 999px;
+}
+
+.sl-serenityline-simulation-chip {
+    position: relative;
+}
+
+.sl-serenityline-simulation-chip::before {
+    width: 1.8rem;
+    height: 0;
+    border-top: 2px dashed var(--sl-simulation-color, #8fb8a8);
+    content: "";
+}
+
+.sl-serenityline-simulation-chip.is-selected {
+    border-color: color-mix(
+        in srgb,
+        var(--sl-simulation-color, #8fb8a8) 72%,
+        var(--sl-color-border)
+    );
+    background: color-mix(
+        in srgb,
+        var(--sl-simulation-color, #8fb8a8) 17%,
+        var(--sl-color-card)
+    );
+}
+
+.sl-serenityline-simulation-line-label {
+    fill: var(--sl-color-text-muted);
+    font-size: 0.78rem;
+    font-weight: 750;
+    paint-order: stroke;
+    stroke: var(--sl-color-card);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { UIEvent } from "react";
+import type { CSSProperties, UIEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
     CartesianGrid,
@@ -23,6 +23,7 @@ import { loadDailyBalancesRange } from "../../features/finance/dailyBalances/fin
 import {
     addMonthsToIsoDate,
     BASE_DAILY_BALANCES_SCENARIO_KEY,
+    getDailyBalancesScenarioKey,
     getInitialSerenityLineRange,
     getTodayIsoDate,
 } from "../../features/finance/dailyBalances/financeDailyBalancesTypes";
@@ -30,6 +31,7 @@ import {
     selectAccounts,
     selectFinanceDataError,
     selectFinanceDataStatus,
+    selectSimulationGroups,
 } from "../../features/finance/financeDataSelectors";
 
 type SerenityLineChartPoint = {
@@ -39,6 +41,7 @@ type SerenityLineChartPoint = {
     serenitylineMinimum: number | null;
     serenitylineMaximumLabel?: string;
     serenitylineMinimumLabel?: string;
+    [key: string]: string | number | null | undefined;
 };
 
 type SerenityLineMaximumMarker = SerenityLineChartPoint & {
@@ -86,6 +89,9 @@ type SerenityLineValueRun = {
 };
 
 type TooltipPayloadItem = {
+    color?: string;
+    dataKey?: string | number;
+    name?: string | number;
     value?: number;
     payload?: SerenityLineChartPoint;
 };
@@ -98,6 +104,14 @@ const SERENITYLINE_CHART_MIN_WIDTH_PX = 1200;
 const SERENITYLINE_MAX_EXTREMA_MARKERS = 12;
 const SERENITYLINE_EXTREMA_MIN_ABSOLUTE_PROMINENCE = 50;
 const SERENITYLINE_EXTREMA_RELATIVE_PROMINENCE = 0.01;
+const SERENITYLINE_MAX_ACTIVE_SIMULATIONS = 5;
+const SERENITYLINE_SIMULATION_COLORS = [
+    "#8fb8a8",
+    "#c6a6b8",
+    "#9eb2d6",
+    "#d2b88f",
+    "#b8bd8f",
+];
 
 function getSelectedAccountsSerenityLineValue(
     balance: FinanceCalendarDailyBalanceResponseDto,
@@ -318,37 +332,68 @@ function getFirstAccountOpeningDateForCurrency(
     );
 }
 
+function getSimulationLineDataKey(simulationGroupId: string) {
+    return `simulation_${simulationGroupId}`;
+}
+
+function getSortedDailyBalances(
+    balancesByDate:
+        | Record<string, FinanceCalendarDailyBalanceResponseDto>
+        | undefined,
+) {
+    return Object.values(balancesByDate ?? {}).sort((first, second) =>
+        first.date.localeCompare(second.date),
+    );
+}
+
+function getSimulationColor(index: number) {
+    return SERENITYLINE_SIMULATION_COLORS[
+        index % SERENITYLINE_SIMULATION_COLORS.length
+    ];
+}
+
 function SerenityLineTooltip({
     active,
     label,
     payload,
     amountFormatter,
     dateFormatter,
-    labelText,
 }: {
     active?: boolean;
     label?: string;
     payload?: readonly TooltipPayloadItem[];
     amountFormatter: Intl.NumberFormat;
     dateFormatter: (date: string) => string;
-    labelText: string;
 }) {
     if (!active || !payload || payload.length === 0 || !label) {
         return null;
     }
 
-    const value = payload[0]?.value;
+    const visiblePayload = payload.filter(
+        (item) =>
+            typeof item.value === "number" &&
+            item.dataKey !== "serenitylineMaximum" &&
+            item.dataKey !== "serenitylineMinimum",
+    );
 
-    if (typeof value !== "number") {
+    if (visiblePayload.length === 0) {
         return null;
     }
 
     return (
         <div className="sl-serenityline-tooltip">
             <strong>{dateFormatter(label)}</strong>
-            <span>
-                {labelText}: {amountFormatter.format(value)}
-            </span>
+
+            {visiblePayload.map((item) => (
+                <span key={String(item.dataKey)}>
+                    <i
+                        aria-hidden="true"
+                        className="sl-serenityline-tooltip-dot"
+                        style={{ backgroundColor: item.color }}
+                    />
+                    {item.name}: {amountFormatter.format(item.value ?? 0)}
+                </span>
+            ))}
         </div>
     );
 }
@@ -379,6 +424,11 @@ export function SerenityLinePage() {
         ),
     );
 
+    const simulationGroups = useAppSelector(selectSimulationGroups);
+    const dailyBalanceScenarios = useAppSelector(
+        (state) => state.financeDailyBalances.scenarios,
+    );
+
     const [preferredCurrency, setPreferredCurrency] = useState<string | null>(
         null,
     );
@@ -397,6 +447,11 @@ export function SerenityLinePage() {
 
     const [isLoadingPreviousRange, setIsLoadingPreviousRange] = useState(false);
     const [isLoadingNextRange, setIsLoadingNextRange] = useState(false);
+    const [selectedSimulationGroupIds, setSelectedSimulationGroupIds] =
+        useState<string[]>([]);
+    const [simulationSelectionError, setSimulationSelectionError] = useState<
+        string | null
+    >(null);
 
     const accountCurrencies = useMemo(
         () => [...new Set(accounts.map((account) => account.currency))].sort(),
@@ -417,6 +472,34 @@ export function SerenityLinePage() {
         () =>
             accounts.filter((account) => account.currency === selectedCurrency),
         [accounts, selectedCurrency],
+    );
+
+    const activeSimulationGroups = useMemo(
+        () =>
+            simulationGroups.filter(
+                (simulationGroup) =>
+                    simulationGroup.simulationGroupArchivedAt == null,
+            ),
+        [simulationGroups],
+    );
+
+    const selectedSimulationGroups = useMemo(
+        () =>
+            selectedSimulationGroupIds
+                .map((simulationGroupId) =>
+                    activeSimulationGroups.find(
+                        (simulationGroup) =>
+                            simulationGroup.simulationGroupId ===
+                            simulationGroupId,
+                    ),
+                )
+                .filter(
+                    (
+                        simulationGroup,
+                    ): simulationGroup is (typeof activeSimulationGroups)[number] =>
+                        simulationGroup != null,
+                ),
+        [activeSimulationGroups, selectedSimulationGroupIds],
     );
 
     const currencyAccountIds = useMemo(
@@ -467,6 +550,63 @@ export function SerenityLinePage() {
         [amountFormatter, baseChartData],
     );
 
+    const simulationLines = useMemo(
+        () =>
+            selectedSimulationGroups.map((simulationGroup, index) => {
+                const scenarioKey = getDailyBalancesScenarioKey([
+                    simulationGroup.simulationGroupId,
+                ]);
+                const scenarioEntry = dailyBalanceScenarios[scenarioKey];
+                const simulationBalances = getSortedDailyBalances(
+                    scenarioEntry?.balancesByDate,
+                );
+
+                const valuesByDate = new Map(
+                    simulationBalances.map((balance) => [
+                        balance.date,
+                        getSelectedAccountsSerenityLineValue(
+                            balance,
+                            selectedCurrency,
+                            selectedAccountIds,
+                        ),
+                    ]),
+                );
+
+                return {
+                    color: getSimulationColor(index),
+                    dataKey: getSimulationLineDataKey(
+                        simulationGroup.simulationGroupId,
+                    ),
+                    name: simulationGroup.simulationGroupName,
+                    simulationGroup,
+                    valuesByDate,
+                };
+            }),
+        [
+            dailyBalanceScenarios,
+            selectedAccountIds,
+            selectedCurrency,
+            selectedSimulationGroups,
+        ],
+    );
+
+    const chartDataWithSimulations = useMemo(
+        () =>
+            chartData.map((point) => {
+                const pointWithSimulations: SerenityLineChartPoint = {
+                    ...point,
+                };
+
+                simulationLines.forEach((simulationLine) => {
+                    pointWithSimulations[simulationLine.dataKey] =
+                        simulationLine.valuesByDate.get(point.date) ?? null;
+                });
+
+                return pointWithSimulations;
+            }),
+        [chartData, simulationLines],
+    );
+
     const maximumMarkers = useMemo(
         () => chartData.filter(isSerenityLineMaximumMarker),
         [chartData],
@@ -479,7 +619,7 @@ export function SerenityLinePage() {
 
     const chartWidth = Math.max(
         SERENITYLINE_CHART_MIN_WIDTH_PX,
-        chartData.length * SERENITYLINE_CHART_DAY_WIDTH_PX,
+        chartDataWithSimulations.length * SERENITYLINE_CHART_DAY_WIDTH_PX,
     );
 
     const firstAccountOpeningDate = useMemo(
@@ -568,11 +708,21 @@ export function SerenityLinePage() {
         setIsLoadingPreviousRange(true);
 
         try {
-            await dispatch(
-                loadDailyBalancesRange({
-                    range: previousRange,
-                }),
-            );
+            await Promise.all([
+                dispatch(
+                    loadDailyBalancesRange({
+                        range: previousRange,
+                    }),
+                ),
+                ...selectedSimulationGroupIds.map((simulationGroupId) =>
+                    dispatch(
+                        loadDailyBalancesRange({
+                            range: previousRange,
+                            simulationGroupIds: [simulationGroupId],
+                        }),
+                    ),
+                ),
+            ]);
 
             window.requestAnimationFrame(() => {
                 if (!chartWindow) {
@@ -604,11 +754,21 @@ export function SerenityLinePage() {
         setIsLoadingNextRange(true);
 
         try {
-            await dispatch(
-                loadDailyBalancesRange({
-                    range: nextRange,
-                }),
-            );
+            await Promise.all([
+                dispatch(
+                    loadDailyBalancesRange({
+                        range: nextRange,
+                    }),
+                ),
+                ...selectedSimulationGroupIds.map((simulationGroupId) =>
+                    dispatch(
+                        loadDailyBalancesRange({
+                            range: nextRange,
+                            simulationGroupIds: [simulationGroupId],
+                        }),
+                    ),
+                ),
+            ]);
         } finally {
             isLoadingNextRangeRef.current = false;
             setIsLoadingNextRange(false);
@@ -706,6 +866,32 @@ export function SerenityLinePage() {
         nextRangeArmedRef.current = true;
     }, [selectedCurrency]);
 
+    useEffect(() => {
+        if (selectedSimulationGroupIds.length === 0) {
+            return;
+        }
+
+        const range = {
+            from: cacheEntry.loadedFrom ?? initialRange.from,
+            to: cacheEntry.loadedTo ?? initialRange.to,
+        };
+
+        selectedSimulationGroupIds.forEach((simulationGroupId) => {
+            void dispatch(
+                loadDailyBalancesRange({
+                    range,
+                    simulationGroupIds: [simulationGroupId],
+                }),
+            );
+        });
+    }, [
+        cacheEntry.loadedFrom,
+        cacheEntry.loadedTo,
+        dispatch,
+        initialRange,
+        selectedSimulationGroupIds,
+    ]);
+
     function handleToggleAccount(accountId: string) {
         setSelectedAccountIdsByCurrency(
             (currentSelectedAccountIdsByCurrency) => {
@@ -749,6 +935,33 @@ export function SerenityLinePage() {
 
     function isAccountSelected(accountId: string) {
         return selectedAccountIds.includes(accountId);
+    }
+
+    function handleToggleSimulationGroup(simulationGroupId: string) {
+        setSimulationSelectionError(null);
+
+        setSelectedSimulationGroupIds((currentSimulationGroupIds) => {
+            if (currentSimulationGroupIds.includes(simulationGroupId)) {
+                return currentSimulationGroupIds.filter(
+                    (currentSimulationGroupId) =>
+                        currentSimulationGroupId !== simulationGroupId,
+                );
+            }
+
+            if (
+                currentSimulationGroupIds.length >=
+                SERENITYLINE_MAX_ACTIVE_SIMULATIONS
+            ) {
+                setSimulationSelectionError(t("simulations.limitReached"));
+                return currentSimulationGroupIds;
+            }
+
+            return [...currentSimulationGroupIds, simulationGroupId];
+        });
+    }
+
+    function isSimulationGroupSelected(simulationGroupId: string) {
+        return selectedSimulationGroupIds.includes(simulationGroupId);
     }
 
     return (
@@ -815,7 +1028,7 @@ export function SerenityLinePage() {
                                 style={{ width: `${chartWidth}px` }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <LineChart
-                                        data={chartData}
+                                        data={chartDataWithSimulations}
                                         margin={{
                                             top: 28,
                                             right: 40,
@@ -862,9 +1075,6 @@ export function SerenityLinePage() {
                                                         )
                                                     }
                                                     label={String(label)}
-                                                    labelText={t(
-                                                        "chart.serenityLine",
-                                                    )}
                                                     payload={
                                                         payload as unknown as readonly TooltipPayloadItem[]
                                                     }
@@ -898,6 +1108,70 @@ export function SerenityLinePage() {
                                             strokeWidth={6}
                                             type="natural"
                                         />
+                                        {simulationLines.map(
+                                            (simulationLine) => (
+                                                <Line
+                                                    activeDot={{ r: 4 }}
+                                                    dataKey={
+                                                        simulationLine.dataKey
+                                                    }
+                                                    dot={false}
+                                                    isAnimationActive={false}
+                                                    key={simulationLine.dataKey}
+                                                    name={simulationLine.name}
+                                                    stroke={
+                                                        simulationLine.color
+                                                    }
+                                                    strokeDasharray="8 7"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2.2}
+                                                    type="natural"
+                                                />
+                                            ),
+                                        )}
+                                        {simulationLines.map(
+                                            (simulationLine) => {
+                                                const lastPoint = [
+                                                    ...chartDataWithSimulations,
+                                                ]
+                                                    .reverse()
+                                                    .find(
+                                                        (point) =>
+                                                            typeof point[
+                                                                simulationLine
+                                                                    .dataKey
+                                                            ] === "number",
+                                                    );
+
+                                                if (!lastPoint) {
+                                                    return null;
+                                                }
+
+                                                return (
+                                                    <ReferenceDot
+                                                        fill="transparent"
+                                                        ifOverflow="extendDomain"
+                                                        key={`simulation-label-${simulationLine.dataKey}`}
+                                                        r={0}
+                                                        stroke="transparent"
+                                                        x={lastPoint.date}
+                                                        y={
+                                                            lastPoint[
+                                                                simulationLine
+                                                                    .dataKey
+                                                            ] as number
+                                                        }
+                                                        label={{
+                                                            value: simulationLine.name,
+                                                            position: "right",
+                                                            className:
+                                                                "sl-serenityline-simulation-line-label",
+                                                        }}
+                                                    />
+                                                );
+                                            },
+                                        )}
                                         {maximumMarkers.map((marker) => (
                                             <ReferenceDot
                                                 fill="var(--sl-color-card)"
@@ -1039,6 +1313,82 @@ export function SerenityLinePage() {
                                         </button>
                                     );
                                 })}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="sl-serenityline-control-section">
+                        <div className="sl-serenityline-control-section-heading">
+                            <div>
+                                <h3 className="h6">{t("simulations.title")}</h3>
+                                <p>
+                                    {t("simulations.description", {
+                                        count: SERENITYLINE_MAX_ACTIVE_SIMULATIONS,
+                                    })}
+                                </p>
+                            </div>
+                        </div>
+
+                        {simulationSelectionError ? (
+                            <div
+                                className="alert alert-warning mb-0"
+                                role="alert">
+                                {simulationSelectionError}
+                            </div>
+                        ) : null}
+
+                        {activeSimulationGroups.length === 0 ? (
+                            <p className="text-muted mb-0">
+                                {t("simulations.empty")}
+                            </p>
+                        ) : (
+                            <div className="sl-serenityline-account-toggles">
+                                {activeSimulationGroups.map(
+                                    (simulationGroup, index) => {
+                                        const isSelected =
+                                            isSimulationGroupSelected(
+                                                simulationGroup.simulationGroupId,
+                                            );
+                                        const simulationColor =
+                                            getSimulationColor(index);
+
+                                        return (
+                                            <button
+                                                aria-pressed={isSelected}
+                                                className={
+                                                    isSelected
+                                                        ? "sl-serenityline-toggle-chip sl-serenityline-simulation-chip is-selected"
+                                                        : "sl-serenityline-toggle-chip sl-serenityline-simulation-chip"
+                                                }
+                                                key={
+                                                    simulationGroup.simulationGroupId
+                                                }
+                                                onClick={() =>
+                                                    handleToggleSimulationGroup(
+                                                        simulationGroup.simulationGroupId,
+                                                    )
+                                                }
+                                                style={
+                                                    {
+                                                        "--sl-simulation-color":
+                                                            simulationColor,
+                                                    } as CSSProperties
+                                                }
+                                                type="button">
+                                                <span>
+                                                    {
+                                                        simulationGroup.simulationGroupName
+                                                    }
+                                                </span>
+                                                <small>
+                                                    {t(
+                                                        "simulations.dashedLine",
+                                                    )}
+                                                </small>
+                                            </button>
+                                        );
+                                    },
+                                )}
                             </div>
                         )}
                     </div>
