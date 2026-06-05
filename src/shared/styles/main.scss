@@ -2894,3 +2894,86 @@ h6 {
         white-space: nowrap;
     }
 }
+
+.sl-transactions-actions-mobile-row {
+    display: none;
+}
+
+@media (max-width: 939.98px) {
+    .sl-transactions-actions-heading,
+    .sl-transactions-actions-cell {
+        display: none;
+    }
+
+    .sl-transactions-actions-mobile-row {
+        display: table-row;
+    }
+
+    .sl-transactions-actions-mobile-row > td {
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .sl-transactions-mobile-actions {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .sl-transactions-mobile-actions .btn {
+        min-width: 6rem;
+    }
+
+    .sl-transactions-edit-row {
+        display: block;
+        width: calc(100vw - 5rem);
+        max-width: calc(100vw - 5rem);
+    }
+
+    .sl-transactions-edit-cell {
+        display: block;
+        width: calc(100vw - 5rem);
+        max-width: calc(100vw - 5rem);
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .sl-transactions-inline-form {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .sl-transactions-inline-form * {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .sl-transactions-inline-form .row {
+        --bs-gutter-x: 0;
+        margin-right: 0;
+        margin-left: 0;
+    }
+
+    .sl-transactions-inline-form [class^="col-"],
+    .sl-transactions-inline-form [class*=" col-"] {
+        width: 100%;
+        max-width: 100%;
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .sl-transactions-inline-form .form-control,
+    .sl-transactions-inline-form .form-select,
+    .sl-transactions-inline-form textarea,
+    .sl-transactions-inline-form input {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .sl-transactions-inline-form .btn {
+        width: 100%;
+        white-space: normal;
+    }
+}

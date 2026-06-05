@@ -384,6 +384,15 @@ export function TransactionsPage() {
             const isUpdating =
                 transactionUpdateSubmittingId === transaction.transactionId;
 
+            const editButton = (
+                <button
+                    className="btn btn-sm btn-outline-primary"
+                    onClick={() => startEditingTransaction(scope, transaction)}
+                    type="button">
+                    {t("session.actions.edit")}
+                </button>
+            );
+
             return (
                 <Fragment key={`${scope}-${transaction.transactionId}`}>
                     <tr>
@@ -410,22 +419,25 @@ export function TransactionsPage() {
                                     : t("session.status.planned")}
                             </span>
                         </td>
-                        <td>
-                            <button
-                                className="btn btn-sm btn-outline-primary"
-                                onClick={() =>
-                                    startEditingTransaction(scope, transaction)
-                                }
-                                type="button">
-                                {t("session.actions.edit")}
-                            </button>
+                        <td className="sl-transactions-actions-cell">
+                            {editButton}
+                        </td>
+                    </tr>
+
+                    <tr className="sl-transactions-actions-mobile-row">
+                        <td colSpan={9}>
+                            <div className="sl-transactions-mobile-actions">
+                                {editButton}
+                            </div>
                         </td>
                     </tr>
 
                     {isEditing ? (
-                        <tr>
-                            <td colSpan={9}>
-                                <div className="border rounded p-3">
+                        <tr className="sl-transactions-edit-row">
+                            <td
+                                className="sl-transactions-edit-cell"
+                                colSpan={9}>
+                                <div className="border rounded p-3 sl-transactions-inline-form">
                                     <div className="mb-3">
                                         <h3 className="h6 mb-1">
                                             {t("edit.title")}
@@ -534,7 +546,7 @@ export function TransactionsPage() {
                             </p>
                         ) : (
                             <div className="table-responsive">
-                                <table className="table align-middle">
+                                <table className="table align-middle sl-transactions-table">
                                     <thead>
                                         <tr>
                                             <th scope="col">
@@ -561,7 +573,9 @@ export function TransactionsPage() {
                                             <th scope="col">
                                                 {t("session.table.status")}
                                             </th>
-                                            <th scope="col">
+                                            <th
+                                                className="sl-transactions-actions-heading"
+                                                scope="col">
                                                 {t("session.table.actions")}
                                             </th>
                                         </tr>
@@ -643,7 +657,7 @@ export function TransactionsPage() {
 
                 {searchedTransactions.length > 0 ? (
                     <div className="table-responsive mt-3">
-                        <table className="table align-middle">
+                        <table className="table align-middle sl-transactions-table">
                             <thead>
                                 <tr>
                                     <th scope="col">
@@ -670,7 +684,9 @@ export function TransactionsPage() {
                                     <th scope="col">
                                         {t("session.table.status")}
                                     </th>
-                                    <th scope="col">
+                                    <th
+                                        className="sl-transactions-actions-heading"
+                                        scope="col">
                                         {t("session.table.actions")}
                                     </th>
                                 </tr>
