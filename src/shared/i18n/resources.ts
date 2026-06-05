@@ -161,6 +161,8 @@ export const resources = {
                 accessibleLabel: "Grafico della liquidità SerenityLine",
                 serenityLine: "SerenityLine",
                 today: "Oggi",
+                loadingPrevious: "Caricamento periodo precedente...",
+                loadingNext: "Caricamento periodo successivo...",
             },
             insights: {
                 today: "Liquidità oggi",
@@ -1658,6 +1660,8 @@ export const resources = {
                 accessibleLabel: "SerenityLine liquidity chart",
                 serenityLine: "SerenityLine",
                 today: "Today",
+                loadingPrevious: "Loading previous period...",
+                loadingNext: "Loading next period...",
             },
             insights: {
                 today: "Liquidity today",

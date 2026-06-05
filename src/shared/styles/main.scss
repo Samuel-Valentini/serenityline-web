@@ -643,12 +643,22 @@ h6 {
 }
 
 .sl-serenityline-page {
-    width: min(100%, 98rem);
+    width: 100%;
+    max-width: none;
 }
+
 .sl-serenityline-layout {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
+    min-width: 0;
+}
+
+.sl-serenityline-chart-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .sl-serenityline-chart-card {
@@ -707,10 +717,51 @@ h6 {
     font-variant-numeric: tabular-nums;
 }
 
+// .sl-serenityline-chart-window {
+//     width: 100%;
+//     height: 55vh;
+//     // min-height: 600px;
+// }
+
 .sl-serenityline-chart-window {
+    position: relative;
+    display: block;
     width: 100%;
-    height: 55vh;
-    // min-height: 600px;
+    max-width: 100%;
+    min-width: 0;
+    height: min(62vh, 580px);
+    min-height: 480px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+}
+
+.sl-serenityline-chart-canvas {
+    height: 100%;
+    min-width: 100%;
+}
+
+.sl-serenityline-edge-loader {
+    position: sticky;
+    top: 1rem;
+    z-index: 2;
+    width: max-content;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 999px;
+    background: rgba(255, 253, 248, 0.94);
+    color: var(--sl-color-text-muted);
+    box-shadow: 0 0.75rem 1.8rem rgba(5, 46, 34, 0.1);
+    font-size: 0.85rem;
+}
+
+.sl-serenityline-edge-loader-left {
+    left: 1rem;
+}
+
+.sl-serenityline-edge-loader-right {
+    left: calc(100% - 14rem);
 }
 
 .sl-serenityline-tooltip {
@@ -770,8 +821,8 @@ h6 {
     }
 
     .sl-serenityline-chart-window {
-        height: 68vh;
-        min-height: 460px;
+        height: 58vh;
+        min-height: 380px;
     }
 
     .sl-serenityline-controls-grid {
