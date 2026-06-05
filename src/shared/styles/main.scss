@@ -2745,3 +2745,61 @@ h6 {
     max-width: 690px;
     margin-right: auto;
 }
+
+.sl-simulations-actions-mobile-row {
+    display: none;
+}
+
+.sl-simulations-actions {
+    align-items: center;
+}
+
+@media (max-width: 767.98px) {
+    .sl-simulations-table {
+        min-width: 0;
+    }
+
+    .sl-simulations-table th,
+    .sl-simulations-table td {
+        white-space: normal;
+    }
+
+    .sl-simulations-actions-heading,
+    .sl-simulations-actions-cell {
+        display: none;
+    }
+
+    .sl-simulations-actions-mobile-row {
+        display: table-row;
+    }
+
+    .sl-simulations-actions-mobile-row > td {
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .sl-simulations-actions {
+        display: grid !important;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .sl-simulations-actions .btn {
+        width: 100%;
+        white-space: normal;
+    }
+
+    .sl-simulations-inline-form {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .sl-simulations-inline-form .row {
+        --bs-gutter-x: 0;
+    }
+
+    .sl-simulations-inline-form .btn {
+        width: 100%;
+        white-space: normal;
+    }
+}

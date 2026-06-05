@@ -1242,7 +1242,7 @@ export function SimulationsPage() {
                         <p className="text-muted mb-0">{t("emptyState")}</p>
                     ) : (
                         <div className="table-responsive">
-                            <table className="table align-middle">
+                            <table className="table align-middle sl-simulations-table">
                                 <thead>
                                     <tr>
                                         <th scope="col">{t("table.name")}</th>
@@ -1250,7 +1250,9 @@ export function SimulationsPage() {
                                             {t("table.accounts")}
                                         </th>
                                         <th scope="col">{t("table.status")}</th>
-                                        <th scope="col">
+                                        <th
+                                            className="sl-simulations-actions-heading"
+                                            scope="col">
                                             {t("table.actions")}
                                         </th>
                                     </tr>
@@ -1300,6 +1302,179 @@ export function SimulationsPage() {
                                                     simulationGroup
                                                         .simulationGroupId
                                                 ];
+
+                                            const simulationGroupActions =
+                                                isEditing ? (
+                                                    <div className="d-flex flex-wrap gap-2 sl-simulations-actions">
+                                                        <button
+                                                            className="btn btn-sm btn-primary"
+                                                            disabled={
+                                                                isUpdating
+                                                            }
+                                                            onClick={() =>
+                                                                handleUpdateSimulationGroup(
+                                                                    simulationGroup.simulationGroupId,
+                                                                )
+                                                            }
+                                                            type="button">
+                                                            {isUpdating
+                                                                ? t(
+                                                                      "actions.saving",
+                                                                  )
+                                                                : t(
+                                                                      "actions.save",
+                                                                  )}
+                                                        </button>
+
+                                                        <button
+                                                            className="btn btn-sm btn-outline-secondary"
+                                                            disabled={
+                                                                isUpdating
+                                                            }
+                                                            onClick={
+                                                                cancelEditingSimulationGroup
+                                                            }
+                                                            type="button">
+                                                            {t(
+                                                                "actions.cancel",
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                ) : isManagingAccounts ? (
+                                                    <div className="sl-simulations-actions">
+                                                        <button
+                                                            className="btn btn-sm btn-outline-secondary"
+                                                            disabled={
+                                                                accountChangingKey !==
+                                                                null
+                                                            }
+                                                            onClick={
+                                                                stopManagingSimulationGroupAccounts
+                                                            }
+                                                            type="button">
+                                                            {t("actions.done")}
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="d-flex flex-wrap gap-2 sl-simulations-actions">
+                                                        {!isArchived ? (
+                                                            <>
+                                                                <button
+                                                                    className="btn btn-sm btn-outline-primary"
+                                                                    onClick={() =>
+                                                                        startEditingSimulationGroup(
+                                                                            simulationGroup,
+                                                                        )
+                                                                    }
+                                                                    type="button">
+                                                                    {t(
+                                                                        "actions.edit",
+                                                                    )}
+                                                                </button>
+
+                                                                <button
+                                                                    className="btn btn-sm btn-outline-primary"
+                                                                    onClick={() =>
+                                                                        startManagingSimulationGroupAccounts(
+                                                                            simulationGroup,
+                                                                        )
+                                                                    }
+                                                                    type="button">
+                                                                    {t(
+                                                                        "actions.manageAccounts",
+                                                                    )}
+                                                                </button>
+
+                                                                <button
+                                                                    className="btn btn-sm btn-outline-secondary"
+                                                                    disabled={
+                                                                        statusChangingSimulationGroupId ===
+                                                                        simulationGroup.simulationGroupId
+                                                                    }
+                                                                    onClick={() =>
+                                                                        handleArchiveSimulationGroup(
+                                                                            simulationGroup.simulationGroupId,
+                                                                        )
+                                                                    }
+                                                                    type="button">
+                                                                    {statusChangingSimulationGroupId ===
+                                                                    simulationGroup.simulationGroupId
+                                                                        ? t(
+                                                                              "actions.archiving",
+                                                                          )
+                                                                        : t(
+                                                                              "actions.archive",
+                                                                          )}
+                                                                </button>
+
+                                                                <button
+                                                                    className="btn btn-sm btn-outline-primary"
+                                                                    onClick={() =>
+                                                                        startAddingTransaction(
+                                                                            simulationGroup,
+                                                                        )
+                                                                    }
+                                                                    type="button">
+                                                                    {t(
+                                                                        "actions.addTransaction",
+                                                                    )}
+                                                                </button>
+
+                                                                <button
+                                                                    className="btn btn-sm btn-outline-primary"
+                                                                    onClick={() =>
+                                                                        startAddingRecurringTransaction(
+                                                                            simulationGroup,
+                                                                        )
+                                                                    }
+                                                                    type="button">
+                                                                    {t(
+                                                                        "actions.addRecurringTransaction",
+                                                                    )}
+                                                                </button>
+
+                                                                <button
+                                                                    className="btn btn-sm btn-outline-primary"
+                                                                    onClick={() =>
+                                                                        handleToggleSimulationGroupMovements(
+                                                                            simulationGroup,
+                                                                        )
+                                                                    }
+                                                                    type="button">
+                                                                    {isShowingMovements
+                                                                        ? t(
+                                                                              "actions.hideMovements",
+                                                                          )
+                                                                        : t(
+                                                                              "actions.showMovements",
+                                                                          )}
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <button
+                                                                className="btn btn-sm btn-outline-primary"
+                                                                disabled={
+                                                                    statusChangingSimulationGroupId ===
+                                                                    simulationGroup.simulationGroupId
+                                                                }
+                                                                onClick={() =>
+                                                                    handleRestoreSimulationGroup(
+                                                                        simulationGroup.simulationGroupId,
+                                                                    )
+                                                                }
+                                                                type="button">
+                                                                {statusChangingSimulationGroupId ===
+                                                                simulationGroup.simulationGroupId
+                                                                    ? t(
+                                                                          "actions.restoring",
+                                                                      )
+                                                                    : t(
+                                                                          "actions.restore",
+                                                                      )}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                );
 
                                             return (
                                                 <Fragment
@@ -1460,182 +1635,23 @@ export function SimulationsPage() {
                                                                       )}
                                                             </span>
                                                         </td>
-                                                        <td>
-                                                            {isEditing ? (
-                                                                <div className="d-flex flex-wrap gap-2">
-                                                                    <button
-                                                                        className="btn btn-sm btn-primary"
-                                                                        disabled={
-                                                                            isUpdating
-                                                                        }
-                                                                        onClick={() =>
-                                                                            handleUpdateSimulationGroup(
-                                                                                simulationGroup.simulationGroupId,
-                                                                            )
-                                                                        }
-                                                                        type="button">
-                                                                        {isUpdating
-                                                                            ? t(
-                                                                                  "actions.saving",
-                                                                              )
-                                                                            : t(
-                                                                                  "actions.save",
-                                                                              )}
-                                                                    </button>
-
-                                                                    <button
-                                                                        className="btn btn-sm btn-outline-secondary"
-                                                                        disabled={
-                                                                            isUpdating
-                                                                        }
-                                                                        onClick={
-                                                                            cancelEditingSimulationGroup
-                                                                        }
-                                                                        type="button">
-                                                                        {t(
-                                                                            "actions.cancel",
-                                                                        )}
-                                                                    </button>
-                                                                </div>
-                                                            ) : isManagingAccounts ? (
-                                                                <button
-                                                                    className="btn btn-sm btn-outline-secondary"
-                                                                    disabled={
-                                                                        accountChangingKey !==
-                                                                        null
-                                                                    }
-                                                                    onClick={
-                                                                        stopManagingSimulationGroupAccounts
-                                                                    }
-                                                                    type="button">
-                                                                    {t(
-                                                                        "actions.done",
-                                                                    )}
-                                                                </button>
-                                                            ) : (
-                                                                <div className="d-flex flex-wrap gap-2">
-                                                                    {!isArchived ? (
-                                                                        <>
-                                                                            <button
-                                                                                className="btn btn-sm btn-outline-primary"
-                                                                                onClick={() =>
-                                                                                    startEditingSimulationGroup(
-                                                                                        simulationGroup,
-                                                                                    )
-                                                                                }
-                                                                                type="button">
-                                                                                {t(
-                                                                                    "actions.edit",
-                                                                                )}
-                                                                            </button>
-
-                                                                            <button
-                                                                                className="btn btn-sm btn-outline-primary"
-                                                                                onClick={() =>
-                                                                                    startManagingSimulationGroupAccounts(
-                                                                                        simulationGroup,
-                                                                                    )
-                                                                                }
-                                                                                type="button">
-                                                                                {t(
-                                                                                    "actions.manageAccounts",
-                                                                                )}
-                                                                            </button>
-
-                                                                            <button
-                                                                                className="btn btn-sm btn-outline-secondary"
-                                                                                disabled={
-                                                                                    statusChangingSimulationGroupId ===
-                                                                                    simulationGroup.simulationGroupId
-                                                                                }
-                                                                                onClick={() =>
-                                                                                    handleArchiveSimulationGroup(
-                                                                                        simulationGroup.simulationGroupId,
-                                                                                    )
-                                                                                }
-                                                                                type="button">
-                                                                                {statusChangingSimulationGroupId ===
-                                                                                simulationGroup.simulationGroupId
-                                                                                    ? t(
-                                                                                          "actions.archiving",
-                                                                                      )
-                                                                                    : t(
-                                                                                          "actions.archive",
-                                                                                      )}
-                                                                            </button>
-
-                                                                            <button
-                                                                                className="btn btn-sm btn-outline-primary"
-                                                                                onClick={() =>
-                                                                                    startAddingTransaction(
-                                                                                        simulationGroup,
-                                                                                    )
-                                                                                }
-                                                                                type="button">
-                                                                                {t(
-                                                                                    "actions.addTransaction",
-                                                                                )}
-                                                                            </button>
-                                                                            <button
-                                                                                className="btn btn-sm btn-outline-primary"
-                                                                                onClick={() =>
-                                                                                    startAddingRecurringTransaction(
-                                                                                        simulationGroup,
-                                                                                    )
-                                                                                }
-                                                                                type="button">
-                                                                                {t(
-                                                                                    "actions.addRecurringTransaction",
-                                                                                )}
-                                                                            </button>
-                                                                            <button
-                                                                                className="btn btn-sm btn-outline-primary"
-                                                                                onClick={() =>
-                                                                                    handleToggleSimulationGroupMovements(
-                                                                                        simulationGroup,
-                                                                                    )
-                                                                                }
-                                                                                type="button">
-                                                                                {isShowingMovements
-                                                                                    ? t(
-                                                                                          "actions.hideMovements",
-                                                                                      )
-                                                                                    : t(
-                                                                                          "actions.showMovements",
-                                                                                      )}
-                                                                            </button>
-                                                                        </>
-                                                                    ) : (
-                                                                        <button
-                                                                            className="btn btn-sm btn-outline-primary"
-                                                                            disabled={
-                                                                                statusChangingSimulationGroupId ===
-                                                                                simulationGroup.simulationGroupId
-                                                                            }
-                                                                            onClick={() =>
-                                                                                handleRestoreSimulationGroup(
-                                                                                    simulationGroup.simulationGroupId,
-                                                                                )
-                                                                            }
-                                                                            type="button">
-                                                                            {statusChangingSimulationGroupId ===
-                                                                            simulationGroup.simulationGroupId
-                                                                                ? t(
-                                                                                      "actions.restoring",
-                                                                                  )
-                                                                                : t(
-                                                                                      "actions.restore",
-                                                                                  )}
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            )}
+                                                        <td className="sl-simulations-actions-cell">
+                                                            {
+                                                                simulationGroupActions
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                    <tr className="sl-simulations-actions-mobile-row">
+                                                        <td colSpan={3}>
+                                                            {
+                                                                simulationGroupActions
+                                                            }
                                                         </td>
                                                     </tr>
                                                     {isAddingTransaction ? (
                                                         <tr>
                                                             <td colSpan={4}>
-                                                                <div className="border rounded p-3">
+                                                                <div className="border rounded p-3 sl-simulations-inline-form">
                                                                     <div className="mb-3">
                                                                         <h3 className="h6 mb-1">
                                                                             {t(
@@ -1699,7 +1715,7 @@ export function SimulationsPage() {
                                                     {isAddingRecurringTransaction ? (
                                                         <tr>
                                                             <td colSpan={4}>
-                                                                <div className="border rounded p-3">
+                                                                <div className="border rounded p-3 sl-simulations-inline-form">
                                                                     <div className="mb-3">
                                                                         <h3 className="h6 mb-1">
                                                                             {t(
@@ -1915,7 +1931,7 @@ export function SimulationsPage() {
                                                                                                                     colSpan={
                                                                                                                         5
                                                                                                                     }>
-                                                                                                                    <div className="border rounded p-3">
+                                                                                                                    <div className="border rounded p-3 sl-simulations-inline-form">
                                                                                                                         <div className="mb-3">
                                                                                                                             <h5 className="h6 mb-1">
                                                                                                                                 {t(
@@ -2082,7 +2098,7 @@ export function SimulationsPage() {
                                                                                                                     colSpan={
                                                                                                                         4
                                                                                                                     }>
-                                                                                                                    <div className="border rounded p-3">
+                                                                                                                    <div className="border rounded p-3 sl-simulations-inline-form">
                                                                                                                         <div className="mb-3">
                                                                                                                             <h5 className="h6 mb-1">
                                                                                                                                 {t(
