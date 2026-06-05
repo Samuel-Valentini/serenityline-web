@@ -56,6 +56,26 @@ const unconfirmedTransaction = {
     transactionUpdatedAt: "2026-06-05T10:00:00Z",
 };
 
+const simulationGroup = {
+    simulationGroupId: "simulation-group-id",
+    simulationGroupName: "Scenario vacanza",
+    simulationGroupDescription: "Simulazione ferie estive",
+    simulationGroupCreatedAt: "2026-01-01T00:00:00Z",
+    simulationGroupUpdatedAt: "2026-01-01T00:00:00Z",
+    simulationGroupArchivedAt: null,
+    accountIds: ["account-id"],
+};
+
+const secondSimulationGroup = {
+    simulationGroupId: "second-simulation-group-id",
+    simulationGroupName: "Scenario casa",
+    simulationGroupDescription: "Simulazione acquisto casa",
+    simulationGroupCreatedAt: "2026-01-01T00:00:00Z",
+    simulationGroupUpdatedAt: "2026-01-01T00:00:00Z",
+    simulationGroupArchivedAt: null,
+    accountIds: ["account-id"],
+};
+
 const confirmedTransaction = {
     ...unconfirmedTransaction,
     transactionIsConfirmed: true,
@@ -108,7 +128,7 @@ const referenceData: FinanceReferenceData = {
     creditCards: [],
     categories: [category],
     buckets: [bucket],
-    simulationGroups: [],
+    simulationGroups: [simulationGroup, secondSimulationGroup],
     financialPriorities: [],
 };
 
@@ -132,6 +152,16 @@ const persistedMovement = {
     simulationGroupId: null,
     userEntered: true,
     finalOccurrence: false,
+};
+
+const simulatedMovement = {
+    ...persistedMovement,
+    transactionId: "simulated-transaction-id",
+    description: "Movimento simulato",
+    chargeDate: "2026-06-10",
+    logicalDate: "2026-06-10",
+    simulated: true,
+    simulationGroupId: "simulation-group-id",
 };
 
 const unconfirmedPersistedMovement = {
@@ -421,6 +451,77 @@ describe("CalendarPage", () => {
             await screen.findByText(
                 "Ricorrenza confermata e salvata come transazione.",
             ),
+        ).toBeInTheDocument();
+    });
+
+    it("reloads the calendar when a simulation group is selected", async () => {
+        vi.mocked(listCalendarMovements)
+            .mockResolvedValueOnce([persistedMovement])
+            .mockResolvedValueOnce([simulatedMovement]);
+
+        renderPage();
+
+        expect(await screen.findByText("Stipendio")).toBeInTheDocument();
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Scenario vacanza" }),
+        );
+
+        await waitFor(() => {
+            expect(listCalendarMovements).toHaveBeenCalledTimes(2);
+            expect(listCalendarMovements).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    simulationGroupIds: ["simulation-group-id"],
+                }),
+            );
+        });
+
+        expect(
+            await screen.findByText("Movimento simulato"),
+        ).toBeInTheDocument();
+    });
+
+    it("supports selecting multiple simulation groups", async () => {
+        vi.mocked(listCalendarMovements)
+            .mockResolvedValueOnce([persistedMovement])
+            .mockResolvedValueOnce([simulatedMovement])
+            .mockResolvedValueOnce([
+                {
+                    ...simulatedMovement,
+                    transactionId: "multi-simulation-transaction-id",
+                    description: "Movimento multi simulazione",
+                    simulationGroupId: "second-simulation-group-id",
+                },
+            ]);
+
+        renderPage();
+
+        expect(await screen.findByText("Stipendio")).toBeInTheDocument();
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Scenario vacanza" }),
+        );
+
+        await waitFor(() => {
+            expect(listCalendarMovements).toHaveBeenCalledTimes(2);
+        });
+
+        fireEvent.click(screen.getByRole("button", { name: "Scenario casa" }));
+
+        await waitFor(() => {
+            expect(listCalendarMovements).toHaveBeenCalledTimes(3);
+            expect(listCalendarMovements).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    simulationGroupIds: [
+                        "second-simulation-group-id",
+                        "simulation-group-id",
+                    ],
+                }),
+            );
+        });
+
+        expect(
+            await screen.findByText("Movimento multi simulazione"),
         ).toBeInTheDocument();
     });
 });

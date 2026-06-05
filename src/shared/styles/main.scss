@@ -614,6 +614,21 @@ h6 {
     background: rgba(255, 255, 255, 0.6);
 }
 
+.sl-calendar-simulations {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.sl-calendar-simulation-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
 @media (max-width: 767.98px) {
     .sl-calendar-filter-heading {
         flex-direction: column;

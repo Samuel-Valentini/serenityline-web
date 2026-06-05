@@ -27,6 +27,7 @@ import {
     selectCategories,
     selectFinanceDataError,
     selectFinanceDataStatus,
+    selectSimulationGroups,
 } from "../../features/finance/financeDataSelectors";
 import {
     formatMoneyAmountForDisplay,
@@ -142,8 +143,10 @@ export function CalendarPage() {
     const accounts = useAppSelector(selectAccounts);
     const categories = useAppSelector(selectCategories);
     const buckets = useAppSelector(selectBuckets);
+    const simulationGroups = useAppSelector(selectSimulationGroups);
 
-    const [selectedSimulationGroupIds] = useState<string[]>([]);
+    const [selectedSimulationGroupIds, setSelectedSimulationGroupIds] =
+        useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
         [],
@@ -198,6 +201,20 @@ export function CalendarPage() {
     const bucketsById = useMemo(
         () => new Map(buckets.map((bucket) => [bucket.bucketId, bucket])),
         [buckets],
+    );
+
+    const activeSimulationGroups = useMemo(
+        () =>
+            simulationGroups.filter(
+                (simulationGroup) =>
+                    simulationGroup.simulationGroupArchivedAt == null,
+            ),
+        [simulationGroups],
+    );
+
+    const selectedSimulationGroupIdsKey = useMemo(
+        () => [...selectedSimulationGroupIds].sort().join("|"),
+        [selectedSimulationGroupIds],
     );
 
     const normalizedSearchQuery = searchQuery
@@ -277,6 +294,11 @@ export function CalendarPage() {
             firstFutureOrTodayMovement ?? movements[movements.length - 1],
         );
     }, [movements, todayIsoDate]);
+
+    useEffect(() => {
+        hasRequestedInitialRangeRef.current = false;
+        hasScrolledToTodayRef.current = false;
+    }, [selectedSimulationGroupIdsKey]);
 
     useEffect(() => {
         if (hasRequestedInitialRangeRef.current || movements.length > 0) {
@@ -379,6 +401,32 @@ export function CalendarPage() {
         setSelectedAccountIds([]);
         setSelectedBucketIds([]);
         setConfirmedFilter("all");
+    }
+
+    function handleToggleSimulationGroup(simulationGroupId: string) {
+        clearConfirmationFeedback();
+        setConfirmingMovement(null);
+
+        setSelectedSimulationGroupIds((currentSimulationGroupIds) => {
+            if (currentSimulationGroupIds.includes(simulationGroupId)) {
+                return currentSimulationGroupIds.filter(
+                    (currentSimulationGroupId) =>
+                        currentSimulationGroupId !== simulationGroupId,
+                );
+            }
+
+            return [...currentSimulationGroupIds, simulationGroupId];
+        });
+    }
+
+    function handleClearSimulationGroups() {
+        clearConfirmationFeedback();
+        setConfirmingMovement(null);
+        setSelectedSimulationGroupIds([]);
+    }
+
+    function isSimulationGroupSelected(simulationGroupId: string) {
+        return selectedSimulationGroupIds.includes(simulationGroupId);
     }
 
     function clearConfirmationFeedback() {
@@ -720,6 +768,13 @@ export function CalendarPage() {
                                       ),
                                   })}
                         </p>
+                        <p className="text-muted mb-0">
+                            {selectedSimulationGroupIds.length > 0
+                                ? t("simulations.selectedCount", {
+                                      count: selectedSimulationGroupIds.length,
+                                  })
+                                : t("simulations.realScenarioActive")}
+                        </p>
                     </div>
 
                     <button
@@ -731,6 +786,59 @@ export function CalendarPage() {
                             ? t("timeline.refreshing")
                             : t("timeline.refresh")}
                     </button>
+                </div>
+
+                <div className="sl-calendar-simulations mt-3">
+                    <div>
+                        <h3 className="h5">{t("simulations.title")}</h3>
+                        <p className="text-muted mb-0">
+                            {t("simulations.description")}
+                        </p>
+                    </div>
+
+                    {activeSimulationGroups.length === 0 ? (
+                        <p className="text-muted mb-0">
+                            {t("simulations.empty")}
+                        </p>
+                    ) : (
+                        <div className="sl-calendar-simulation-buttons">
+                            <button
+                                className={
+                                    selectedSimulationGroupIds.length === 0
+                                        ? "btn btn-sm btn-primary"
+                                        : "btn btn-sm btn-outline-primary"
+                                }
+                                onClick={handleClearSimulationGroups}
+                                type="button">
+                                {t("simulations.realScenario")}
+                            </button>
+
+                            {activeSimulationGroups.map((simulationGroup) => {
+                                const isSelected = isSimulationGroupSelected(
+                                    simulationGroup.simulationGroupId,
+                                );
+
+                                return (
+                                    <button
+                                        aria-pressed={isSelected}
+                                        className={
+                                            isSelected
+                                                ? "btn btn-sm btn-primary"
+                                                : "btn btn-sm btn-outline-primary"
+                                        }
+                                        key={simulationGroup.simulationGroupId}
+                                        onClick={() =>
+                                            handleToggleSimulationGroup(
+                                                simulationGroup.simulationGroupId,
+                                            )
+                                        }
+                                        type="button">
+                                        {simulationGroup.simulationGroupName}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
 
                 <div className="sl-calendar-filters mt-3">

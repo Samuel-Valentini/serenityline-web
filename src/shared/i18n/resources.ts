@@ -230,6 +230,18 @@ export const resources = {
                     chargeDate: "Inserisci una data di addebito valida.",
                 },
             },
+            simulations: {
+                title: "Scenari simulati",
+                description:
+                    "Seleziona uno o più scenari. Il calendario verrà ricaricato con i simulation group scelti.",
+                empty: "Non ci sono simulazioni attive.",
+                realScenario: "Scenario reale",
+                realScenarioActive:
+                    "Stai visualizzando lo scenario senza simulazioni.",
+                selectedCount_one: "Stai visualizzando {{count}} simulazione.",
+                selectedCount_other:
+                    "Stai visualizzando {{count}} simulazioni.",
+            },
         },
         recurringTransactions: {
             eyebrow: "Futuro ricorrente",
@@ -1675,6 +1687,16 @@ export const resources = {
                     amount: "Enter a valid amount.",
                     chargeDate: "Enter a valid charge date.",
                 },
+            },
+            simulations: {
+                title: "Simulated scenarios",
+                description:
+                    "Select one or more scenarios. The calendar will reload using the selected simulation groups.",
+                empty: "There are no active simulations.",
+                realScenario: "Real scenario",
+                realScenarioActive: "You are viewing the real scenario.",
+                selectedCount_one: "You are viewing {{count}} simulation.",
+                selectedCount_other: "You are viewing {{count}} simulations.",
             },
         },
         dashboard: {
