@@ -4,6 +4,7 @@ import { authReducer } from "../../features/auth/authSlice";
 import { appReducer } from "./appSlice";
 import { accountReducer } from "../../features/account/accountSlice";
 import { financeDataReducer } from "../../features/finance/financeDataSlice";
+import { financeDailyBalancesReducer } from "../../features/finance/dailyBalances/financeDailyBalancesSlice";
 
 export const store = configureStore({
     reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
         auth: authReducer,
         account: accountReducer,
         financeData: financeDataReducer,
+        financeDailyBalances: financeDailyBalancesReducer,
     },
 });
 

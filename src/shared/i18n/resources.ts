@@ -137,6 +137,45 @@ export const resources = {
                     "Sono disponibili {{count}} priorità per distinguere movimenti critici, essenziali e opzionali.",
             },
         },
+        serenityline: {
+            eyebrow: "Previsione strategica",
+            title: "SerenityLine",
+            subtitle:
+                "Esplora la tua liquidità reale nel tempo e capisci dove stai andando.",
+            referenceDataLoading: "Caricamento dati finanziari...",
+            referenceDataLoadErrorTitle:
+                "Impossibile caricare i dati finanziari.",
+            referenceDataLoadErrorFallback: "Riprova tra qualche istante.",
+            loading: "Caricamento SerenityLine...",
+            empty: "Non ci sono dati SerenityLine nel periodo caricato.",
+            emptyValue: "—",
+            loadErrorFallback:
+                "Non è stato possibile caricare la SerenityLine. Riprova tra qualche istante.",
+            currency: {
+                label: "Valuta",
+            },
+            chart: {
+                eyebrow: "Linea principale",
+                title: "Liquidità SerenityLine",
+                range: "Periodo iniziale: {{from}} - {{to}}.",
+                accessibleLabel: "Grafico della liquidità SerenityLine",
+                serenityLine: "SerenityLine",
+                today: "Oggi",
+            },
+            insights: {
+                today: "Liquidità oggi",
+                rangeEnd: "Liquidità a fine periodo",
+                loadedDays: "Giorni caricati",
+            },
+            controls: {
+                eyebrow: "Livelli",
+                title: "Controlli vista",
+                subtitle:
+                    "Nei prossimi step qui potrai accendere conti, simulazioni, portafogli e indicatori analitici.",
+                nextSteps:
+                    "Per ora visualizzi la linea base. I controlli avanzati arriveranno nei prossivi step.",
+            },
+        },
         calendar: {
             eyebrow: "Calendario finanziario",
             title: "Calendario",
@@ -1594,6 +1633,44 @@ export const resources = {
                 categories: "Categories",
                 settings: "Settings",
                 administration: "Administration",
+            },
+        },
+        serenityline: {
+            eyebrow: "Strategic forecast",
+            title: "SerenityLine",
+            subtitle:
+                "Explore your real liquidity over time and understand where you are heading.",
+            referenceDataLoading: "Loading finance data...",
+            referenceDataLoadErrorTitle: "Unable to load finance data.",
+            referenceDataLoadErrorFallback: "Please try again in a moment.",
+            loading: "Loading SerenityLine...",
+            empty: "There is no SerenityLine data in the loaded period.",
+            emptyValue: "—",
+            loadErrorFallback:
+                "We could not load SerenityLine. Please try again in a moment.",
+            currency: {
+                label: "Currency",
+            },
+            chart: {
+                eyebrow: "Main line",
+                title: "SerenityLine liquidity",
+                range: "Initial period: {{from}} - {{to}}.",
+                accessibleLabel: "SerenityLine liquidity chart",
+                serenityLine: "SerenityLine",
+                today: "Today",
+            },
+            insights: {
+                today: "Liquidity today",
+                rangeEnd: "Liquidity at period end",
+                loadedDays: "Loaded days",
+            },
+            controls: {
+                eyebrow: "Layers",
+                title: "View controls",
+                subtitle:
+                    "In the next steps you will be able to toggle accounts, simulations, portfolios and analytical indicators.",
+                nextSteps:
+                    "For now you are viewing the base line. Advanced controls will be added in the next steps.",
             },
         },
         calendar: {

@@ -28,6 +28,7 @@ import { SimulationsPage } from "../../pages/app/SimulationsPage";
 import { RecurringTransactionsPage } from "../../pages/app/RecurringTransactionsPage";
 import { TransactionsPage } from "../../pages/app/TransactionsPage";
 import { CalendarPage } from "../../pages/app/CalendarPage";
+import { SerenityLinePage } from "../../pages/app/SerenityLinePage";
 
 export function AppRouter() {
     return (
@@ -104,9 +105,7 @@ export function AppRouter() {
                         <Route path="dashboard" element={<DashboardPage />} />
                         <Route
                             path="serenityline"
-                            element={
-                                <AppPlaceholderPage pageKey="serenityline" />
-                            }
+                            element={<SerenityLinePage />}
                         />
                         <Route path="calendario" element={<CalendarPage />} />
                         <Route
