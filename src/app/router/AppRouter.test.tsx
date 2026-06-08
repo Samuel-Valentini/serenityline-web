@@ -198,4 +198,36 @@ describe("AppRouter", () => {
             screen.getByLabelText("Vai alla homepage di SerenityLine"),
         ).toHaveAttribute("href", "/");
     });
+
+    it("renders the public privacy page", () => {
+        renderRouterAt("/privacy");
+
+        expect(
+            screen.getByRole("heading", {
+                level: 1,
+                name: "Privacy Policy di SerenityLine",
+            }),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("heading", {
+                name: "10. Cookie e tecnologie simili",
+            }),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByText(
+                "Questa pagina ospiterà l'informativa privacy completa prima del lancio pubblico del servizio.",
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it("shows the privacy link in the public footer", () => {
+        renderRouterAt("/");
+
+        expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute(
+            "href",
+            "/privacy",
+        );
+    });
 });

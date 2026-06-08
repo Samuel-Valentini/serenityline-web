@@ -34,6 +34,7 @@ import { SecurityPage } from "../../pages/public/SecurityPage";
 import { HowItWorksPage } from "../../pages/public/HowItWorksPage";
 import { ScrollToTop } from "./ScrollToTop";
 import { ContactPage } from "../../pages/public/ContactPage";
+import { PrivacyPage } from "../../pages/public/PrivacyPage";
 
 export function AppRouter() {
     return (
@@ -56,7 +57,7 @@ export function AppRouter() {
                     />
                     <Route
                         path={ROUTES.public.privacy}
-                        element={<PublicInfoPage pageKey="privacy" />}
+                        element={<PrivacyPage />}
                     />
                     <Route
                         path={ROUTES.public.terms}

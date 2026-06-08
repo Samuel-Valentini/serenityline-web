@@ -3342,3 +3342,97 @@ h6 {
 .sl-auth-card-topline .btn {
     flex: 0 0 auto;
 }
+
+.sl-legal-page {
+    max-width: 72rem;
+}
+
+.sl-legal-document {
+    padding: clamp(1.35rem, 3vw, 3rem);
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1.35rem;
+    background: var(--sl-color-card);
+    box-shadow: 0 1.5rem 4rem rgba(5, 46, 34, 0.07);
+}
+
+.sl-legal-title {
+    max-width: 48rem;
+    margin-bottom: 1.25rem;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.35rem, 5vw, 4.5rem);
+    letter-spacing: -0.04em;
+    line-height: 0.98;
+}
+
+.sl-legal-heading {
+    margin-top: 2.5rem;
+    margin-bottom: 0.95rem;
+    scroll-margin-top: 6rem;
+}
+
+.sl-legal-document h2.sl-legal-heading {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--sl-color-border);
+    font-size: clamp(1.35rem, 2vw, 1.85rem);
+}
+
+.sl-legal-document h3.sl-legal-heading {
+    color: var(--sl-color-green-800);
+    font-size: 1.08rem;
+}
+
+.sl-legal-document p,
+.sl-legal-document li,
+.sl-legal-document td,
+.sl-legal-document th {
+    color: var(--sl-color-text-main);
+    line-height: 1.75;
+}
+
+.sl-legal-document p {
+    max-width: 58rem;
+    margin-bottom: 1rem;
+}
+
+.sl-legal-document ul {
+    max-width: 58rem;
+    margin-bottom: 1.25rem;
+    padding-left: 1.3rem;
+}
+
+.sl-legal-document li + li {
+    margin-top: 0.25rem;
+}
+
+.sl-legal-table-wrapper {
+    width: 100%;
+    margin: 1.4rem 0 2rem;
+    overflow-x: auto;
+    border: 1px solid var(--sl-color-border);
+    border-radius: 1rem;
+    background: #fffdf8;
+}
+
+.sl-legal-table {
+    width: 100%;
+    min-width: 46rem;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+
+.sl-legal-table th,
+.sl-legal-table td {
+    padding: 0.85rem 1rem;
+    vertical-align: top;
+    border-bottom: 1px solid var(--sl-color-border);
+}
+
+.sl-legal-table th {
+    color: var(--sl-color-green-900);
+    font-weight: 800;
+    background: rgba(245, 241, 232, 0.72);
+}
+
+.sl-legal-table tr:last-child td {
+    border-bottom: 0;
+}
