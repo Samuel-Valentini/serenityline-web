@@ -119,11 +119,40 @@ function renderParagraphLines(lines: string[]) {
     ));
 }
 
+function slugifyHeading(text: string) {
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+function getBaseHeadingId(text: string) {
+    const sectionMatch = /^(\d+)\./.exec(text.trim());
+
+    if (sectionMatch) {
+        return `articolo-${sectionMatch[1]}`;
+    }
+
+    return slugifyHeading(text);
+}
+
 export function LegalMarkdownPage({
     markdown,
     ariaLabel,
 }: LegalMarkdownPageProps) {
     const blocks = parseLegalMarkdown(markdown);
+    const headingIdCounts = new Map<string, number>();
+
+    function getUniqueHeadingId(text: string) {
+        const baseId = getBaseHeadingId(text);
+        const occurrence = headingIdCounts.get(baseId) ?? 0;
+
+        headingIdCounts.set(baseId, occurrence + 1);
+
+        return occurrence === 0 ? baseId : `${baseId}-${occurrence + 1}`;
+    }
 
     return (
         <main className="sl-legal-page container py-5">
@@ -135,8 +164,11 @@ export function LegalMarkdownPage({
                             | "h2"
                             | "h3";
 
+                        const headingId = getUniqueHeadingId(block.text);
+
                         return (
                             <HeadingTag
+                                id={headingId}
                                 key={`${block.text}-${blockIndex}`}
                                 className={
                                     block.level === 1

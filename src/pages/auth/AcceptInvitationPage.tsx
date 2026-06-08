@@ -7,6 +7,12 @@ import { acceptUserInvitation } from "../../features/auth/authApi";
 import { ApiError } from "../../shared/api";
 import { ROUTES } from "../../shared/constants/routes";
 
+import { LegalConsentCheckboxes } from "./LegalConsentCheckboxes";
+import {
+    createEmptyLegalConsentState,
+    hasAcceptedAllLegalConsents,
+} from "./legalConsentUtils";
+
 type AcceptInvitationError = {
     code: string;
     message: string;
@@ -69,8 +75,22 @@ export function AcceptInvitationPage() {
     const [hasAcceptedInvitation, setHasAcceptedInvitation] = useState(false);
     const [error, setError] = useState<AcceptInvitationError | null>(null);
 
+    const [legalConsents, setLegalConsents] = useState(
+        createEmptyLegalConsentState,
+    );
+
+    const hasRequiredLegalConsents = hasAcceptedAllLegalConsents(legalConsents);
+
     async function submitAcceptInvitation() {
         setError(null);
+
+        if (!hasRequiredLegalConsents) {
+            setError({
+                code: "auth.legalConsentRequired",
+                message: t("legalConsent.requiredError"),
+            });
+            return;
+        }
 
         if (password.length < 10) {
             setError({
@@ -110,7 +130,7 @@ export function AcceptInvitationPage() {
         return (
             <main className="sl-auth-page">
                 <section
-                    className="sl-auth-card"
+                    className="sl-auth-card sl-auth-card--wide"
                     aria-labelledby="accept-invitation-success-title">
                     <p className="sl-eyebrow">SerenityLine</p>
 
@@ -140,7 +160,7 @@ export function AcceptInvitationPage() {
     return (
         <main className="sl-auth-page">
             <section
-                className="sl-auth-card"
+                className="sl-auth-card sl-auth-card--wide"
                 aria-labelledby="accept-invitation-title">
                 <p className="sl-eyebrow">SerenityLine</p>
 
@@ -223,9 +243,17 @@ export function AcceptInvitationPage() {
                         />
                     </div>
 
+                    <LegalConsentCheckboxes
+                        consents={legalConsents}
+                        disabled={isSubmitting}
+                        idPrefix="accept-invitation"
+                        onChange={setLegalConsents}
+                        translationNamespace="authAcceptInvitation"
+                    />
+
                     <button
                         className="btn btn-primary btn-lg"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !hasRequiredLegalConsents}
                         type="submit">
                         {isSubmitting ? t("submitting") : t("submit")}
                     </button>

@@ -9,6 +9,11 @@ import type {
     RegisterRequestDto,
     RegisterResponseDto,
 } from "../../features/auth/authApiTypes";
+import { LegalConsentCheckboxes } from "./LegalConsentCheckboxes";
+import {
+    createEmptyLegalConsentState,
+    hasAcceptedAllLegalConsents,
+} from "./legalConsentUtils";
 
 type RegisterFormError = {
     code: string;
@@ -77,11 +82,24 @@ export function RegisterPage() {
     const [formError, setFormError] = useState<RegisterFormError | null>(null);
     const [registeredUser, setRegisteredUser] =
         useState<RegisterResponseDto | null>(null);
+    const [legalConsents, setLegalConsents] = useState(
+        createEmptyLegalConsentState,
+    );
+
+    const hasRequiredLegalConsents = hasAcceptedAllLegalConsents(legalConsents);
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
         setFormError(null);
+
+        if (!hasRequiredLegalConsents) {
+            setFormError({
+                code: "auth.legalConsentRequired",
+                message: t("legalConsent.requiredError"),
+            });
+            return;
+        }
 
         if (password.length < 10) {
             setFormError({
@@ -157,7 +175,9 @@ export function RegisterPage() {
 
     return (
         <main className="sl-auth-page">
-            <section className="sl-auth-card" aria-labelledby="register-title">
+            <section
+                className="sl-auth-card sl-auth-card--wide"
+                aria-labelledby="register-title">
                 <p className="sl-eyebrow">SerenityLine</p>
 
                 <h1 id="register-title">{t("title")}</h1>
@@ -299,9 +319,17 @@ export function RegisterPage() {
                         </label>
                     </div>
 
+                    <LegalConsentCheckboxes
+                        consents={legalConsents}
+                        disabled={isSubmitting}
+                        idPrefix="register"
+                        onChange={setLegalConsents}
+                        translationNamespace="authRegister"
+                    />
+
                     <button
                         className="btn btn-primary btn-lg"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !hasRequiredLegalConsents}
                         type="submit">
                         {isSubmitting ? t("submitting") : t("submit")}
                     </button>

@@ -57,6 +57,12 @@ describe("TermsPage", () => {
                 name: "32. Approvazione specifica di alcune clausole",
             }),
         ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("heading", {
+                name: "32. Approvazione specifica di alcune clausole",
+            }),
+        ).toHaveAttribute("id", "articolo-32");
     });
 
     it("renders the English terms of service when the active language is English", async () => {

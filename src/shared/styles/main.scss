@@ -3478,3 +3478,60 @@ h6 {
         flex: 0 0 auto;
     }
 }
+
+.sl-auth-card--wide {
+    width: min(100%, 34rem);
+}
+
+.sl-legal-consent-group {
+    display: grid;
+    gap: 0.85rem;
+    margin: 0.25rem 0 0.35rem;
+    padding: 1rem;
+    border: 1px solid rgba(167, 123, 45, 0.24);
+    border-radius: 1rem;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(245, 241, 232, 0.64),
+            rgba(255, 253, 248, 0.86)
+        ),
+        var(--sl-color-card);
+}
+
+.sl-legal-consent-title {
+    float: none;
+    width: auto;
+    margin-bottom: 0;
+    color: var(--sl-color-green-900);
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.sl-legal-consent-helper {
+    margin-bottom: 0;
+    color: var(--sl-color-text-muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.sl-legal-consent-item {
+    margin-bottom: 0;
+}
+
+.sl-legal-consent-item .form-check-label {
+    color: var(--sl-color-text-main);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.sl-legal-consent-item a {
+    color: var(--sl-color-green-900);
+    font-weight: 750;
+    text-decoration-color: rgba(167, 123, 45, 0.55);
+    text-underline-offset: 0.16em;
+}
+
+.sl-legal-consent-item a:hover {
+    color: var(--sl-color-green-800);
+}
