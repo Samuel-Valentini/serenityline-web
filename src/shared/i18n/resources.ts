@@ -4352,23 +4352,23 @@ export const resources = {
             goToLogin: "Go to login",
             backHome: "Back to home",
             legalConsent: {
-                title: "Consensi obbligatori",
+                title: "Mandatory acknowledgements",
                 subtitle:
-                    "Per accettare l'invito devi confermare la presa visione dei documenti legali.",
-                termsPrefix: "Ho letto e accetto i ",
-                termsLink: "Termini di Servizio",
+                    "To create your account, you must confirm that you have reviewed the legal documents.",
+                termsPrefix: "I have read and accept the ",
+                termsLink: "Terms of Service",
                 termsSuffix: ".",
-                privacyPrefix: "Dichiaro di aver letto la ",
+                privacyPrefix: "I declare that I have read the ",
                 privacyLink: "Privacy Policy",
                 privacySuffix: ".",
                 specificClausesPrefix:
-                    "Approvo specificamente, ai sensi degli artt. 1341 e 1342 c.c., le clausole dei Termini di Servizio indicate nella ",
+                    "I specifically approve, pursuant to Articles 1341 and 1342 of the Italian Civil Code, the clauses of the Terms of Service indicated in the ",
                 specificClausesLink:
-                    "sezione “Approvazione specifica di alcune clausole”",
+                    "section “Specific approval of certain clauses”",
                 specificClausesSuffix:
-                    ", e in particolare le clausole 8, 11, 12, 13, 15, 18, 23, 24, 25, 26, 28, 29 e 31.",
+                    ", and in particular clauses 8, 11, 12, 13, 15, 18, 23, 24, 25, 26, 28, 29 and 31.",
                 requiredError:
-                    "Per proseguire devi accettare i Termini di Servizio, dichiarare di aver letto la Privacy Policy e approvare specificamente le clausole indicate.",
+                    "To continue, you must accept the Terms of Service, declare that you have read the Privacy Policy and specifically approve the indicated clauses.",
             },
         },
         notFound: {
