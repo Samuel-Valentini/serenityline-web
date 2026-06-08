@@ -18,6 +18,18 @@ type RouteLocationState = {
     };
 };
 
+function getSafeInternalRedirectPath(value: string | null | undefined) {
+    if (!value) {
+        return null;
+    }
+
+    if (!value.startsWith("/") || value.startsWith("//")) {
+        return null;
+    }
+
+    return value;
+}
+
 export function Login2faPage() {
     const { t } = useTranslation("auth");
     const dispatch = useAppDispatch();
@@ -32,7 +44,10 @@ export function Login2faPage() {
     const [code, setCode] = useState("");
 
     const locationState = location.state as RouteLocationState | null;
-    const redirectTo = locationState?.from?.pathname ?? ROUTES.app.dashboard;
+
+    const redirectTo =
+        getSafeInternalRedirectPath(locationState?.from?.pathname) ??
+        ROUTES.app.dashboard;
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -111,7 +126,10 @@ export function Login2faPage() {
                 </form>
 
                 <div className="mt-4">
-                    <Link to={ROUTES.auth.login}>{t("backToLogin")}</Link>
+                    <Link
+                        to={`${ROUTES.auth.login}?returnTo=${encodeURIComponent(redirectTo)}`}>
+                        {t("backToLogin")}
+                    </Link>
                 </div>
             </section>
         </main>

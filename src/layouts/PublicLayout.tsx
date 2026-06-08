@@ -153,12 +153,25 @@ export function PublicLayout() {
 
             <Outlet />
 
-            <footer className="sl-public-footer text-center">
-                <span>
-                    © SerenityLine, 2026 <br />
-                    Samuel Valentini
-                </span>
-                <span>{t("footerClaim")}</span>
+            <footer className="sl-public-footer">
+                <div className="sl-public-footer-brand">
+                    <span>
+                        © SerenityLine, 2026 <br />
+                        Samuel Valentini
+                    </span>
+                </div>
+
+                <div className="sl-public-footer-brand">
+                    <span>{t("footerClaim")}</span>
+                </div>
+
+                <nav
+                    className="sl-public-footer-links"
+                    aria-label={t("footerNavigationLabel")}>
+                    <Link to={ROUTES.public.contact}>{t("contact")}</Link>
+                    <Link to={ROUTES.public.privacy}>{t("privacy")}</Link>
+                    <Link to={ROUTES.public.terms}>{t("terms")}</Link>
+                </nav>
             </footer>
         </div>
     );

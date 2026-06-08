@@ -62,6 +62,10 @@ const appNavigationItems = [
         to: ROUTES.app.administration,
         labelKey: "nav.administration",
     },
+    {
+        to: ROUTES.public.contact,
+        labelKey: "nav.contact",
+    },
 ] as const;
 
 export function AppLayout() {
@@ -122,7 +126,7 @@ export function AppLayout() {
 
                     <Link
                         className="sl-app-brand-lockup"
-                        to={ROUTES.app.dashboard}
+                        to={ROUTES.public.home}
                         aria-label={t("brandLabel")}>
                         <img
                             className="sl-app-brand-logo"
@@ -219,7 +223,7 @@ export function AppLayout() {
                         <div className="sl-app-mobile-drawer-header">
                             <Link
                                 className="sl-app-brand-lockup"
-                                to={ROUTES.app.dashboard}
+                                to={ROUTES.public.home}
                                 onClick={closeMobileNavigation}
                                 aria-label={t("brandLabel")}>
                                 <img

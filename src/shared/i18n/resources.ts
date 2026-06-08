@@ -20,6 +20,10 @@ export const resources = {
             logout: "Logout",
             footerClaim: "Pianifica, prevedi, vivi sereno.",
             languageSwitcherLabel: "Selezione lingua",
+            contact: "Contatti",
+            privacy: "Privacy",
+            terms: "Termini",
+            footerNavigationLabel: "Link informativi",
         },
         home: {
             hero: {
@@ -390,6 +394,95 @@ export const resources = {
                 secondaryCta: "Vai alla sicurezza",
             },
         },
+        contactPage: {
+            hero: {
+                eyebrow: "Siamo qui per aiutarti",
+                title: "Hai bisogno di supporto?",
+                subtitle:
+                    "Scrivici se hai dubbi su SerenityLine, se hai trovato un problema o se vuoi segnalarci qualcosa che può rendere il prodotto più chiaro e utile.",
+                primaryCta: "Invia la tua richiesta",
+                secondaryCta: "Accedi",
+            },
+            panel: {
+                eyebrow: "Supporto SerenityLine",
+                title: "Un canale semplice e sicuro",
+                text: "Il modulo di contatto ti permetterà di inviare una richiesta al team SerenityLine. Se sei autenticato, useremo i dati del tuo account per collegare meglio la segnalazione.",
+            },
+            cardsLabel: "Tipi di richiesta supportati",
+            cards: [
+                {
+                    title: "Problemi di accesso",
+                    text: "Account, login, verifica email, password dimenticata o autenticazione a due fattori.",
+                },
+                {
+                    title: "Bug o comportamenti inattesi",
+                    text: "Segnalazioni su pagine, dati, calcoli, messaggi o funzionalità che non si comportano come previsto.",
+                },
+                {
+                    title: "Privacy e dati",
+                    text: "Domande su sicurezza, trattamento dei dati, esportazione, cancellazione o gestione dell'account.",
+                },
+            ],
+            form: {
+                eyebrow: "Modulo contatti",
+                title: "Scrivici in modo sicuro",
+                subtitle:
+                    "Raccontaci il problema o la richiesta. Ti consigliamo di non inviare password, codici di accesso, numeri completi di carte o dati bancari completi.",
+                authenticatedNoticeTitle:
+                    "Stai scrivendo come utente autenticato",
+                authenticatedNoticeText:
+                    "Collegheremo la richiesta al tuo account e useremo l'email {{email}} come riferimento.",
+                authenticatedFallbackEmail: "del tuo account",
+                nameLabel: "Nome",
+                namePlaceholder: "Mario Rossi",
+                emailLabel: "Email",
+                emailPlaceholder: "nome@email.it",
+                topicLabel: "Argomento",
+                topicOptions: [
+                    {
+                        value: "ACCOUNT",
+                        label: "Account e accesso",
+                    },
+                    {
+                        value: "BUG",
+                        label: "Bug o comportamento inatteso",
+                    },
+                    {
+                        value: "BILLING",
+                        label: "Pagamenti e fatturazione",
+                    },
+                    {
+                        value: "PRIVACY",
+                        label: "Privacy e dati",
+                    },
+                    {
+                        value: "FEEDBACK",
+                        label: "Suggerimenti",
+                    },
+                    {
+                        value: "OTHER",
+                        label: "Altro",
+                    },
+                ],
+                subjectLabel: "Oggetto",
+                subjectPlaceholder: "Es. Problema accesso account",
+                messageLabel: "Messaggio",
+                messagePlaceholder:
+                    "Descrivi cosa è successo, cosa ti aspettavi e in quale pagina o funzione hai riscontrato il problema.",
+                securityHint:
+                    "Per la tua sicurezza, non inserire password, codici temporanei, numeri completi di carte o dati bancari completi.",
+                privacyLabel:
+                    "Accetto che i dati inseriti vengano trattati per gestire questa richiesta di supporto.",
+                websiteLabel: "Sito web",
+                submit: "Invia richiesta",
+                submitting: "Invio in corso...",
+                successTitle: "Richiesta inviata",
+                successFallback: "La tua richiesta è stata accettata.",
+                errorTitle: "Invio non riuscito",
+                errorFallback:
+                    "Non siamo riusciti a inviare la richiesta. Riprova tra qualche istante.",
+            },
+        },
         securityPage: {
             hero: {
                 eyebrow: "Sicurezza e privacy",
@@ -554,7 +647,7 @@ export const resources = {
                 "Non è stato possibile ripristinare l'account. Il token potrebbe essere scaduto o non più valido.",
         },
         appShell: {
-            brandLabel: "Vai alla dashboard",
+            brandLabel: "Vai alla homepage di SerenityLine",
             navigationLabel: "Navigazione principale",
             navigationTitle: "Menu",
             quickActionsLabel: "Azioni rapide",
@@ -578,6 +671,7 @@ export const resources = {
                 categories: "Categorie",
                 settings: "Impostazioni",
                 administration: "Amministrazione",
+                contact: "Contattaci",
             },
         },
         dashboard: {
@@ -2245,6 +2339,10 @@ export const resources = {
             logout: "Logout",
             footerClaim: "Plan, forecast, live with peace of mind.",
             languageSwitcherLabel: "Language selection",
+            contact: "Contact",
+            privacy: "Privacy",
+            terms: "Terms",
+            footerNavigationLabel: "Informational links",
         },
         home: {
             hero: {
@@ -2615,6 +2713,94 @@ export const resources = {
                 secondaryCta: "Go to security",
             },
         },
+        contactPage: {
+            hero: {
+                eyebrow: "We are here to help",
+                title: "Need support?",
+                subtitle:
+                    "Write to us if you have questions about SerenityLine, if you found an issue or if you want to report something that could make the product clearer and more useful.",
+                primaryCta: "Send your request",
+                secondaryCta: "Sign in",
+            },
+            panel: {
+                eyebrow: "SerenityLine support",
+                title: "A simple and secure channel",
+                text: "The contact form will let you send a request to the SerenityLine team. If you are signed in, we will use your account details to better connect the report.",
+            },
+            cardsLabel: "Supported request types",
+            cards: [
+                {
+                    title: "Access issues",
+                    text: "Account, login, email verification, forgotten password or two-factor authentication.",
+                },
+                {
+                    title: "Bugs or unexpected behavior",
+                    text: "Reports about pages, data, calculations, messages or features that do not behave as expected.",
+                },
+                {
+                    title: "Privacy and data",
+                    text: "Questions about security, data processing, export, deletion or account management.",
+                },
+            ],
+            form: {
+                eyebrow: "Contact form",
+                title: "Write to us securely",
+                subtitle:
+                    "Tell us about the issue or request. Please do not send passwords, access codes, full card numbers or complete bank details.",
+                authenticatedNoticeTitle: "You are writing as a signed-in user",
+                authenticatedNoticeText:
+                    "We will connect the request to your account and use {{email}} as the reference email.",
+                authenticatedFallbackEmail: "your account email",
+                nameLabel: "Name",
+                namePlaceholder: "Mario Rossi",
+                emailLabel: "Email",
+                emailPlaceholder: "name@email.com",
+                topicLabel: "Topic",
+                topicOptions: [
+                    {
+                        value: "ACCOUNT",
+                        label: "Account and access",
+                    },
+                    {
+                        value: "BUG",
+                        label: "Bug or unexpected behavior",
+                    },
+                    {
+                        value: "BILLING",
+                        label: "Payments and billing",
+                    },
+                    {
+                        value: "PRIVACY",
+                        label: "Privacy and data",
+                    },
+                    {
+                        value: "FEEDBACK",
+                        label: "Suggestions",
+                    },
+                    {
+                        value: "OTHER",
+                        label: "Other",
+                    },
+                ],
+                subjectLabel: "Subject",
+                subjectPlaceholder: "E.g. Account access issue",
+                messageLabel: "Message",
+                messagePlaceholder:
+                    "Describe what happened, what you expected and which page or feature was involved.",
+                securityHint:
+                    "For your security, do not enter passwords, temporary codes, full card numbers or complete bank details.",
+                privacyLabel:
+                    "I agree that the data I enter may be processed to handle this support request.",
+                websiteLabel: "Website",
+                submit: "Send request",
+                submitting: "Sending...",
+                successTitle: "Request sent",
+                successFallback: "Your request has been accepted.",
+                errorTitle: "Could not send request",
+                errorFallback:
+                    "We could not send the request. Please try again in a moment.",
+            },
+        },
         securityPage: {
             hero: {
                 eyebrow: "Security and privacy",
@@ -2779,7 +2965,7 @@ export const resources = {
                 "Could not restore the account. The token may have expired or may no longer be valid.",
         },
         appShell: {
-            brandLabel: "Go to dashboard",
+            brandLabel: "Go to the SerenityLine homepage",
             navigationLabel: "Main navigation",
             navigationTitle: "Menu",
             quickActionsLabel: "Quick actions",
@@ -2803,6 +2989,7 @@ export const resources = {
                 categories: "Categories",
                 settings: "Settings",
                 administration: "Administration",
+                contact: "Contact us",
             },
         },
         serenityline: {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 import {
@@ -50,11 +50,24 @@ function getLoginApiErrorMessage(
     return fallbackMessage;
 }
 
+function getSafeInternalRedirectPath(value: string | null | undefined) {
+    if (!value) {
+        return null;
+    }
+
+    if (!value.startsWith("/") || value.startsWith("//")) {
+        return null;
+    }
+
+    return value;
+}
+
 export function LoginPage() {
     const { t } = useTranslation("auth");
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const location = useLocation();
+    const [searchParams] = useSearchParams();
 
     const isCheckingAuth = useAppSelector(selectIsCheckingAuth);
     const isAuthenticated = useAppSelector(selectIsAuthenticated);
@@ -94,7 +107,11 @@ export function LoginPage() {
         : (authError?.restoreAccountChallenge ?? null);
 
     const locationState = location.state as RouteLocationState | null;
-    const redirectTo = locationState?.from?.pathname ?? ROUTES.app.dashboard;
+
+    const redirectTo =
+        getSafeInternalRedirectPath(searchParams.get("returnTo")) ??
+        getSafeInternalRedirectPath(locationState?.from?.pathname) ??
+        ROUTES.app.dashboard;
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -106,10 +123,14 @@ export function LoginPage() {
         if (isTwoFactorRequired) {
             navigate(ROUTES.auth.login2fa, {
                 replace: true,
-                state: location.state,
+                state: {
+                    from: {
+                        pathname: redirectTo,
+                    },
+                },
             });
         }
-    }, [isTwoFactorRequired, location.state, navigate]);
+    }, [isTwoFactorRequired, navigate, redirectTo]);
 
     function submitLogin() {
         setEmailVerificationRequiredOverride(null);
@@ -203,7 +224,15 @@ export function LoginPage() {
     return (
         <main className="sl-auth-page">
             <section className="sl-auth-card" aria-labelledby="login-title">
-                <p className="sl-eyebrow">SerenityLine</p>
+                <div className="sl-auth-card-topline">
+                    <p className="sl-eyebrow mb-0">SerenityLine</p>
+
+                    <Link
+                        className="btn btn-outline-primary btn-sm"
+                        to={ROUTES.public.home}>
+                        {t("backHome")}
+                    </Link>
+                </div>
 
                 <h1 id="login-title">{t("loginTitle")}</h1>
 

@@ -157,4 +157,45 @@ describe("AppRouter", () => {
             screen.queryByRole("link", { name: "Crea account" }),
         ).not.toBeInTheDocument();
     });
+
+    it("renders the public contact page", () => {
+        renderRouterAt("/contatti");
+
+        expect(
+            screen.getByRole("heading", {
+                name: "Hai bisogno di supporto?",
+            }),
+        ).toBeInTheDocument();
+
+        expect(screen.getByText("Supporto SerenityLine")).toBeInTheDocument();
+    });
+
+    it("shows the contact link in the public footer", () => {
+        renderRouterAt("/");
+
+        expect(screen.getByRole("link", { name: "Contatti" })).toHaveAttribute(
+            "href",
+            "/contatti",
+        );
+    });
+
+    it("shows the contact link in the authenticated app navigation", () => {
+        store.dispatch(authAuthenticated(user));
+
+        renderRouterAt("/app/dashboard");
+
+        expect(
+            screen.getByRole("link", { name: "Contattaci" }),
+        ).toHaveAttribute("href", "/contatti");
+    });
+
+    it("links the authenticated app brand to the public homepage", () => {
+        store.dispatch(authAuthenticated(user));
+
+        renderRouterAt("/app/dashboard");
+
+        expect(
+            screen.getByLabelText("Vai alla homepage di SerenityLine"),
+        ).toHaveAttribute("href", "/");
+    });
 });
