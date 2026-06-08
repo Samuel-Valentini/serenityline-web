@@ -10,7 +10,6 @@ import { DashboardPage } from "../../pages/app/DashboardPage";
 import { Login2faPage } from "../../pages/auth/Login2faPage";
 import { LoginPage } from "../../pages/auth/LoginPage";
 import { HomePage } from "../../pages/public/HomePage";
-import { PublicInfoPage } from "../../pages/public/PublicInfoPage";
 import { ROUTES } from "../../shared/constants/routes";
 import { RegisterPage } from "../../pages/auth/RegisterPage";
 import { VerifyEmailPage } from "../../pages/auth/VerifyEmailPage";
@@ -35,6 +34,7 @@ import { HowItWorksPage } from "../../pages/public/HowItWorksPage";
 import { ScrollToTop } from "./ScrollToTop";
 import { ContactPage } from "../../pages/public/ContactPage";
 import { PrivacyPage } from "../../pages/public/PrivacyPage";
+import { TermsPage } from "../../pages/public/TermsPage";
 
 export function AppRouter() {
     return (
@@ -59,10 +59,7 @@ export function AppRouter() {
                         path={ROUTES.public.privacy}
                         element={<PrivacyPage />}
                     />
-                    <Route
-                        path={ROUTES.public.terms}
-                        element={<PublicInfoPage pageKey="terms" />}
-                    />
+                    <Route path={ROUTES.public.terms} element={<TermsPage />} />
                 </Route>
 
                 <Route element={<AuthLayout />}>

@@ -230,4 +230,36 @@ describe("AppRouter", () => {
             "/privacy",
         );
     });
+
+    it("renders the public terms page", () => {
+        renderRouterAt("/termini");
+
+        expect(
+            screen.getByRole("heading", {
+                level: 1,
+                name: "Termini di Servizio di SerenityLine",
+            }),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("heading", {
+                name: "4. SerenityLine non è consulenza finanziaria, fiscale, legale o professionale",
+            }),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByText(
+                "Questa pagina ospiterà i termini di servizio completi prima del lancio pubblico del servizio.",
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it("shows the terms link in the public footer", () => {
+        renderRouterAt("/");
+
+        expect(screen.getByRole("link", { name: "Termini" })).toHaveAttribute(
+            "href",
+            "/termini",
+        );
+    });
 });
