@@ -24,6 +24,8 @@ export const resources = {
             privacy: "Privacy",
             terms: "Termini",
             footerNavigationLabel: "Link informativi",
+            footerLegal:
+                "Gruppo Valentini di Samuel Valentini – P. IVA IT02328650227",
         },
         home: {
             hero: {
@@ -2343,6 +2345,8 @@ export const resources = {
             privacy: "Privacy",
             terms: "Terms",
             footerNavigationLabel: "Informational links",
+            footerLegal:
+    "Gruppo Valentini di Samuel Valentini – P. IVA IT02328650227",
         },
         home: {
             hero: {

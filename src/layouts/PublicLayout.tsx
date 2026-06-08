@@ -154,24 +154,28 @@ export function PublicLayout() {
             <Outlet />
 
             <footer className="sl-public-footer">
-                <div className="sl-public-footer-brand">
-                    <span>
-                        © SerenityLine, 2026 <br />
-                        Samuel Valentini
-                    </span>
+                <div className="sl-public-footer-main">
+                    <div className="sl-public-footer-brand">
+                        <span>
+                            © SerenityLine, 2026 <br />
+                            Samuel Valentini
+                        </span>
+                    </div>
+
+                    <div className="sl-public-footer-claim">
+                        <span>{t("footerClaim")}</span>
+                    </div>
+
+                    <nav
+                        className="sl-public-footer-links"
+                        aria-label={t("footerNavigationLabel")}>
+                        <Link to={ROUTES.public.contact}>{t("contact")}</Link>
+                        <Link to={ROUTES.public.privacy}>{t("privacy")}</Link>
+                        <Link to={ROUTES.public.terms}>{t("terms")}</Link>
+                    </nav>
                 </div>
 
-                <div className="sl-public-footer-brand">
-                    <span>{t("footerClaim")}</span>
-                </div>
-
-                <nav
-                    className="sl-public-footer-links"
-                    aria-label={t("footerNavigationLabel")}>
-                    <Link to={ROUTES.public.contact}>{t("contact")}</Link>
-                    <Link to={ROUTES.public.privacy}>{t("privacy")}</Link>
-                    <Link to={ROUTES.public.terms}>{t("terms")}</Link>
-                </nav>
+                <p className="sl-public-footer-legal">{t("footerLegal")}</p>
             </footer>
         </div>
     );
