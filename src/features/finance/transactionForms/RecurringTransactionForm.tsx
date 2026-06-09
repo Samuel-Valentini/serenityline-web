@@ -490,6 +490,9 @@ export function RecurringTransactionForm({
                         type="text"
                         value={form.paymentAmount}
                     />
+                    <div className="sl-amount-sign-reminder" role="note">
+                        {t("amountSignReminder")}
+                    </div>
                 </div>
 
                 <div className="form-check">

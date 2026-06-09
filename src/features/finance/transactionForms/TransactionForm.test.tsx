@@ -706,4 +706,14 @@ describe("TransactionForm", () => {
             screen.queryByLabelText("Attiva promemoria"),
         ).not.toBeInTheDocument();
     });
+
+    it("shows a visible reminder for outgoing amount sign", () => {
+        renderForm();
+
+        expect(
+            screen.getByText(
+                "Ricorda: gli importi in uscita vanno inseriti con il segno meno (-) ad es. -50 €.",
+            ),
+        ).toBeInTheDocument();
+    });
 });

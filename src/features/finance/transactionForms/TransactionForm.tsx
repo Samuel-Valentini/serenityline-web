@@ -424,6 +424,9 @@ export function TransactionForm({
                         type="text"
                         value={form.transactionAmount}
                     />
+                    <div className="sl-amount-sign-reminder" role="note">
+                        {t("amountSignReminder")}
+                    </div>
                 </div>
 
                 <div>

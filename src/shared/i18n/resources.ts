@@ -1542,6 +1542,8 @@ export const resources = {
             placeholders: {
                 amount: "Es. 250,50",
             },
+            amountSignReminder:
+                "Ricorda: gli importi in uscita vanno inseriti con il segno meno (-) ad es. -50 €.",
             options: {
                 selectCategory: "Seleziona categoria",
                 selectAccount: "Seleziona conto",
@@ -3886,6 +3888,8 @@ export const resources = {
             placeholders: {
                 amount: "E.g. 250.50",
             },
+            amountSignReminder:
+                "Remember: outgoing amounts must be entered with the minus sign (-), e.g. -50 €.",
             options: {
                 selectCategory: "Select category",
                 selectAccount: "Select account",

@@ -2892,6 +2892,19 @@ h6 {
     display: none;
 }
 
+.sl-amount-sign-reminder {
+    margin-top: 0.55rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid rgba(167, 123, 45, 0.32);
+    border-left: 4px solid var(--sl-color-gold);
+    border-radius: 0.75rem;
+    background: rgba(216, 195, 155, 0.16);
+    color: var(--sl-color-green-900);
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
 @media (max-width: 939.98px) {
     .sl-transactions-actions-heading,
     .sl-transactions-actions-cell {
