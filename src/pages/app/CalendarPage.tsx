@@ -390,13 +390,55 @@ export function CalendarPage() {
         return "badge text-bg-primary";
     }
 
-    function formatMovementAmount(
+    function formatMovementAmountForEffect(
         movement: FinanceCalendarMovementResponseDto,
+        affectsTarget: boolean,
     ) {
         return formatMoneyAmountForDisplay(
-            movement.amount,
+            affectsTarget ? movement.amount : 0,
             displayLanguage,
             getAccountCurrency(movement.accountId),
+        );
+    }
+
+    function renderMovementAmounts(
+        movement: FinanceCalendarMovementResponseDto,
+    ) {
+        const serenitylineLabel = t("table.amountLabels.serenityline");
+        const movementLabel = t("table.amountLabels.movement");
+
+        return (
+            <div className="sl-calendar-amount-breakdown">
+                <div
+                    aria-label={serenitylineLabel}
+                    className="sl-calendar-amount-row sl-calendar-amount-row--serenityline"
+                    role="group">
+                    <span className="sl-calendar-amount-value">
+                        {formatMovementAmountForEffect(
+                            movement,
+                            movement.affectsSerenityline,
+                        )}
+                    </span>
+                    <span className="sl-calendar-amount-label">
+                        {serenitylineLabel}
+                    </span>
+                </div>
+
+                <div
+                    aria-label={movementLabel}
+                    className="sl-calendar-amount-row sl-calendar-amount-row--movement"
+                    role="group">
+                    <span className="sl-calendar-amount-value">
+                        {formatMovementAmountForEffect(
+                            movement,
+                            movement.affectsAccountBalance,
+                        )}
+                    </span>
+                    <span className="sl-calendar-amount-label">
+                        {movementLabel}
+                    </span>
+                </div>
+            </div>
         );
     }
 
@@ -1228,7 +1270,7 @@ export function CalendarPage() {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    {formatMovementAmount(
+                                                    {renderMovementAmounts(
                                                         movement,
                                                     )}
                                                 </td>

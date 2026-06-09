@@ -211,6 +211,24 @@ const nextRangeMovement = {
     confirmed: false,
 };
 
+const serenitylineOnlyMovement = {
+    ...persistedMovement,
+    transactionId: "serenityline-only-transaction-id",
+    description: "Acquisto carta",
+    amount: -50,
+    affectsAccountBalance: false,
+    affectsSerenityline: true,
+};
+
+const accountBalanceOnlyMovement = {
+    ...persistedMovement,
+    transactionId: "account-balance-only-transaction-id",
+    description: "Addebito tecnico già considerato",
+    amount: -50,
+    affectsAccountBalance: true,
+    affectsSerenityline: false,
+};
+
 function renderPage() {
     render(
         <AppProviders enableAuthBootstrap={false}>
@@ -550,4 +568,55 @@ describe("CalendarPage", () => {
             await screen.findByText("Movimento multi simulazione"),
         ).toBeInTheDocument();
     });
+
+    it("shows separate SerenityLine and movement amounts using the effect flags", async () => {
+    vi.mocked(listCalendarMovements).mockResolvedValue([
+        serenitylineOnlyMovement,
+        accountBalanceOnlyMovement,
+    ]);
+
+    renderPage();
+
+    const serenitylineOnlyRow = (
+        await screen.findByText("Acquisto carta")
+    ).closest("tr");
+
+    expect(serenitylineOnlyRow).not.toBeNull();
+
+    const serenitylineOnlyAmountCell =
+        within(serenitylineOnlyRow!).getAllByRole("cell")[1];
+
+    expect(
+        within(serenitylineOnlyAmountCell).getByRole("group", {
+            name: "SerenityLine",
+        }),
+    ).toHaveTextContent(/-50,00\s€/);
+
+    expect(
+        within(serenitylineOnlyAmountCell).getByRole("group", {
+            name: "Movimento",
+        }),
+    ).toHaveTextContent(/0,00\s€/);
+
+    const accountBalanceOnlyRow = (
+        await screen.findByText("Addebito tecnico già considerato")
+    ).closest("tr");
+
+    expect(accountBalanceOnlyRow).not.toBeNull();
+
+    const accountBalanceOnlyAmountCell =
+        within(accountBalanceOnlyRow!).getAllByRole("cell")[1];
+
+    expect(
+        within(accountBalanceOnlyAmountCell).getByRole("group", {
+            name: "SerenityLine",
+        }),
+    ).toHaveTextContent(/0,00\s€/);
+
+    expect(
+        within(accountBalanceOnlyAmountCell).getByRole("group", {
+            name: "Movimento",
+        }),
+    ).toHaveTextContent(/-50,00\s€/);
+});
 });

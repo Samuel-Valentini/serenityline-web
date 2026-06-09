@@ -1189,6 +1189,60 @@ h6 {
     color: var(--sl-color-text-muted);
 }
 
+.sl-calendar-amount-breakdown {
+    display: grid;
+    min-width: 12rem;
+    gap: 0.35rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.sl-calendar-amount-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.sl-calendar-amount-row + .sl-calendar-amount-row {
+    padding-top: 0.35rem;
+    border-top: 1px solid rgba(16, 35, 28, 0.14);
+}
+
+.sl-calendar-amount-value {
+    white-space: nowrap;
+}
+
+.sl-calendar-amount-row--serenityline .sl-calendar-amount-value {
+    color: var(--sl-color-text-main);
+    font-weight: 850;
+}
+
+.sl-calendar-amount-row--movement .sl-calendar-amount-value {
+    color: var(--sl-color-text-muted);
+    font-weight: 500;
+}
+
+.sl-calendar-amount-label {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 0.21rem;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 750;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.sl-calendar-amount-row--serenityline .sl-calendar-amount-label {
+    background: rgba(52, 142, 73, 0.16);
+    color: var(--sl-color-green-800);
+}
+
+.sl-calendar-amount-row--movement .sl-calendar-amount-label {
+    background: rgba(16, 35, 28, 0.08);
+    color: var(--sl-color-text-muted);
+}
+
 .sl-calendar-today-row {
     outline: 2px solid rgba(167, 123, 45, 0.35);
     outline-offset: -2px;

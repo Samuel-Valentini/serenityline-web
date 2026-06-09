@@ -969,7 +969,11 @@ export const resources = {
             },
             table: {
                 description: "Descrizione",
-                amount: "Importo",
+                amount: "Importi",
+                amountLabels: {
+                    serenityline: "SerenityLine",
+                    movement: "Movimento",
+                },
                 category: "Categoria",
                 date: "Data",
                 confirmed: "Confermata",
@@ -3200,7 +3204,11 @@ export const resources = {
             },
             table: {
                 description: "Description",
-                amount: "Amount",
+                amount: "Amounts",
+                amountLabels: {
+                    serenityline: "SerenityLine",
+                    movement: "Movement",
+                },
                 category: "Category",
                 date: "Date",
                 confirmed: "Confirmed",
