@@ -33,7 +33,7 @@ describe("PrivacyPage", () => {
         ).toBeInTheDocument();
 
         expect(
-            screen.getByText(/Ultimo aggiornamento:\s*08\/06\/2026/),
+            screen.getByText(/Ultimo aggiornamento:\s*09\/06\/2026/),
         ).toBeInTheDocument();
 
         expect(
@@ -118,7 +118,7 @@ describe("PrivacyPage", () => {
 
         expect(
             within(suppliersTable).getByText(
-                "hosting frontend e distribuzione del sito/applicazione",
+                "hosting frontend, distribuzione del sito/applicazione e gestione DNS",
             ),
         ).toBeInTheDocument();
     });
