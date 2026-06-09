@@ -2,12 +2,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AppDispatch } from "../../app/store/store";
 import { ApiError } from "../../shared/api";
+import { accountCleared } from "../account/accountSlice";
+import { financeDailyBalancesCleared } from "../finance/dailyBalances/financeDailyBalancesSlice";
+import { financeDataCleared } from "../finance/financeDataSlice";
 import {
     login as loginApi,
     logout as logoutApi,
     refreshSession as refreshSessionApi,
     verifyLogin2fa as verifyLogin2faApi,
 } from "./authApi";
+import type {
+    AuthenticatedResponseDto,
+    EmailVerificationRequiredResponseDto,
+    LoginResult,
+} from "./authApiTypes";
 import {
     authAuthenticated,
     authCheckingStarted,
@@ -21,11 +29,6 @@ import {
     restoreSession,
     verifyLogin2faCode,
 } from "./authThunks";
-import type {
-    AuthenticatedResponseDto,
-    EmailVerificationRequiredResponseDto,
-    LoginResult,
-} from "./authApiTypes";
 import type { AuthUser } from "./authTypes";
 
 vi.mock("./authApi", () => ({
@@ -33,6 +36,10 @@ vi.mock("./authApi", () => ({
     logout: vi.fn(),
     refreshSession: vi.fn(),
     verifyLogin2fa: vi.fn(),
+}));
+
+vi.mock("../finance/calendar/useFinanceCalendarCache", () => ({
+    clearFinanceCalendarCache: vi.fn(),
 }));
 
 describe("authThunks", () => {
@@ -54,6 +61,12 @@ describe("authThunks", () => {
         accessTokenExpiresAt: "2026-06-02T15:00:00Z",
         user,
     };
+
+    const clearedUserScopedStateActions = [
+        accountCleared(),
+        financeDataCleared(),
+        financeDailyBalancesCleared(),
+    ];
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -88,6 +101,7 @@ describe("authThunks", () => {
         })(dispatch, vi.fn());
 
         expect(actions).toEqual([
+            ...clearedUserScopedStateActions,
             authCheckingStarted(),
             authAuthenticated(user),
         ]);
@@ -110,6 +124,7 @@ describe("authThunks", () => {
         })(dispatch, vi.fn());
 
         expect(actions).toEqual([
+            ...clearedUserScopedStateActions,
             authCheckingStarted(),
             authTwoFactorRequired({
                 challengeId: "challenge-id",
@@ -134,6 +149,7 @@ describe("authThunks", () => {
         })(dispatch, vi.fn());
 
         expect(actions).toEqual([
+            ...clearedUserScopedStateActions,
             authCheckingStarted(),
             authFailed({
                 code: "auth.invalidCredentials",
@@ -166,7 +182,11 @@ describe("authThunks", () => {
         const restored = await restoreSession()(dispatch, vi.fn());
 
         expect(restored).toBe(false);
-        expect(actions).toEqual([authCheckingStarted(), authLoggedOut()]);
+        expect(actions).toEqual([
+            authCheckingStarted(),
+            ...clearedUserScopedStateActions,
+            authLoggedOut(),
+        ]);
     });
 
     it("verifies login two factor code", async () => {
@@ -180,6 +200,7 @@ describe("authThunks", () => {
         })(dispatch, vi.fn());
 
         expect(actions).toEqual([
+            ...clearedUserScopedStateActions,
             authCheckingStarted(),
             authAuthenticated(user),
         ]);
@@ -193,7 +214,26 @@ describe("authThunks", () => {
         await logoutUser()(dispatch, vi.fn());
 
         expect(logoutApi).toHaveBeenCalledOnce();
-        expect(actions).toEqual([authLoggedOut()]);
+        expect(actions).toEqual([
+            ...clearedUserScopedStateActions,
+            authCheckingStarted(),
+            authLoggedOut(),
+        ]);
+    });
+
+    it("dispatches logged out state even when logout request fails", async () => {
+        vi.mocked(logoutApi).mockRejectedValue(new Error("Network error"));
+
+        const { dispatch, actions } = createDispatch();
+
+        await logoutUser()(dispatch, vi.fn());
+
+        expect(logoutApi).toHaveBeenCalledOnce();
+        expect(actions).toEqual([
+            ...clearedUserScopedStateActions,
+            authCheckingStarted(),
+            authLoggedOut(),
+        ]);
     });
 
     it("dispatches email verification required state after login conflict", async () => {
@@ -217,14 +257,17 @@ describe("authThunks", () => {
             password: "password",
         })(dispatch, vi.fn());
 
-        expect(actions[0]).toEqual(authCheckingStarted());
-        expect(actions[1]).toMatchObject({
-            type: authFailed.type,
-            payload: {
-                code: "auth.emailVerification.required",
-                emailVerificationRequired,
-            },
-        });
+        expect(actions).toEqual([
+            ...clearedUserScopedStateActions,
+            authCheckingStarted(),
+            expect.objectContaining({
+                type: authFailed.type,
+                payload: expect.objectContaining({
+                    code: "auth.emailVerification.required",
+                    emailVerificationRequired,
+                }),
+            }),
+        ]);
     });
 
     it("dispatches restore required state after login restore challenge", async () => {
@@ -244,6 +287,7 @@ describe("authThunks", () => {
         })(dispatch, vi.fn());
 
         expect(actions).toEqual([
+            ...clearedUserScopedStateActions,
             authCheckingStarted(),
             authFailed({
                 code: "auth.restoreAccount.required",

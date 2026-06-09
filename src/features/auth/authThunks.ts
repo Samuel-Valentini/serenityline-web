@@ -1,4 +1,4 @@
-import type { AppThunk } from "../../app/store/store";
+import type { AppDispatch, AppThunk } from "../../app/store/store";
 import { ApiError, clearAccessToken } from "../../shared/api";
 import {
     authAuthenticated,
@@ -8,6 +8,10 @@ import {
     authTwoFactorRequired,
 } from "./authSlice";
 import { login, logout, refreshSession, verifyLogin2fa } from "./authApi";
+import { accountCleared } from "../account/accountSlice";
+import { clearFinanceCalendarCache } from "../finance/calendar/useFinanceCalendarCache";
+import { financeDailyBalancesCleared } from "../finance/dailyBalances/financeDailyBalancesSlice";
+import { financeDataCleared } from "../finance/financeDataSlice";
 import type {
     EmailVerificationRequiredResponseDto,
     LoginRequestDto,
@@ -74,8 +78,17 @@ function toAuthError(error: unknown): AuthError {
     };
 }
 
+function clearUserScopedClientState(dispatch: AppDispatch) {
+    clearFinanceCalendarCache();
+    dispatch(accountCleared());
+    dispatch(financeDataCleared());
+    dispatch(financeDailyBalancesCleared());
+}
+
 export function loginUser(request: LoginRequestDto): AppThunk<Promise<void>> {
     return async (dispatch) => {
+        clearAccessToken();
+        clearUserScopedClientState(dispatch);
         dispatch(authCheckingStarted());
 
         try {
@@ -117,6 +130,8 @@ export function verifyLogin2faCode(
     request: VerifyLogin2faRequestDto,
 ): AppThunk<Promise<void>> {
     return async (dispatch) => {
+        clearAccessToken();
+        clearUserScopedClientState(dispatch);
         dispatch(authCheckingStarted());
 
         try {
@@ -142,6 +157,7 @@ export function restoreSession(): AppThunk<Promise<boolean>> {
             return true;
         } catch {
             clearAccessToken();
+            clearUserScopedClientState(dispatch);
             dispatch(authLoggedOut());
 
             return false;
@@ -151,6 +167,10 @@ export function restoreSession(): AppThunk<Promise<boolean>> {
 
 export function logoutUser(): AppThunk<Promise<void>> {
     return async (dispatch) => {
+        clearAccessToken();
+        clearUserScopedClientState(dispatch);
+        dispatch(authCheckingStarted());
+
         try {
             await logout();
         } catch {

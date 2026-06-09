@@ -36,6 +36,7 @@ import {
 } from "../../features/finance/transactionForms/moneyInput";
 import { ApiError } from "../../shared/api";
 import { ROUTES } from "../../shared/constants/routes";
+import { selectAuthUser } from "../../features/auth/authSelectors";
 
 function getErrorMessage(error: unknown, fallback: string) {
     if (error instanceof ApiError) {
@@ -144,6 +145,7 @@ export function CalendarPage() {
     const categories = useAppSelector(selectCategories);
     const buckets = useAppSelector(selectBuckets);
     const simulationGroups = useAppSelector(selectSimulationGroups);
+    const authUser = useAppSelector(selectAuthUser);
 
     const [selectedSimulationGroupIds, setSelectedSimulationGroupIds] =
         useState<string[]>([]);
@@ -179,7 +181,10 @@ export function CalendarPage() {
         loadRange,
         refreshRange,
         replaceMovementWithTransaction,
-    } = useFinanceCalendarCache(selectedSimulationGroupIds);
+    } = useFinanceCalendarCache(
+        selectedSimulationGroupIds,
+        authUser?.userId ?? "__anonymous__",
+    );
 
     const hasRequestedInitialRangeRef = useRef(false);
     const hasScrolledToTodayRef = useRef(false);
@@ -308,7 +313,7 @@ export function CalendarPage() {
         hasScrolledToTodayRef.current = false;
         previousRangeArmedRef.current = true;
         nextRangeArmedRef.current = true;
-    }, [selectedSimulationGroupIdsKey]);
+    }, [authUser?.userId, selectedSimulationGroupIdsKey]);
 
     useEffect(() => {
         if (hasRequestedInitialRangeRef.current || movements.length > 0) {

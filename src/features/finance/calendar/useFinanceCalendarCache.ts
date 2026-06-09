@@ -39,6 +39,13 @@ const BASE_CACHE_KEY = "__base__";
 
 const calendarCache = new Map<string, FinanceCalendarCacheEntry>();
 
+let calendarCacheGeneration = 0;
+
+export function clearFinanceCalendarCache() {
+    calendarCacheGeneration += 1;
+    calendarCache.clear();
+}
+
 function createEmptyCacheEntry(): FinanceCalendarCacheEntry {
     return {
         movements: [],
@@ -82,10 +89,14 @@ function normalizeSimulationGroupIds(simulationGroupIds: Uuid[]) {
     return [...simulationGroupIds].sort();
 }
 
-function getCacheKey(simulationGroupIds: Uuid[]) {
+function getScenarioCacheKey(simulationGroupIds: Uuid[]) {
     const normalizedIds = normalizeSimulationGroupIds(simulationGroupIds);
 
     return normalizedIds.length > 0 ? normalizedIds.join("|") : BASE_CACHE_KEY;
+}
+
+function getCacheKey(ownerKey: string, simulationGroupIds: Uuid[]) {
+    return `${ownerKey}::${getScenarioCacheKey(simulationGroupIds)}`;
 }
 
 function minIsoDate(first: IsoDate | null, second: IsoDate) {
@@ -173,7 +184,7 @@ export function getInitialFinanceCalendarRange(
 }
 
 export function clearFinanceCalendarCacheForTests() {
-    calendarCache.clear();
+    clearFinanceCalendarCache();
 }
 
 function addLoadingRangeKey(
@@ -250,10 +261,16 @@ function transactionToCalendarMovement(
     };
 }
 
-export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
+export function useFinanceCalendarCache(
+    simulationGroupIds: Uuid[],
+    ownerKey = "__anonymous__",
+) {
+    const normalizedOwnerKey =
+        ownerKey.trim().length > 0 ? ownerKey : "__anonymous__";
+
     const simulationGroupIdsKey = useMemo(
-        () => getCacheKey(simulationGroupIds),
-        [simulationGroupIds],
+        () => getCacheKey(normalizedOwnerKey, simulationGroupIds),
+        [normalizedOwnerKey, simulationGroupIds],
     );
 
     const normalizedSimulationGroupIds = useMemo(
@@ -279,6 +296,7 @@ export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
 
     const loadRange = useCallback(
         async (range: FinanceCalendarRange, options: LoadRangeOptions = {}) => {
+            const requestGeneration = calendarCacheGeneration;
             const rangeKey = getRangeKey(range);
             const cacheEntry = getCacheEntry(simulationGroupIdsKey);
 
@@ -313,6 +331,10 @@ export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
 
                 const movements = await listCalendarMovements(request);
 
+                if (requestGeneration !== calendarCacheGeneration) {
+                    return;
+                }
+
                 const entryToUpdate = getCacheEntry(simulationGroupIdsKey);
 
                 if (options.replace) {
@@ -341,13 +363,19 @@ export function useFinanceCalendarCache(simulationGroupIds: Uuid[]) {
 
                 setCacheRevision((currentRevision) => currentRevision + 1);
             } catch (caughtError) {
+                if (requestGeneration !== calendarCacheGeneration) {
+                    return;
+                }
+
                 setErrorState({
                     cacheKey: simulationGroupIdsKey,
                     error: caughtError,
                 });
             } finally {
-                const entryToUpdate = getCacheEntry(simulationGroupIdsKey);
-                entryToUpdate.pendingRangeKeys.delete(rangeKey);
+                if (requestGeneration === calendarCacheGeneration) {
+                    const entryToUpdate = getCacheEntry(simulationGroupIdsKey);
+                    entryToUpdate.pendingRangeKeys.delete(rangeKey);
+                }
 
                 setLoadingRangeKeys((currentLoadingRangeKeys) =>
                     removeLoadingRangeKey(
