@@ -1,15 +1,15 @@
 # SerenityLine Privacy Policy
 
-Last updated: 8 June 2026
-Version: 1.0
+Last updated: 9 June 2026
+Version: 1.1
 
 Reference version: the Italian version of this Privacy Policy is the reference document. This English version is provided as a translation for convenience.
 
 This Privacy Policy describes how SerenityLine collects, uses, stores and protects the personal data of users who access or use the website, the application and the services available through serenityline.me and related subdomains, interfaces, features, communications and connected tools.
 
-SerenityLine is a digital personal and family planning tool that allows users to organize logical financial data, transactions, recurring items, simulations, portfolios, balances, reminders and cash-flow projections over time.
+SerenityLine is a digital tool for personal and household financial planning that allows users to organize logical financial data, transactions, recurring transactions, simulations, buckets, balances, reminders and liquidity projections over time.
 
-This notice is provided pursuant to Regulation (EU) 2016/679 (“GDPR”) and the applicable Italian legislation on personal data protection.
+This notice is provided pursuant to Regulation (EU) 2016/679 ("GDPR") and the applicable Italian legislation on the protection of personal data.
 
 ## 1. Data Controller
 
@@ -17,20 +17,20 @@ The Data Controller is:
 
 Gruppo Valentini di Samuel Valentini
 VAT number: IT02328650227
-Registered office: Via Pasotti, 48 – Ville d’Anaunia, Postal code 38019, Italy
+Registered office: Via Pasotti, 48 - Ville d'Anaunia, CAP 38019, Italy
 Contact email: creazionivalentini@gmail.com
 Contact form: available on the /contatti page
 
-In this document, the Controller is also referred to as “SerenityLine”, “we”, “our” or “Controller”.
+In this document, the Data Controller is also referred to as "SerenityLine", "we", "us", "our" or "Controller".
 
-The Controller has not appointed a Data Protection Officer, as the mandatory requirements are currently not met. For any privacy-related request, the Controller can be contacted at the email address indicated above.
+The Controller has not appointed a Data Protection Officer, as the mandatory conditions for such appointment are not currently met. For any privacy-related request, the Controller may be contacted at the email address indicated above.
 
 ## 2. Scope of this Privacy Policy
 
 This Privacy Policy applies to the processing of personal data carried out through SerenityLine, including:
 
 - browsing the website;
-- account registration and management;
+- registration and account management;
 - authentication, security and session management;
 - use of the application;
 - management of logical financial data entered by the user;
@@ -42,9 +42,9 @@ This Privacy Policy applies to the processing of personal data carried out throu
 
 This notice does not govern third-party websites, services or platforms that may be reached through external links.
 
-## 3. Categories of data processed
+## 3. Types of data processed
 
-SerenityLine processes only the data necessary for the operation of the Service, in accordance with the principle of minimization.
+SerenityLine processes only the data necessary for the functioning of the Service, in accordance with the principle of minimization.
 
 ### 3.1 Account and profile data
 
@@ -54,30 +54,30 @@ We may process:
 - email address;
 - password protected by hashing;
 - email verification status;
-- user role;
+- user's role;
 - group membership;
 - language preferences;
 - theme or interface preferences;
 - preferences relating to email reminders;
 - any preference relating to future invoicing;
 - account creation, update, last access and deletion dates;
-- information necessary to manage the account.
+- information necessary for account management.
 
-The “name” or “username” field does not necessarily have to correspond to the user’s legal name. The user may freely choose the value to enter, within the limits of the rules of the Service.
+The "name" or "username" field does not necessarily have to correspond to the user's legal name. The user may freely choose the value to enter, within the limits of the Service rules.
 
 ### 3.2 Authentication and security data
 
 To allow secure access and session management, we may process:
 
-- technical user identifiers;
+- technical identifiers of the user;
 - authentication tokens and refresh tokens in protected form;
 - temporary tokens for email verification, password reset, 2FA, email change or security operations;
-- session and device information;
+- information about sessions and devices;
 - date and time of login, logout, refresh or session revocation;
 - hashes or technical information relating to the IP address, where implemented;
 - user agent or technical information about the browser/device;
 - technical and security logs;
-- events relating to login attempts, errors, revocations or possible abuse.
+- events relating to access attempts, errors, revocations or possible abuse.
 
 ### 3.3 Logical financial data entered by the user
 
@@ -90,7 +90,7 @@ SerenityLine processes financial data freely entered by the user in the applicat
 - currency;
 - institution or account description, if entered;
 - logical credit cards;
-- card charge day;
+- credit card charge day;
 - transactions;
 - amounts;
 - dates;
@@ -98,10 +98,10 @@ SerenityLine processes financial data freely entered by the user in the applicat
 - categories;
 - recurring transactions;
 - recurrence frequency and rules;
-- reminders linked to transactions or recurring transactions;
+- reminders connected to transactions or recurring transactions;
 - simulations;
 - alternative scenarios;
-- portfolios or logical containers;
+- buckets, i.e. logical containers for goals, reserves or commitments;
 - financial priorities;
 - financial calendar data;
 - calculated balances;
@@ -109,15 +109,15 @@ SerenityLine processes financial data freely entered by the user in the applicat
 
 SerenityLine does not access real bank accounts, does not perform open banking, and does not query banks, intermediaries, the Italian Revenue Agency or other external sources to verify the data entered.
 
-The financial data managed in the Service is logical data, declared and organized by the user. The Service does not guarantee that such data corresponds to the user’s actual banking, tax, accounting or asset situation.
+The financial data managed in the Service are logical data, declared and organized by the user. The Service does not guarantee that such data correspond to the user's real banking, tax, accounting or asset position.
 
 ### 3.4 Data entered in free-text fields
 
-The user may freely enter descriptions, names, notes or other content in certain fields of the Service.
+The user may freely enter descriptions, names, notes or other content in some fields of the Service.
 
 The user is invited not to enter unnecessary data, unauthorized third-party data, special categories of personal data or information that is excessive in relation to the purposes of the Service.
 
-By way of example, descriptions such as “medical expense”, “debt with Mario”, “Company X salary”, “therapy”, “political donation” or similar may reveal personal or sensitive information. SerenityLine does not request such information and the user remains responsible for the data they decide to enter freely.
+By way of example, descriptions such as "medical expense", "debt with Mario", "salary Company X", "therapy", "political donation" or similar expressions could reveal personal or sensitive information. SerenityLine does not require such information and the user remains responsible for the data that they decide to enter freely.
 
 ### 3.5 Data relating to Groups, Owners and Collaborators
 
@@ -125,29 +125,29 @@ If the user uses group or collaboration features, we may process:
 
 - Group identifier;
 - Group name;
-- user role in the Group;
+- user's role in the Group;
 - Owner role;
 - Collaborator roles;
 - advanced roles such as Super Collaborator, Viewer Collaborator or Collaborator;
 - invitations sent or accepted;
-- email address of the invited person;
-- accounts or data that a Collaborator can access;
+- email of the invited person;
+- accounts or data that a Collaborator may access;
 - permissions assigned or revoked;
-- activities connected with Group management.
+- activities connected to the management of the Group.
 
-The Owner is the main point of contact for the Group in relation to SerenityLine and manages invitations, permissions and shared space according to the available features and the Terms of Service.
+The Owner is the main contact person for the Group vis-a-vis SerenityLine and manages invitations, permissions and shared space according to the available features and the Terms of Service.
 
 ### 3.6 Data relating to email communications and reminders
 
 We may process data necessary for sending and managing emails, including:
 
-- recipient email address;
+- recipient's email address;
 - type of email;
 - subject and content of the communication;
 - sending status;
 - sending attempts;
 - delivery errors;
-- scheduling, sending, error or cancellation date;
+- date of scheduling, sending, error or cancellation;
 - technical identifiers of the email provider.
 
 Emails may concern, for example:
@@ -160,10 +160,10 @@ Emails may concern, for example:
 - transaction reminders;
 - recurring transaction reminders;
 - service communications;
-- relevant changes to the Terms or Privacy Policy;
+- material changes to the Terms or Privacy Policy;
 - replies to support requests.
 
-### 3.7 Data collected through contact form or email
+### 3.7 Data collected through the contact form or by email
 
 When the user contacts SerenityLine through the contact form or by email, we may process:
 
@@ -171,15 +171,15 @@ When the user contacts SerenityLine through the contact form or by email, we may
 - email address;
 - subject of the request;
 - content of the message;
-- any attachments or information voluntarily entered;
-- technical data necessary to manage the request;
+- any attachments or information entered voluntarily;
+- technical data necessary for managing the request;
 - communication history.
 
-The user is invited not to send financial data, documents, credentials, security codes or information that is not necessary for the request through the contact form or by email.
+The user is invited not to send financial data, documents, credentials, security codes or information not necessary for the request through the contact form or by email.
 
 ### 3.8 Technical browsing data
 
-During access to the website and application, technical systems may process:
+When accessing the website and the application, the technical systems may process:
 
 - IP address;
 - date and time of the request;
@@ -191,65 +191,65 @@ During access to the website and application, technical systems may process:
 - error logs;
 - information necessary for security, diagnostics and abuse prevention.
 
-This data is processed to allow the Service to operate, maintain security, resolve technical issues and prevent misuse.
+These data are processed to allow the functioning of the Service, maintain security, resolve technical issues and prevent improper use.
 
 ## 4. Purposes and legal bases of processing
 
-Personal data is processed for the purposes and legal bases indicated below.
+Personal data are processed for the purposes and legal bases indicated below.
 
-| Purpose                                                            | Main data                                                                                                           | Legal basis                                                                                           |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Account registration and profile creation                          | name/identifier, email, password, initial preferences                                                               | performance of a contract or pre-contractual measures                                                 |
-| Login, authentication, sessions and account security               | credentials, tokens, sessions, technical logs                                                                       | performance of a contract; legitimate interest in security                                            |
-| Email verification, password reset, 2FA, email change              | email, temporary tokens, codes, security logs                                                                       | performance of a contract; legitimate interest in security                                            |
-| Provision of the Service and finance features                      | logical financial data, accounts, transactions, recurring transactions, simulations, portfolios, calendar, balances | performance of a contract                                                                             |
-| Management of Groups, Owners, Collaborators, roles and permissions | account data, roles, invitations, permissions, connected accounts                                                   | performance of a contract                                                                             |
-| Sending reminders and operational communications                   | email, preferences, due-date data                                                                                   | performance of a contract                                                                             |
-| Security or service communications                                 | email, account data, technical information                                                                          | performance of a contract; legitimate interest                                                        |
-| Support and replies to requests                                    | contact data, content of the request                                                                                | performance of a contract, pre-contractual measures or legitimate interest, depending on the case     |
-| Abuse prevention, security, logging and infrastructure protection  | IP, user agent, logs, technical events                                                                              | legitimate interest                                                                                   |
-| Backup, operational continuity and disaster recovery               | data present in systems and technical copies                                                                        | legitimate interest                                                                                   |
-| Export, deletion, management of privacy requests                   | account data, financial data, request logs                                                                          | legal obligation; performance of a contract                                                           |
-| Document retention to protect rights                               | logs, consents, acceptances, communications                                                                         | legitimate interest; legal obligation where applicable                                                |
-| Future invoicing, if activated                                     | minimum tax data, payment data, plans, invoices                                                                     | legal obligation; performance of a contract                                                           |
-| Future analytics, if activated                                     | usage and browsing data                                                                                             | consent, except for technical or anonymized tools configured in a way compatible with the legislation |
-| Advertising or future tracking, if activated                       | browsing data, cookies or identifiers                                                                               | consent                                                                                               |
+| Purpose                                                            | Main data                                                                                                        | Legal basis                                                                                       |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Account registration and profile creation                          | name/identifier, email, password, initial preferences                                                            | performance of a contract or pre-contractual measures                                             |
+| Login, authentication, sessions and account security               | credentials, tokens, sessions, technical logs                                                                    | performance of a contract; legitimate interest in security                                        |
+| Email verification, password reset, 2FA, email change              | email, temporary tokens, codes, security logs                                                                    | performance of a contract; legitimate interest in security                                        |
+| Provision of the Service and finance features                      | logical financial data, accounts, transactions, recurring transactions, simulations, buckets, calendar, balances | performance of a contract                                                                         |
+| Management of Groups, Owners, Collaborators, roles and permissions | account data, roles, invitations, permissions, linked accounts                                                   | performance of a contract                                                                         |
+| Sending reminders and operational communications                   | email, preferences, deadline data                                                                                | performance of a contract                                                                         |
+| Security or service communications                                 | email, account data, technical information                                                                       | performance of a contract; legitimate interest                                                    |
+| Support and reply to requests                                      | contact details, content of the request                                                                          | performance of a contract, pre-contractual measures or legitimate interest, depending on the case |
+| Abuse prevention, security, logging and infrastructure protection  | IP, user agent, logs, technical events                                                                           | legitimate interest                                                                               |
+| Backup, operational continuity and disaster recovery               | data present in the systems and technical copies                                                                 | legitimate interest                                                                               |
+| Export, deletion and privacy request management                    | account data, financial data, request logs                                                                       | legal obligation; performance of a contract                                                       |
+| Document retention to protect rights                               | logs, consents, acceptances, communications                                                                      | legitimate interest; legal obligation where applicable                                            |
+| Future invoicing, if activated                                     | minimum tax data, payment data, plans, invoices                                                                  | legal obligation; performance of a contract                                                       |
+| Future analytics, if activated                                     | usage and browsing data                                                                                          | consent, except for technical or anonymized tools configured in a manner compatible with the law  |
+| Future advertising or tracking, if activated                       | browsing data, cookies or identifiers                                                                            | consent                                                                                           |
 
 ## 5. Mandatory or optional provision of data
 
-The provision of data necessary for registration, authentication and operation of the Service is necessary to use SerenityLine.
+The provision of data necessary for registration, authentication and functioning of the Service is required to use SerenityLine.
 
 Failure to provide such data may prevent account creation, access to the Service or use of certain features.
 
 The provision of logical financial data is optional, but necessary to obtain useful projections, simulations, calendars, reminders and reports.
 
-The entry of data in free-text fields is under the user’s control. SerenityLine invites the user to enter only relevant and necessary data.
+The entry of data in free-text fields is under the user's control. SerenityLine invites the user to enter only relevant and necessary data.
 
-## 6. Logical financial data and absence of bank connections
+## 6. Logical financial data and absence of banking connections
 
-SerenityLine is not a banking, payment, investment, financial advisory, open banking or bank aggregation service.
+SerenityLine is not a banking, payment, investment, financial advisory, open banking or banking aggregation service.
 
-The Service does not directly access the user’s bank accounts and does not verify the data entered with external sources.
+The Service does not directly access the user's bank accounts and does not verify the data entered against external sources.
 
-Financial data is entered and managed by the user in a logical and declarative manner, in order to allow organization, planning, simulations and projections.
+Financial data are entered and managed by the user in a logical and declarative manner, in order to allow organization, planning, simulations and projections.
 
-The outputs produced by the Service depend on the quality, correctness and completeness of the data entered by the user.
+The processing outputs produced by the Service depend on the quality, correctness and completeness of the data entered by the user.
 
 ## 7. Groups, Owners and Collaborators
 
 SerenityLine allows or may allow the management of Groups composed of an Owner and one or more Collaborators.
 
-The Owner is the main point of contact for the Group and manages invitations, permissions, financial and organizational data entered in the shared space.
+The Owner is the main contact person for the Group and manages invitations, permissions, financial and organizational data entered in the shared space.
 
-Collaborators may access the Group’s data within the limits of the permissions granted by the Owner and the available features.
+Collaborators may access the Group data within the limits of the permissions granted by the Owner and the available features.
 
 According to the available features, the Owner may modify, export, delete individual data or request deletion of the entire Group and the associated financial and organizational data, or assign advanced permissions to one or more Collaborators.
 
-Such operations may result in loss of access to the Group, loss of access to data or deletion of data viewed, entered or modified by Collaborators within the Group, without prejudice to mandatory rights provided by applicable law, including rights relating to personal data protection.
+Such operations may result in loss of access to the Group, loss of access to data, or deletion of data displayed, entered or modified by Collaborators within the Group, without prejudice to mandatory rights provided by applicable law, including rights relating to the protection of personal data.
 
 ## 8. Emails, reminders and service communications
 
-SerenityLine may send operational and service emails necessary for the operation of the account and application.
+SerenityLine may send operational and service emails necessary for the functioning of the account and the application.
 
 Such emails may include:
 
@@ -258,24 +258,24 @@ Such emails may include:
 - emails relating to 2FA;
 - email change confirmations;
 - security communications;
-- reminders relating to transactions;
-- reminders relating to recurring transactions;
-- communications on relevant changes to the Service, the Terms or the Privacy Policy;
+- transaction reminders;
+- recurring transaction reminders;
+- communications about material changes to the Service, the Terms or the Privacy Policy;
 - replies to support requests.
 
-Sending reminders is part of the Service features. The user may modify the available preferences within the application, where provided.
+Sending reminders is part of the features of the Service. The user may modify the available preferences within the application, where provided.
 
-Reminders do not replace the user’s obligation to independently monitor deadlines, payments and obligations.
+Reminders do not replace the user's obligation to independently monitor deadlines, payments and obligations.
 
 ## 9. Contact form and support requests
 
-When the user uses the contact form or writes to the Controller by email, the data sent is processed to manage the request, provide a response, resolve any issues and keep a record of the communication for organizational needs and protection of rights.
+When the user uses the contact form or writes to the Controller by email, the data sent are processed to manage the request, provide feedback, resolve any issues and retain a record of the communication for organizational purposes and protection of rights.
 
 The user must avoid sending unnecessary data, credentials, tokens, security codes, documents or detailed financial information unless strictly relevant to the request.
 
 ## 10. Cookies and similar technologies
 
-Currently SerenityLine uses only cookies and technologies that are strictly necessary for the operation of the Service.
+Currently SerenityLine uses only cookies and technologies strictly necessary for the functioning of the Service.
 
 In particular, cookies or technical tools may be used for:
 
@@ -284,25 +284,25 @@ In particular, cookies or technical tools may be used for:
 - CSRF protection;
 - security;
 - session maintenance;
-- correct operation of the application.
+- proper functioning of the application.
 
 These tools are necessary to provide the Service and are not used for profiling, advertising or marketing tracking.
 
-Since SerenityLine currently uses only technical cookies or strictly necessary tools, the user’s prior consent through a cookie banner is not required.
+Since SerenityLine currently uses only technical cookies or strictly necessary tools, the user's prior consent through a cookie banner is not required.
 
-If in the future SerenityLine introduces non-technical cookies or tools, such as non-anonymized analytics, advertising tools or tracking technologies, this notice will be updated and, where required, the user’s consent will be requested through a specific mechanism.
+If in the future SerenityLine introduces non-technical cookies or tools, such as non-anonymized analytics, advertising tools or tracking technologies, this notice will be updated and, where required, the user's consent will be requested through an appropriate mechanism.
 
 ## 11. Analytics, advertising and future tools
 
 As of the last update date of this Privacy Policy, SerenityLine does not use non-technical analytics tools, advertising, marketing profiling or advertising tracking.
 
-In the future SerenityLine may introduce analysis, product monitoring, statistics, advertising or marketing tools. In that case, before activation, the Controller will assess the privacy impact, update this notice and, where required by applicable law, collect the user’s consent.
+In the future SerenityLine may introduce analytics, product monitoring, statistics, advertising or marketing tools. In that case, before activation, the Controller will assess the privacy impact, update this notice and, where required by applicable law, collect the user's consent.
 
 ## 12. Future payments and invoicing
 
-As of the last update date of this Privacy Policy, SerenityLine is provided free of charge and does not collect payment or billing data through the Service.
+As of the last update date of this Privacy Policy, SerenityLine is provided free of charge and does not collect payment or invoicing data through the Service.
 
-In the future SerenityLine may introduce paid plans, subscriptions or premium features. In that case, only the minimum data necessary for payment, invoicing, subscription management, assistance, tax and accounting obligations may be processed.
+In the future SerenityLine may introduce paid plans, subscriptions or premium features. In that case, only the minimum data necessary for payment, invoicing, subscription management, support, and tax and accounting obligations may be processed.
 
 Such data may include, depending on the case:
 
@@ -318,35 +318,35 @@ Payment data may be managed through specialized third-party providers. SerenityL
 
 Before activating paid features, this Privacy Policy will be updated where necessary.
 
-## 13. Suppliers and external processors
+## 13. Providers and external processors
 
-To provide the Service, SerenityLine may use technical suppliers that process personal data on behalf of the Controller or, in some cases, as independent data controllers.
+To provide the Service, SerenityLine may use technical providers that process personal data on behalf of the Controller or, in some cases, as independent controllers.
 
-As of the last update date of this Privacy Policy, the main suppliers expected or involved are:
+As of the last update date of this Privacy Policy, the main providers planned or involved are:
 
-| Supplier       | Indicative role                                           | Purpose                                                                            |
-| -------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Netlify        | technical supplier / external processor, where applicable | frontend hosting and distribution of the website/application                       |
-| Railway        | technical supplier / external processor, where applicable | backend hosting, PostgreSQL database, application infrastructure, possible storage |
-| Resend         | email supplier / external processor, where applicable     | sending transactional, operational and service emails                              |
-| Google / Gmail | email supplier or service used by the Controller          | management of the Controller’s email inbox and communications with users           |
-| SiteGround     | technical supplier, where still involved                  | domain, DNS or technical services connected to the domain                          |
+| Provider       | Indicative role                                                                           | Purpose                                                                                |
+| -------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Netlify        | technical provider / external processor, where applicable                                 | frontend hosting, distribution of the website/application and DNS management           |
+| Railway        | technical provider / external processor, where applicable                                 | backend hosting, PostgreSQL database, application infrastructure, possible storage     |
+| Resend         | email provider / external processor, where applicable                                     | sending transactional, operational and service emails                                  |
+| Google / Gmail | email provider or service used by the Controller                                          | management of the Controller's email mailbox and communications with users             |
+| Aruba          | domain registrar / technical provider or independent controller, depending on the service | registration of the serenityline.me domain and administrative management of the domain |
 
-The Controller undertakes to verify, during the use of the Service, that the suppliers involved offer adequate guarantees and, where necessary, are governed by data processing agreements or equivalent terms.
+The Controller undertakes to verify, during use of the Service, that the providers involved offer adequate guarantees and, where necessary, are governed by data processing agreements or equivalent terms.
 
-The list of suppliers may change over time for technical, organizational, economic or security needs. In case of relevant changes, this Privacy Policy will be updated.
+The list of providers may change over time for technical, organizational, economic or security needs. In the event of material changes, this Privacy Policy will be updated.
 
 ## 14. Transfers of data outside the European Economic Area
 
-Some technical suppliers may have registered offices or infrastructure outside the European Economic Area, or may use sub-processors located in third countries.
+Some technical providers may be established or have infrastructure outside the European Economic Area, or may use sub-processors located in third countries.
 
-When this involves a transfer of personal data outside the European Economic Area, the Controller will adopt the safeguards provided by the GDPR, such as adequacy decisions, Standard Contractual Clauses, Data Processing Agreements, supplementary measures or other tools provided by applicable law.
+Where this entails a transfer of personal data outside the European Economic Area, the Controller will adopt the safeguards provided for by the GDPR, such as adequacy decisions, Standard Contractual Clauses, Data Processing Agreements, supplementary measures or other instruments provided by applicable law.
 
-The user may request further information on applicable transfers by contacting the Controller.
+The user may request further information about applicable transfers by contacting the Controller.
 
 ## 15. Retention periods
 
-Personal data is retained for the time necessary for the purposes for which it is collected, subject to legal obligations, security needs, protection of rights or technical needs.
+Personal data are retained for the time necessary for the purposes for which they are collected, subject to legal obligations, security needs, protection of rights or technical requirements.
 
 The main retention criteria are:
 
@@ -357,15 +357,15 @@ The main retention criteria are:
 | Technical account recovery period                      | up to 30 days, where available                                                                                                                                            |
 | Backups                                                | up to a reasonable maximum technical period, indicatively up to 180 days, unless shorter rotations, security needs, operational continuity or retention obligations apply |
 | Technical and security logs                            | normally up to 12 months, unless further retention is necessary for security, abuse prevention, technical investigations or protection of rights                          |
-| Temporary tokens and authentication data               | for the time necessary for the related purpose, security and abuse prevention                                                                                             |
+| Temporary tokens and authentication data               | for the time necessary for the relevant purpose, security and abuse prevention                                                                                            |
 | Transactional emails and outbox data                   | for the time necessary for sending, error management, security and proof of communication                                                                                 |
 | Requests through contact form or email                 | up to 24 months, unless further retention is necessary for disputes or protection of rights                                                                               |
-| Consents, acceptance of Terms/Privacy and related logs | for the duration of the account and thereafter for the time necessary to protect rights                                                                                   |
+| Consents, acceptance of Terms/Privacy and related logs | for the duration of the account and subsequently for the time necessary to protect rights                                                                                 |
 | Future tax and invoicing data                          | according to applicable tax and accounting obligations, normally up to 10 years                                                                                           |
 
 Deletion from active systems may not result in immediate deletion from backup copies, which will be deleted or overwritten according to technical rotation cycles.
 
-If data is deleted before the maximum term indicated, this does not affect the lawfulness of processing, provided that there are no retention obligations or protection needs.
+If data are deleted before the maximum period indicated, this does not affect the lawfulness of the processing, provided that there are no retention obligations or protection needs.
 
 ## 16. Data security
 
@@ -388,13 +388,13 @@ The measures may include, by way of example:
 - logical separation of data by Group;
 - monitoring and technical interventions in case of abuse or anomaly.
 
-No digital system can guarantee absolute security. The user is responsible for protecting their credentials, their email, their devices and the correct use of the Service.
+No digital system can, however, guarantee absolute security. The user is responsible for protecting their credentials, email, devices and correct use of the Service.
 
 ## 17. Personal data breaches
 
-In the event of a personal data breach, SerenityLine will adopt the measures required by applicable law, including, where the conditions are met, notification to the Italian Data Protection Authority and communication to the data subjects.
+In the event of a personal data breach, SerenityLine will adopt the measures required by applicable law, including, where the relevant conditions are met, notification to the Italian Data Protection Authority and communication to the data subjects.
 
-The Controller will keep internal documentation on relevant incidents, the assessments carried out and the measures adopted.
+The Controller will keep internal documentation on relevant incidents, assessments carried out and measures adopted.
 
 ## 18. Rights of the data subject
 
@@ -407,35 +407,35 @@ The user may exercise, within the limits and under the conditions provided by th
 - right to object;
 - right to data portability;
 - right to withdraw consent, where processing is based on consent;
-- right not to be subject to decisions based solely on automated processing, where applicable.
+- right not to be subject to a decision based solely on automated processing, where applicable.
 
 Requests may be sent to:
 
 Email: creazionivalentini@gmail.com
 
-The Controller may request information necessary to verify the identity of the requester before following up on the request.
+The Controller may request information necessary to verify the identity of the requester before acting on the request.
 
 The exercise of rights may be limited where necessary to comply with legal obligations, protect the rights of the Controller or third parties, ensure security, prevent abuse or comply with applicable technical and legal limits.
 
 ## 19. Export, deletion and portability
 
-SerenityLine may make features available to export or delete data, according to the available technical methods.
+SerenityLine may provide features to export or delete data, according to the available technical methods.
 
-The user may request export or deletion of their data, within the limits provided by applicable law.
+The user may request the export or deletion of their data, within the limits provided by applicable law.
 
 In the case of Groups, the Owner may have advanced export or deletion features for the Group and the associated financial and organizational data, as provided in the Terms of Service.
 
 Deletion of the account or Group may result in permanent loss of access to the Service and associated data, subject to any technical recovery period where available.
 
-Some data may be retained even after deletion when necessary for legal obligations, security, fraud prevention, dispute management, protection of rights or technical retention in backups.
+Some data may be retained even after deletion where necessary for legal obligations, security, fraud prevention, dispute management, protection of rights or technical retention in backups.
 
 ## 20. Automated decisions and profiling
 
-As of the last update date of this Privacy Policy, SerenityLine does not make decisions based solely on automated processing that produce legal effects for the user or similarly significantly affect them.
+As of the last update date of this Privacy Policy, SerenityLine does not make decisions based solely on automated processing that produce legal effects concerning the user or similarly significantly affect them.
 
-SerenityLine generates projections, calculations, reports, insights and simulations based on the data entered by the user, but such results have an informational and organizational function. The user remains responsible for their personal, economic, tax, asset-related and professional decisions.
+SerenityLine generates projections, calculations, reports, insights and simulations based on the data entered by the user, but these results have an informational and organizational function. The user remains responsible for their personal, economic, tax, asset-related and professional decisions.
 
-As of the last update date, SerenityLine does not use user data for advertising profiling.
+As of the last update date, SerenityLine does not use users' data for advertising profiling.
 
 ## 21. Minors
 
@@ -443,25 +443,25 @@ SerenityLine is intended for adult users.
 
 By creating an account or using the Service, the user declares that they are at least 18 years old.
 
-If the Controller becomes aware of the use of the Service by a minor without an appropriate legal basis, it may adopt measures to suspend or delete the account.
+If the Controller becomes aware that the Service is being used by a minor without an appropriate legal basis, it may take measures to suspend or delete the account.
 
 ## 22. Complaint to the Italian Data Protection Authority
 
-A user who believes that the processing of their personal data is carried out in violation of applicable law may lodge a complaint with the Italian Data Protection Authority.
+A user who believes that the processing of their personal data is carried out in breach of applicable law may lodge a complaint with the Italian Data Protection Authority.
 
-The possibility of applying to the competent judicial authority remains unaffected.
+The right to bring proceedings before the competent judicial authority remains unaffected.
 
 ## 23. Changes to this Privacy Policy
 
-SerenityLine may update this Privacy Policy over time for regulatory, technical, organizational, security, product or Service evolution reasons.
+SerenityLine may update this Privacy Policy over time for legal, technical, organizational, security, product or Service evolution reasons.
 
-In the event of relevant changes, SerenityLine will inform users through reasonable means, such as email, in-app notice, website banner or publication of the updated version.
+In the event of material changes, SerenityLine will inform users through reasonable means, for example by email, in-app notice, website banner or publication of the updated version.
 
-Continued use of the Service after the Privacy Policy update constitutes acknowledgment of the new version, without prejudice to cases in which the law requires specific consent.
+Continued use of the Service after the Privacy Policy update entails acknowledgment of the new version, without prejudice to cases in which the law requires specific consent.
 
 ## 24. Contacts
 
-For questions, requests or exercise of privacy rights, the Controller can be contacted at:
+For questions, requests or exercise of privacy rights, the Controller may be contacted at:
 
 Gruppo Valentini di Samuel Valentini
 Email: creazionivalentini@gmail.com

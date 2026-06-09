@@ -1,7 +1,7 @@
 # Privacy Policy di SerenityLine
 
-Ultimo aggiornamento: 08/06/2026
-Versione: 1.0
+Ultimo aggiornamento: 09/06/2026
+Versione: 1.1
 
 La presente Privacy Policy descrive come SerenityLine raccoglie, utilizza, conserva e protegge i dati personali degli utenti che accedono o utilizzano il sito web, l’applicazione e i servizi disponibili tramite serenityline.me e relativi sottodomini, interfacce, funzionalità, comunicazioni e strumenti collegati.
 
@@ -322,13 +322,13 @@ Per fornire il Servizio, SerenityLine può utilizzare fornitori tecnici che trat
 
 Alla data dell’ultimo aggiornamento della presente Privacy Policy, i principali fornitori previsti o coinvolti sono:
 
-| Fornitore      | Ruolo indicativo                                          | Finalità                                                                            |
-| -------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Netlify        | fornitore tecnico / responsabile esterno, ove applicabile | hosting frontend e distribuzione del sito/applicazione                              |
-| Railway        | fornitore tecnico / responsabile esterno, ove applicabile | hosting backend, database PostgreSQL, infrastruttura applicativa, eventuale storage |
-| Resend         | fornitore email / responsabile esterno, ove applicabile   | invio di email transazionali, operative e di servizio                               |
-| Google / Gmail | fornitore email o servizio utilizzato dal Titolare        | gestione della casella email del Titolare e comunicazioni con utenti                |
-| SiteGround     | fornitore tecnico, ove ancora coinvolto                   | dominio, DNS o servizi tecnici collegati al dominio                                 |
+| Fornitore      | Ruolo indicativo                                                                   | Finalità                                                                            |
+| -------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Netlify        | fornitore tecnico / responsabile esterno, ove applicabile                          | hosting frontend, distribuzione del sito/applicazione e gestione DNS                |
+| Railway        | fornitore tecnico / responsabile esterno, ove applicabile                          | hosting backend, database PostgreSQL, infrastruttura applicativa, eventuale storage |
+| Resend         | fornitore email / responsabile esterno, ove applicabile                            | invio di email transazionali, operative e di servizio                               |
+| Google / Gmail | fornitore email o servizio utilizzato dal Titolare                                 | gestione della casella email del Titolare e comunicazioni con utenti                |
+| Aruba          | registrar del dominio / fornitore tecnico o autonomo titolare, secondo il servizio | registrazione del dominio serenityline.me e gestione amministrativa del dominio     |
 
 Il Titolare si impegna a verificare, durante l’uso del Servizio, che i fornitori coinvolti offrano garanzie adeguate e, ove necessario, siano regolati da accordi di trattamento dati o condizioni equivalenti.
 
