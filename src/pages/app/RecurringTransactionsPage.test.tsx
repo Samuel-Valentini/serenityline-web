@@ -390,6 +390,63 @@ describe("RecurringTransactionsPage", () => {
         expect(listRecurringTransactions).toHaveBeenCalledTimes(1);
     });
 
+    it("sorts active recurring transactions from lowest to highest amount", async () => {
+        const groceriesRecurringTransaction = {
+            ...recurringTransaction,
+            recurringTransactionId: "groceries-recurring-transaction-id",
+            recurringTransactionDescription: "Spesa",
+            paymentAmount: -700,
+            recurringTransactionFirstPaymentDate: "2026-06-03",
+        };
+
+        const refundRecurringTransaction = {
+            ...recurringTransaction,
+            recurringTransactionId: "refund-recurring-transaction-id",
+            recurringTransactionDescription: "Rimborso",
+            paymentAmount: 10,
+            recurringTransactionFirstPaymentDate: "2026-06-02",
+        };
+
+        const incomeRecurringTransaction = {
+            ...recurringTransaction,
+            recurringTransactionId: "income-recurring-transaction-id",
+            recurringTransactionDescription: "Entrata extra",
+            paymentAmount: 200,
+            recurringTransactionFirstPaymentDate: "2026-06-01",
+        };
+
+        vi.mocked(listRecurringTransactions).mockResolvedValueOnce([
+            incomeRecurringTransaction,
+            refundRecurringTransaction,
+            groceriesRecurringTransaction,
+            recurringTransaction,
+        ]);
+
+        renderPage();
+
+        expect(await screen.findByText("Affitto")).toBeInTheDocument();
+
+        const rent = screen.getByText("Affitto");
+        const groceries = screen.getByText("Spesa");
+        const refund = screen.getByText("Rimborso");
+        const income = screen.getByText("Entrata extra");
+
+        expect(
+            rent.compareDocumentPosition(groceries) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+
+        expect(
+            groceries.compareDocumentPosition(refund) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+
+        expect(
+            refund.compareDocumentPosition(income) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+    });
+
     it("creates a recurring transaction and refreshes the report", async () => {
         vi.mocked(createRecurringTransaction).mockResolvedValueOnce(
             createdRecurringTransaction,

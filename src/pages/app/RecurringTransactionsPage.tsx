@@ -107,11 +107,27 @@ export function RecurringTransactionsPage() {
 
     const sortedRecurringTransactions = useMemo(
         () =>
-            [...recurringTransactions].sort((first, second) =>
-                first.recurringTransactionFirstPaymentDate.localeCompare(
-                    second.recurringTransactionFirstPaymentDate,
-                ),
-            ),
+            [...recurringTransactions].sort((first, second) => {
+                const amountComparison =
+                    first.paymentAmount - second.paymentAmount;
+
+                if (amountComparison !== 0) {
+                    return amountComparison;
+                }
+
+                const dateComparison =
+                    first.recurringTransactionFirstPaymentDate.localeCompare(
+                        second.recurringTransactionFirstPaymentDate,
+                    );
+
+                if (dateComparison !== 0) {
+                    return dateComparison;
+                }
+
+                return first.recurringTransactionDescription.localeCompare(
+                    second.recurringTransactionDescription,
+                );
+            }),
         [recurringTransactions],
     );
 
