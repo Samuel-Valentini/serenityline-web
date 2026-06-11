@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
-import type { FinanceCalendarDailyBalanceResponseDto } from "../../features/finance/api/financeApiTypes";
+import { listCalendarMovements } from "../../features/finance/api/financeApi";
+import type {
+    CategoryResponseDto,
+    FinanceCalendarDailyBalanceResponseDto,
+    FinanceCalendarMovementResponseDto,
+} from "../../features/finance/api/financeApiTypes";
 import {
     selectDailyBalancesForScenario,
     selectDailyBalancesScenarioEntry,
@@ -11,6 +17,7 @@ import {
 import { loadDailyBalancesRange } from "../../features/finance/dailyBalances/financeDailyBalancesThunks";
 import {
     BASE_DAILY_BALANCES_SCENARIO_KEY,
+    getDailyBalancesRangeKey,
     getInitialSerenityLineRange,
     getTodayIsoDate,
 } from "../../features/finance/dailyBalances/financeDailyBalancesTypes";
@@ -18,6 +25,7 @@ import {
     selectAccounts,
     selectActiveCategories,
     selectBuckets,
+    selectCategories,
     selectCreditCards,
     selectFinanceDataError,
     selectFinanceDataStatus,
@@ -46,6 +54,36 @@ type DashboardMetricCardProps = {
     description: string;
     tone?: DashboardSignalTone;
 };
+
+type DashboardExpenseStatus = "idle" | "loading" | "loaded" | "failed";
+
+type DashboardCategoryExpense = {
+    categoryId: string;
+    categoryName: string;
+    total: number;
+    percentage: number;
+};
+
+const DASHBOARD_EXPENSE_CHART_COLORS = [
+    "#2f8064",
+    "#c79a4b",
+    "#4f6f8f",
+    "#b06f4f",
+    "#7a8f79",
+    "#8f6f9f",
+    "#3f9f7c",
+    "#d9b66f",
+    "#5d7280",
+    "#a96d7a",
+    "#6f8f4f",
+    "#c8845d",
+];
+
+function getDashboardExpenseChartColor(index: number) {
+    return DASHBOARD_EXPENSE_CHART_COLORS[
+        index % DASHBOARD_EXPENSE_CHART_COLORS.length
+    ];
+}
 
 function formatIsoDateForDisplay(date: string, language: string) {
     return new Intl.DateTimeFormat(language).format(
@@ -186,6 +224,85 @@ function formatMoneyOrDash(
     return amountFormatter.format(value);
 }
 
+function getYearRange(year: number) {
+    return {
+        from: `${year}-01-01`,
+        to: `${year}-12-31`,
+    };
+}
+
+function getDashboardExpenseYearOptions(todayIsoDate: string) {
+    const currentYear = Number(todayIsoDate.slice(0, 4));
+
+    return Array.from({ length: 9 }, (_, index) => currentYear - 4 + index);
+}
+
+function getCategoryExpenseBreakdown(
+    movements: FinanceCalendarMovementResponseDto[],
+    categories: CategoryResponseDto[],
+    accounts: { accountId: string; currency: string }[],
+    selectedCurrency: string,
+    fallbackCategoryName: string,
+): DashboardCategoryExpense[] {
+    const categoriesById = new Map(
+        categories.map((category) => [category.categoryId, category]),
+    );
+
+    const accountsById = new Map(
+        accounts.map((account) => [account.accountId, account]),
+    );
+
+    const totalsByCategoryId = new Map<
+        string,
+        {
+            categoryName: string;
+            total: number;
+        }
+    >();
+
+    movements.forEach((movement) => {
+        if (
+            movement.amount >= 0 ||
+            movement.affectsSerenityline !== true ||
+            movement.simulated === true
+        ) {
+            return;
+        }
+
+        const account = accountsById.get(movement.accountId);
+
+        if (account?.currency !== selectedCurrency) {
+            return;
+        }
+
+        const category = categoriesById.get(movement.categoryId);
+        const currentTotal = totalsByCategoryId.get(movement.categoryId);
+
+        totalsByCategoryId.set(movement.categoryId, {
+            categoryName: category?.categoryName ?? fallbackCategoryName,
+            total: (currentTotal?.total ?? 0) + Math.abs(movement.amount),
+        });
+    });
+
+    const totalExpenses = [...totalsByCategoryId.values()].reduce(
+        (sum, categoryTotal) => sum + categoryTotal.total,
+        0,
+    );
+
+    if (totalExpenses <= 0) {
+        return [];
+    }
+
+    return [...totalsByCategoryId.entries()]
+        .map(([categoryId, categoryTotal]) => ({
+            categoryId,
+            categoryName: categoryTotal.categoryName,
+            total: categoryTotal.total,
+            percentage: (categoryTotal.total / totalExpenses) * 100,
+        }))
+        .sort((first, second) => second.total - first.total);
+}
+
 function DashboardMetricCard({
     label,
     value,
@@ -217,6 +334,7 @@ export function DashboardPage() {
     const accounts = useAppSelector(selectAccounts);
     const creditCards = useAppSelector(selectCreditCards);
     const activeCategories = useAppSelector(selectActiveCategories);
+    const categories = useAppSelector(selectCategories);
     const buckets = useAppSelector(selectBuckets);
     const simulationGroups = useAppSelector(selectSimulationGroups);
 
@@ -231,9 +349,33 @@ export function DashboardPage() {
         ),
     );
 
+    const initialRangeKey = useMemo(
+        () => getDailyBalancesRangeKey(initialRange),
+        [initialRange],
+    );
+
+    const hasRequestedInitialRange =
+        cacheEntry.loadedRangeKeys.includes(initialRangeKey) ||
+        cacheEntry.pendingRangeKeys.includes(initialRangeKey);
+
     const [preferredCurrency, setPreferredCurrency] = useState<string | null>(
         null,
     );
+
+    const [selectedExpenseYear, setSelectedExpenseYear] = useState<
+        number | null
+    >(null);
+    const [expenseState, setExpenseState] = useState<{
+        rangeKey: string | null;
+        status: Exclude<DashboardExpenseStatus, "loading">;
+        movements: FinanceCalendarMovementResponseDto[];
+        error: string | null;
+    }>({
+        rangeKey: null,
+        status: "idle",
+        movements: [],
+        error: null,
+    });
 
     const accountCurrencies = useMemo(
         () => [...new Set(accounts.map((account) => account.currency))].sort(),
@@ -260,13 +402,79 @@ export function DashboardPage() {
         [displayLanguage, selectedCurrency],
     );
 
+    const detailedAmountFormatter = useMemo(
+        () =>
+            new Intl.NumberFormat(displayLanguage, {
+                currency: selectedCurrency,
+                maximumFractionDigits: 2,
+                style: "currency",
+            }),
+        [displayLanguage, selectedCurrency],
+    );
+
+    const percentageFormatter = useMemo(
+        () =>
+            new Intl.NumberFormat(displayLanguage, {
+                maximumFractionDigits: 1,
+                minimumFractionDigits: 0,
+                style: "percent",
+            }),
+        [displayLanguage],
+    );
+
+    const expenseYearOptions = useMemo(
+        () => getDashboardExpenseYearOptions(todayIsoDate),
+        [todayIsoDate],
+    );
+
+    const expenseRange = useMemo(() => {
+        if (selectedExpenseYear !== null) {
+            return getYearRange(selectedExpenseYear);
+        }
+
+        return initialRange;
+    }, [initialRange, selectedExpenseYear]);
+
+    const expenseRangeKey = useMemo(
+        () => `${expenseRange.from}:${expenseRange.to}`,
+        [expenseRange.from, expenseRange.to],
+    );
+
+    const canLoadExpenseMovements =
+        financeDataStatus === "loaded" && accounts.length > 0;
+
+    const expenseStateMatchesCurrentRange =
+        expenseState.rangeKey === expenseRangeKey;
+
+    const expenseStatus: DashboardExpenseStatus = !canLoadExpenseMovements
+        ? "idle"
+        : expenseStateMatchesCurrentRange
+          ? expenseState.status
+          : "loading";
+
+    const expenseMovements = useMemo(
+        () =>
+            canLoadExpenseMovements && expenseStateMatchesCurrentRange
+                ? expenseState.movements
+                : [],
+        [
+            canLoadExpenseMovements,
+            expenseState.movements,
+            expenseStateMatchesCurrentRange,
+        ],
+    );
+
+    const expenseError =
+        canLoadExpenseMovements && expenseStateMatchesCurrentRange
+            ? expenseState.error
+            : null;
+
     useEffect(() => {
         if (
             financeDataStatus !== "loaded" ||
             accounts.length === 0 ||
             cacheEntry.status === "failed" ||
-            cacheEntry.loadedFrom ||
-            cacheEntry.pendingRangeKeys.length > 0
+            hasRequestedInitialRange
         ) {
             return;
         }
@@ -278,12 +486,57 @@ export function DashboardPage() {
         );
     }, [
         accounts.length,
-        cacheEntry.loadedFrom,
-        cacheEntry.pendingRangeKeys.length,
         cacheEntry.status,
         dispatch,
         financeDataStatus,
+        hasRequestedInitialRange,
         initialRange,
+    ]);
+
+    useEffect(() => {
+        if (!canLoadExpenseMovements) {
+            return;
+        }
+
+        let cancelled = false;
+
+        void listCalendarMovements({
+            from: expenseRange.from,
+            to: expenseRange.to,
+        })
+            .then((movements) => {
+                if (cancelled) {
+                    return;
+                }
+
+                setExpenseState({
+                    rangeKey: expenseRangeKey,
+                    status: "loaded",
+                    movements,
+                    error: null,
+                });
+            })
+            .catch((error: unknown) => {
+                if (cancelled) {
+                    return;
+                }
+
+                setExpenseState({
+                    rangeKey: expenseRangeKey,
+                    status: "failed",
+                    movements: [],
+                    error: error instanceof Error ? error.message : null,
+                });
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [
+        canLoadExpenseMovements,
+        expenseRange.from,
+        expenseRange.to,
+        expenseRangeKey,
     ]);
 
     const todayBalance = useMemo(
@@ -432,6 +685,23 @@ export function DashboardPage() {
         serenityLineToday,
         t,
     ]);
+
+    const categoryExpenseBreakdown = useMemo(
+        () =>
+            getCategoryExpenseBreakdown(
+                expenseMovements,
+                categories,
+                accounts,
+                selectedCurrency,
+                t("expenseCategories.unknownCategory"),
+            ),
+        [accounts, categories, expenseMovements, selectedCurrency, t],
+    );
+
+    const totalCategoryExpenses = categoryExpenseBreakdown.reduce(
+        (sum, categoryExpense) => sum + categoryExpense.total,
+        0,
+    );
 
     const setupSteps = [
         {
@@ -702,6 +972,195 @@ export function DashboardPage() {
                     </article>
                 </div>
             </div>
+
+            <article className="sl-panel sl-dashboard-category-expenses">
+                <div className="sl-section-heading">
+                    <div>
+                        <p className="sl-eyebrow">
+                            {t("expenseCategories.eyebrow")}
+                        </p>
+                        <h2>{t("expenseCategories.title")}</h2>
+                        <p>
+                            {selectedExpenseYear === null
+                                ? t("expenseCategories.subtitleLoadedPeriod")
+                                : t("expenseCategories.subtitleYear", {
+                                      year: selectedExpenseYear,
+                                  })}
+                        </p>
+                    </div>
+
+                    <div className="sl-dashboard-expense-period">
+                        <label
+                            className="form-label"
+                            htmlFor="dashboardExpensePeriod">
+                            {t("expenseCategories.periodLabel")}
+                        </label>
+                        <select
+                            className="form-select"
+                            id="dashboardExpensePeriod"
+                            onChange={(event) => {
+                                const value = event.target.value;
+
+                                setSelectedExpenseYear(
+                                    value === "loaded" ? null : Number(value),
+                                );
+                            }}
+                            value={selectedExpenseYear ?? "loaded"}>
+                            <option value="loaded">
+                                {t("expenseCategories.loadedPeriod")}
+                            </option>
+                            {expenseYearOptions.map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                {expenseStatus === "loading" ? (
+                    <div className="alert alert-info mb-0" role="status">
+                        {t("expenseCategories.loading")}
+                    </div>
+                ) : null}
+
+                {expenseStatus === "failed" ? (
+                    <div className="alert alert-warning mb-0" role="alert">
+                        {expenseError ?? t("expenseCategories.error")}
+                    </div>
+                ) : null}
+
+                {financeDataStatus === "loaded" &&
+                expenseStatus !== "loading" &&
+                expenseStatus !== "failed" &&
+                categoryExpenseBreakdown.length === 0 ? (
+                    <p className="text-muted mb-0">
+                        {t("expenseCategories.empty")}
+                    </p>
+                ) : null}
+
+                {categoryExpenseBreakdown.length > 0 ? (
+                    <div className="sl-dashboard-expense-grid">
+                        <div
+                            className="sl-dashboard-expense-chart"
+                            aria-label={t("expenseCategories.chartLabel")}>
+                            <ResponsiveContainer width="100%" height={280}>
+                                <PieChart>
+                                    <Pie
+                                        data={categoryExpenseBreakdown}
+                                        dataKey="total"
+                                        innerRadius={62}
+                                        nameKey="categoryName"
+                                        outerRadius={105}
+                                        paddingAngle={2}>
+                                        {categoryExpenseBreakdown.map(
+                                            (categoryExpense, index) => (
+                                                <Cell
+                                                    fill={getDashboardExpenseChartColor(
+                                                        index,
+                                                    )}
+                                                    key={
+                                                        categoryExpense.categoryId
+                                                    }
+                                                    stroke="rgba(255, 255, 255, 0.92)"
+                                                    strokeWidth={2}
+                                                />
+                                            ),
+                                        )}
+                                    </Pie>
+                                    <Tooltip
+                                        formatter={(value) =>
+                                            detailedAmountFormatter.format(
+                                                Number(value),
+                                            )
+                                        }
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        <div className="sl-dashboard-expense-side">
+                            <div className="sl-dashboard-expense-total">
+                                <span>{t("expenseCategories.total")}</span>
+                                <strong>
+                                    {detailedAmountFormatter.format(
+                                        totalCategoryExpenses,
+                                    )}
+                                </strong>
+                            </div>
+
+                            <div className="sl-dashboard-expense-table-card">
+                                <table className="sl-dashboard-expense-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">
+                                                {t(
+                                                    "expenseCategories.table.category",
+                                                )}
+                                            </th>
+                                            <th
+                                                className="text-end"
+                                                scope="col">
+                                                {t(
+                                                    "expenseCategories.table.amount",
+                                                )}
+                                            </th>
+                                            <th
+                                                className="text-end"
+                                                scope="col">
+                                                {t(
+                                                    "expenseCategories.table.percentage",
+                                                )}
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {categoryExpenseBreakdown.map(
+                                            (categoryExpense, index) => (
+                                                <tr
+                                                    key={
+                                                        categoryExpense.categoryId
+                                                    }>
+                                                    <td>
+                                                        <div className="sl-dashboard-expense-category">
+                                                            <span
+                                                                aria-hidden="true"
+                                                                className="sl-dashboard-expense-color-dot"
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        getDashboardExpenseChartColor(
+                                                                            index,
+                                                                        ),
+                                                                }}
+                                                            />
+                                                            <span className="sl-dashboard-expense-category-name">
+                                                                {
+                                                                    categoryExpense.categoryName
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="text-end sl-dashboard-expense-amount">
+                                                        {detailedAmountFormatter.format(
+                                                            categoryExpense.total,
+                                                        )}
+                                                    </td>
+                                                    <td className="text-end sl-dashboard-expense-percentage">
+                                                        {percentageFormatter.format(
+                                                            categoryExpense.percentage /
+                                                                100,
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ),
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
+            </article>
 
             <article className="sl-panel sl-dashboard-actions">
                 <div>

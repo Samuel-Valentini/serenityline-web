@@ -787,6 +787,27 @@ export const resources = {
                 categories: "Categorie",
                 loadedDays: "Giorni caricati",
             },
+            expenseCategories: {
+                eyebrow: "Spese per categoria",
+                title: "Dove pesa di più la tua SerenityLine",
+                subtitleLoadedPeriod:
+                    "Totale delle uscite nel periodo attualmente caricato in Dashboard.",
+                subtitleYear:
+                    "Totale delle uscite registrate e previste per il {{year}}.",
+                periodLabel: "Periodo",
+                loadedPeriod: "Periodo dashboard",
+                loading: "Caricamento spese per categoria...",
+                empty: "Nessuna uscita trovata per il periodo selezionato.",
+                error: "Non è stato possibile caricare le spese per categoria.",
+                chartLabel: "Grafico a torta delle spese per categoria",
+                unknownCategory: "Categoria non disponibile",
+                total: "Totale uscite",
+                table: {
+                    category: "Categoria",
+                    amount: "Totale",
+                    percentage: "%",
+                },
+            },
             quickActions: {
                 eyebrow: "Azioni rapide",
                 title: "Vai dove serve",
@@ -3383,6 +3404,27 @@ export const resources = {
                 categories: "Categories",
                 loadedDays: "Loaded days",
             },
+            expenseCategories: {
+    eyebrow: "Expenses by category",
+    title: "Where your SerenityLine is most affected",
+    subtitleLoadedPeriod:
+        "Total outgoing movements in the period currently loaded in the Dashboard.",
+    subtitleYear:
+        "Total recorded and projected outgoing movements for {{year}}.",
+    periodLabel: "Period",
+    loadedPeriod: "Dashboard period",
+    loading: "Loading expenses by category...",
+    empty: "No outgoing movements found for the selected period.",
+    error: "Could not load expenses by category.",
+    chartLabel: "Pie chart of expenses by category",
+    unknownCategory: "Unknown category",
+    total: "Total expenses",
+    table: {
+        category: "Category",
+        amount: "Total",
+        percentage: "%",
+    },
+},
             quickActions: {
                 eyebrow: "Quick actions",
                 title: "Go where it matters",

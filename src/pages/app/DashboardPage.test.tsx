@@ -1,11 +1,17 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
-import { listDailyBalances } from "../../features/finance/api/financeApi";
-import type { FinanceCalendarDailyBalanceResponseDto } from "../../features/finance/api/financeApiTypes";
+import {
+    listCalendarMovements,
+    listDailyBalances,
+} from "../../features/finance/api/financeApi";
+import type {
+    FinanceCalendarDailyBalanceResponseDto,
+    FinanceCalendarMovementResponseDto,
+} from "../../features/finance/api/financeApiTypes";
 import { financeDailyBalancesCleared } from "../../features/finance/dailyBalances/financeDailyBalancesSlice";
 import { getTodayIsoDate } from "../../features/finance/dailyBalances/financeDailyBalancesTypes";
 import {
@@ -15,9 +21,11 @@ import {
     financeReferenceDataLoadingStarted,
 } from "../../features/finance/financeDataSlice";
 import type { FinanceReferenceData } from "../../features/finance/financeDataTypes";
+import { i18n } from "../../shared/i18n/i18n";
 import { DashboardPage } from "./DashboardPage";
 
 vi.mock("../../features/finance/api/financeApi", () => ({
+    listCalendarMovements: vi.fn(),
     listDailyBalances: vi.fn(),
 }));
 
@@ -149,13 +157,71 @@ function createDailyBalances({
     ];
 }
 
+const rentExpenseMovement: FinanceCalendarMovementResponseDto = {
+    movementType: "PERSISTED_TRANSACTION",
+    transactionId: "rent-transaction-id",
+    recurringTransactionId: null,
+    logicalDate: "2026-06-05",
+    chargeDate: "2026-06-05",
+    description: "Affitto",
+    amount: -850,
+    affectsAccountBalance: true,
+    affectsSerenityline: true,
+    categoryId: "category-id",
+    financialPriorityId: "priority-id",
+    accountId: "account-id",
+    creditCardId: null,
+    bucketId: null,
+    confirmed: true,
+    simulated: false,
+    simulationGroupId: null,
+    userEntered: true,
+    finalOccurrence: false,
+};
+
+const bucketExpenseMovement: FinanceCalendarMovementResponseDto = {
+    ...rentExpenseMovement,
+    transactionId: "bucket-expense-transaction-id",
+    description: "Accantonamento essenziali",
+    amount: -150,
+    bucketId: "bucket-id",
+};
+
+const incomeMovement: FinanceCalendarMovementResponseDto = {
+    ...rentExpenseMovement,
+    transactionId: "income-transaction-id",
+    description: "Stipendio",
+    amount: 2000,
+};
+
+const accountBalanceOnlyMovement: FinanceCalendarMovementResponseDto = {
+    ...rentExpenseMovement,
+    transactionId: "account-balance-only-transaction-id",
+    description: "Movimento tecnico",
+    amount: -300,
+    affectsSerenityline: false,
+};
+
+const simulatedExpenseMovement: FinanceCalendarMovementResponseDto = {
+    ...rentExpenseMovement,
+    transactionId: "simulated-expense-transaction-id",
+    description: "Spesa simulata",
+    amount: -400,
+    simulated: true,
+    simulationGroupId: "simulation-group-id",
+};
+
 describe("DashboardPage", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+        await i18n.changeLanguage("it");
+
         vi.clearAllMocks();
+
         store.dispatch(financeDataCleared());
         store.dispatch(financeDailyBalancesCleared());
 
         vi.mocked(listDailyBalances).mockResolvedValue([]);
+        vi.mocked(listCalendarMovements).mockResolvedValue([]);
     });
 
     function renderPage() {
@@ -204,6 +270,65 @@ describe("DashboardPage", () => {
         expect(screen.getByText("Portafogli")).toBeInTheDocument();
         expect(screen.getByText("Simulazioni")).toBeInTheDocument();
         expect(screen.getByText("Categorie")).toBeInTheDocument();
+    });
+
+    it("renders category expense breakdown and reloads it when a year is selected", async () => {
+        const currentYear = Number(getTodayIsoDate().slice(0, 4));
+
+        vi.mocked(listDailyBalances).mockResolvedValueOnce(
+            createDailyBalances(),
+        );
+        vi.mocked(listCalendarMovements)
+            .mockResolvedValueOnce([
+                rentExpenseMovement,
+                bucketExpenseMovement,
+                incomeMovement,
+                accountBalanceOnlyMovement,
+                simulatedExpenseMovement,
+            ])
+            .mockResolvedValueOnce([
+                {
+                    ...rentExpenseMovement,
+                    transactionId: "year-rent-transaction-id",
+                    amount: -1200,
+                },
+            ]);
+
+        store.dispatch(financeReferenceDataLoaded(referenceData));
+
+        renderPage();
+
+        expect(
+            await screen.findByRole("heading", {
+                name: "Dove pesa di più la tua SerenityLine",
+            }),
+        ).toBeInTheDocument();
+
+        expect(await screen.findByText("Casa")).toBeInTheDocument();
+
+        expect(
+            screen.getAllByText(/1\.000,00\s€|1000,00\s€/).length,
+        ).toBeGreaterThan(0);
+        expect(screen.getByText("100%")).toBeInTheDocument();
+
+        expect(
+            screen.queryByText(/1\.300,00\s€|1300,00\s€/),
+        ).not.toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText("Periodo"), {
+            target: { value: String(currentYear) },
+        });
+
+        await waitFor(() => {
+            expect(listCalendarMovements).toHaveBeenLastCalledWith({
+                from: `${currentYear}-01-01`,
+                to: `${currentYear}-12-31`,
+            });
+        });
+
+        expect(
+            await screen.findAllByText(/1\.200,00\s€|1200,00\s€/),
+        ).not.toHaveLength(0);
     });
 
     it("renders a risk signal when the future SerenityLine goes below zero", async () => {
@@ -272,6 +397,7 @@ describe("DashboardPage", () => {
         expect(screen.getByText("Inizia dal primo conto")).toBeInTheDocument();
         expect(screen.getByText("Aggiungi conto")).toBeInTheDocument();
         expect(listDailyBalances).not.toHaveBeenCalled();
+        expect(listCalendarMovements).not.toHaveBeenCalled();
     });
 
     it("renders the daily balances error state", async () => {
