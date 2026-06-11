@@ -38,6 +38,21 @@ type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
 >[0];
 
+export type RecurringTransactionEditScope =
+    | "FULL_SERIES"
+    | "FROM_TODAY"
+    | "FROM_DATE";
+
+export type RecurringTransactionFormSubmitMeta = {
+    editScope: RecurringTransactionEditScope;
+    editEffectiveFrom: string;
+};
+
+export type RecurringTransactionFormEditOptions = {
+    enabled: boolean;
+    defaultEffectiveFrom?: string;
+};
+
 export type RecurringTransactionFormState = {
     recurringTransactionDescription: string;
     paymentAmount: string;
@@ -55,6 +70,8 @@ export type RecurringTransactionFormState = {
     linkedBucketId: string;
     recurringTransactionReminderEnabled: boolean;
     recurringTransactionReminderDaysBefore: string;
+    editScope: RecurringTransactionEditScope;
+    editEffectiveFrom: string;
 };
 
 export type RecurringTransactionFormReferenceActions = {
@@ -75,7 +92,9 @@ export type RecurringTransactionFormProps = {
     onCancel?: () => void;
     onSubmit: (
         requests: RecurringTransactionCreateRequestDto[],
+        meta?: RecurringTransactionFormSubmitMeta,
     ) => Promise<void> | void;
+    editOptions?: RecurringTransactionFormEditOptions;
 };
 
 function getTodayIsoDate() {
@@ -86,12 +105,16 @@ function getTodayIsoDate() {
     return localDate.toISOString().slice(0, 10);
 }
 
-function getInitialFormState(): RecurringTransactionFormState {
+function getInitialFormState(
+    defaultEditEffectiveFrom?: string,
+): RecurringTransactionFormState {
+    const today = getTodayIsoDate();
+
     return {
         recurringTransactionDescription: "",
         paymentAmount: "",
         recurringTransactionAmountIsAdjustable: true,
-        recurringTransactionFirstPaymentDate: getTodayIsoDate(),
+        recurringTransactionFirstPaymentDate: today,
         recurrenceInterval: "1",
         recurrenceUnit: "MONTH",
         paymentDateAdjustmentPolicy: "NONE",
@@ -104,6 +127,8 @@ function getInitialFormState(): RecurringTransactionFormState {
         linkedBucketId: "",
         recurringTransactionReminderEnabled: false,
         recurringTransactionReminderDaysBefore: "7",
+        editScope: "FROM_TODAY",
+        editEffectiveFrom: defaultEditEffectiveFrom ?? today,
     };
 }
 
@@ -116,6 +141,7 @@ export function RecurringTransactionForm({
     idPrefix = "recurringTransactionForm",
     initialValues,
     isSubmitting = false,
+    editOptions,
     referenceActions,
     submitLabel,
     submittingLabel,
@@ -132,7 +158,7 @@ export function RecurringTransactionForm({
     const currentUser = useAppSelector(selectCurrentUser);
 
     const [form, setForm] = useState<RecurringTransactionFormState>(() => ({
-        ...getInitialFormState(),
+        ...getInitialFormState(editOptions?.defaultEffectiveFrom),
         ...initialValues,
     }));
     const [formError, setFormError] = useState<string | null>(null);
@@ -264,6 +290,18 @@ export function RecurringTransactionForm({
         setFormError(null);
     }
 
+    function updateEditScope(editScope: RecurringTransactionEditScope) {
+        setForm((currentForm) => ({
+            ...currentForm,
+            editScope,
+            editEffectiveFrom:
+                editScope === "FROM_TODAY"
+                    ? (editOptions?.defaultEffectiveFrom ?? getTodayIsoDate())
+                    : currentForm.editEffectiveFrom,
+        }));
+        setFormError(null);
+    }
+
     function updateLinkedAccount(linkedAccountId: string) {
         setForm((currentForm) => ({
             ...currentForm,
@@ -379,6 +417,15 @@ export function RecurringTransactionForm({
             return;
         }
 
+        if (
+            editOptions?.enabled &&
+            form.editScope === "FROM_DATE" &&
+            !form.editEffectiveFrom
+        ) {
+            setFormError(t("recurring.validation.editEffectiveFromRequired"));
+            return;
+        }
+
         if (!Number.isInteger(recurrenceInterval) || recurrenceInterval < 1) {
             setFormError(t("recurring.validation.recurrenceIntervalInvalid"));
             return;
@@ -448,6 +495,17 @@ export function RecurringTransactionForm({
             linkedBucketId: form.linkedBucketId,
         });
 
+        if (editOptions?.enabled) {
+            await onSubmit(requests, {
+                editScope: form.editScope,
+                editEffectiveFrom:
+                    form.editScope === "FROM_TODAY"
+                        ? getTodayIsoDate()
+                        : form.editEffectiveFrom,
+            });
+            return;
+        }
+
         await onSubmit(requests);
     };
 
@@ -459,7 +517,95 @@ export function RecurringTransactionForm({
                         {formError}
                     </div>
                 ) : null}
+                {editOptions?.enabled ? (
+                    <fieldset className="border rounded p-3">
+                        <legend className="h6 mb-3">
+                            {t("recurring.editScope.title")}
+                        </legend>
 
+                        <div className="d-grid gap-2">
+                            <div className="form-check">
+                                <input
+                                    checked={form.editScope === "FULL_SERIES"}
+                                    className="form-check-input"
+                                    id={`${idPrefix}-editScope-fullSeries`}
+                                    name={`${idPrefix}-editScope`}
+                                    onChange={() =>
+                                        updateEditScope("FULL_SERIES")
+                                    }
+                                    type="radio"
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor={`${idPrefix}-editScope-fullSeries`}>
+                                    {t("recurring.editScope.fullSeries")}
+                                </label>
+                            </div>
+
+                            <div className="form-check">
+                                <input
+                                    checked={form.editScope === "FROM_TODAY"}
+                                    className="form-check-input"
+                                    id={`${idPrefix}-editScope-fromToday`}
+                                    name={`${idPrefix}-editScope`}
+                                    onChange={() =>
+                                        updateEditScope("FROM_TODAY")
+                                    }
+                                    type="radio"
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor={`${idPrefix}-editScope-fromToday`}>
+                                    {t("recurring.editScope.fromToday")}
+                                </label>
+                            </div>
+
+                            <div className="form-check">
+                                <input
+                                    checked={form.editScope === "FROM_DATE"}
+                                    className="form-check-input"
+                                    id={`${idPrefix}-editScope-fromDate`}
+                                    name={`${idPrefix}-editScope`}
+                                    onChange={() =>
+                                        updateEditScope("FROM_DATE")
+                                    }
+                                    type="radio"
+                                />
+                                <label
+                                    className="form-check-label"
+                                    htmlFor={`${idPrefix}-editScope-fromDate`}>
+                                    {t("recurring.editScope.fromDate")}
+                                </label>
+                            </div>
+                        </div>
+
+                        {form.editScope === "FROM_DATE" ? (
+                            <div className="mt-3">
+                                <label
+                                    className="form-label"
+                                    htmlFor={`${idPrefix}-editEffectiveFrom`}>
+                                    {t("recurring.fields.editEffectiveFrom")}
+                                </label>
+                                <input
+                                    className="form-control"
+                                    id={`${idPrefix}-editEffectiveFrom`}
+                                    onChange={(event) =>
+                                        updateField(
+                                            "editEffectiveFrom",
+                                            event.target.value,
+                                        )
+                                    }
+                                    required
+                                    type="date"
+                                    value={form.editEffectiveFrom}
+                                />
+                                <div className="form-text">
+                                    {t("recurring.editScope.effectiveFromHint")}
+                                </div>
+                            </div>
+                        ) : null}
+                    </fieldset>
+                ) : null}
                 <div>
                     <label
                         className="form-label"

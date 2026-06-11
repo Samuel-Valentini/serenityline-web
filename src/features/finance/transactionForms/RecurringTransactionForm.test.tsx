@@ -392,4 +392,91 @@ describe("RecurringTransactionForm", () => {
             screen.getByRole("link", { name: "impostazioni generali" }),
         ).toHaveAttribute("href", "/app/impostazioni");
     });
+
+    it("preselects edit from today when edit options are enabled", () => {
+        renderForm({
+            editOptions: {
+                enabled: true,
+                defaultEffectiveFrom: "2026-06-11",
+            },
+        });
+
+        expect(
+            screen.getByRole("radio", {
+                name: "Modifica da oggi in poi",
+            }),
+        ).toBeChecked();
+
+        expect(
+            screen.queryByLabelText("Applica modifica dal"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("shows the effective date field when editing from a specific date", () => {
+        renderForm({
+            editOptions: {
+                enabled: true,
+                defaultEffectiveFrom: "2026-06-11",
+            },
+        });
+
+        fireEvent.click(
+            screen.getByRole("radio", {
+                name: "Modifica da una data specifica in poi",
+            }),
+        );
+
+        expect(
+            screen.getByLabelText("Applica modifica dal"),
+        ).toBeInTheDocument();
+    });
+
+    it("renders recurring edit scope fields in English", async () => {
+        await i18n.changeLanguage("en");
+
+        renderForm({
+            editOptions: {
+                enabled: true,
+                defaultEffectiveFrom: "2026-06-11",
+            },
+        });
+
+        expect(screen.getByText("Edit scope")).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("radio", {
+                name: "Edit the whole recurring transaction",
+            }),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("radio", {
+                name: "Edit from today onward",
+            }),
+        ).toBeChecked();
+
+        expect(
+            screen.getByRole("radio", {
+                name: "Edit from a specific date onward",
+            }),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByLabelText("Apply change from"),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(
+            screen.getByRole("radio", {
+                name: "Edit from a specific date onward",
+            }),
+        );
+
+        expect(screen.getByLabelText("Apply change from")).toBeInTheDocument();
+
+        expect(
+            screen.getByText(
+                "Previous occurrences will keep using the values already saved.",
+            ),
+        ).toBeInTheDocument();
+    });
 });

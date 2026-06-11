@@ -30,6 +30,7 @@ import { clearFinanceCalendarCache } from "../../features/finance/calendar/useFi
 import type { FinanceReferenceData } from "../../features/finance/financeDataTypes";
 import { i18n } from "../../shared/i18n/i18n";
 import { SimulationsPage } from "./SimulationsPage";
+import { getTodayIsoDate } from "../../features/finance/dailyBalances/financeDailyBalancesTypes";
 
 vi.mock("../../features/finance/api/financeApi", () => ({
     archiveSimulationGroup: vi.fn(),
@@ -1215,6 +1216,12 @@ describe("SimulationsPage", () => {
         );
         changeSimulationRecurringEditField("account", "account-id");
 
+        fireEvent.click(
+            screen.getByRole("radio", {
+                name: "Modifica tutta la ricorrenza",
+            }),
+        );
+
         submitSimulationRecurringEditForm();
 
         await waitFor(() => {
@@ -1264,6 +1271,8 @@ describe("SimulationsPage", () => {
         expect(
             screen.queryByText("Modifica movimento ricorrente simulato"),
         ).not.toBeInTheDocument();
+
+        expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
     });
 
     it("shows an error when simulated recurring transaction update fails", async () => {
@@ -1313,5 +1322,206 @@ describe("SimulationsPage", () => {
             "simulation-group-id",
             "second-account-id",
         );
+    });
+
+    it("patches a simulated recurring transaction from today by default without changing the first payment date", async () => {
+        const today = getTodayIsoDate();
+
+        vi.mocked(patchRecurringTransaction).mockResolvedValueOnce({
+            ...updatedSimulatedRecurringTransaction,
+            recurringTransactionFirstPaymentDate:
+                simulatedRecurringTransaction.recurringTransactionFirstPaymentDate,
+            effectiveFrom: today,
+            recurringTransactionDetailsEffectiveFrom: today,
+        });
+
+        await openSimulatedRecurringTransactionEditForm();
+
+        expect(
+            screen.getByRole("radio", {
+                name: "Modifica da oggi in poi",
+            }),
+        ).toBeChecked();
+
+        expect(
+            screen.queryByLabelText("Applica modifica dal"),
+        ).not.toBeInTheDocument();
+
+        changeSimulationRecurringEditField("description", "Affitto aggiornato");
+        changeSimulationRecurringEditField("paymentAmount", "-900,00");
+        changeSimulationRecurringEditField("recurrenceInterval", "1");
+        changeSimulationRecurringEditField("recurrenceUnit", "MONTH");
+        changeSimulationRecurringEditField("category", "category-id");
+        changeSimulationRecurringEditField(
+            "financialPriority",
+            "financial-priority-id",
+        );
+        changeSimulationRecurringEditField("account", "account-id");
+
+        submitSimulationRecurringEditForm();
+
+        await waitFor(() => {
+            expect(patchRecurringTransaction).toHaveBeenCalled();
+        });
+
+        const [, patchRequest] = vi.mocked(patchRecurringTransaction).mock
+            .calls[0];
+
+        expect(patchRequest).not.toHaveProperty(
+            "recurringTransactionFirstPaymentDate",
+        );
+
+        expect(patchRequest).toEqual(
+            expect.objectContaining({
+                recurringTransactionAmountIsAdjustable: false,
+                recurringTransactionIsSimulated: true,
+                simulationGroupId: "simulation-group-id",
+                recurringTransactionReminderEnabled: false,
+                recurringTransactionReminderDaysBefore: 7,
+            }),
+        );
+
+        expect(patchRequest.rule).toEqual(
+            expect.objectContaining({
+                effectiveFrom: today,
+                dayOfUnit: 4,
+                paymentAmount: "-900.00",
+                recurrenceInterval: 1,
+                recurrenceUnit: "MONTH",
+                paymentDateAdjustmentPolicy: "NONE",
+                recurringTransactionEndDate: null,
+                finalPaymentAmount: null,
+            }),
+        );
+
+        expect(patchRequest.details).toEqual(
+            expect.objectContaining({
+                effectiveFrom: today,
+                recurringTransactionDescription: "Affitto aggiornato",
+                categoryId: "category-id",
+                financialPriorityId: "financial-priority-id",
+                linkedAccountId: "account-id",
+                linkedCreditCardId: null,
+                linkedBucketId: null,
+                recurringTransactionAffectsAccountBalance: true,
+                recurringtransactionAffectsSerenityline: true,
+            }),
+        );
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    "Movimento ricorrente simulato aggiornato correttamente.",
+                ),
+            ).toBeInTheDocument();
+        });
+
+        expect(screen.getByText("Affitto aggiornato")).toBeInTheDocument();
+
+        expect(
+            screen.queryByText("Modifica movimento ricorrente simulato"),
+        ).not.toBeInTheDocument();
+
+        expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
+    });
+
+    it("patches a simulated recurring transaction from a selected effective date without changing the first payment date", async () => {
+        vi.mocked(patchRecurringTransaction).mockResolvedValueOnce({
+            ...updatedSimulatedRecurringTransaction,
+            recurringTransactionFirstPaymentDate:
+                simulatedRecurringTransaction.recurringTransactionFirstPaymentDate,
+            effectiveFrom: "2026-08-15",
+            recurringTransactionDetailsEffectiveFrom: "2026-08-15",
+        });
+
+        await openSimulatedRecurringTransactionEditForm();
+
+        fireEvent.click(
+            screen.getByRole("radio", {
+                name: "Modifica da una data specifica in poi",
+            }),
+        );
+
+        expect(
+            screen.getByLabelText("Applica modifica dal"),
+        ).toBeInTheDocument();
+
+        changeSimulationRecurringEditField("editEffectiveFrom", "2026-08-15");
+        changeSimulationRecurringEditField("description", "Affitto aggiornato");
+        changeSimulationRecurringEditField("paymentAmount", "-900,00");
+        changeSimulationRecurringEditField("recurrenceInterval", "1");
+        changeSimulationRecurringEditField("recurrenceUnit", "MONTH");
+        changeSimulationRecurringEditField("category", "category-id");
+        changeSimulationRecurringEditField(
+            "financialPriority",
+            "financial-priority-id",
+        );
+        changeSimulationRecurringEditField("account", "account-id");
+
+        submitSimulationRecurringEditForm();
+
+        await waitFor(() => {
+            expect(patchRecurringTransaction).toHaveBeenCalled();
+        });
+
+        const [, patchRequest] = vi.mocked(patchRecurringTransaction).mock
+            .calls[0];
+
+        expect(patchRequest).not.toHaveProperty(
+            "recurringTransactionFirstPaymentDate",
+        );
+
+        expect(patchRequest).toEqual(
+            expect.objectContaining({
+                recurringTransactionAmountIsAdjustable: false,
+                recurringTransactionIsSimulated: true,
+                simulationGroupId: "simulation-group-id",
+                recurringTransactionReminderEnabled: false,
+                recurringTransactionReminderDaysBefore: 7,
+            }),
+        );
+
+        expect(patchRequest.rule).toEqual(
+            expect.objectContaining({
+                effectiveFrom: "2026-08-15",
+                dayOfUnit: 4,
+                paymentAmount: "-900.00",
+                recurrenceInterval: 1,
+                recurrenceUnit: "MONTH",
+                paymentDateAdjustmentPolicy: "NONE",
+                recurringTransactionEndDate: null,
+                finalPaymentAmount: null,
+            }),
+        );
+
+        expect(patchRequest.details).toEqual(
+            expect.objectContaining({
+                effectiveFrom: "2026-08-15",
+                recurringTransactionDescription: "Affitto aggiornato",
+                categoryId: "category-id",
+                financialPriorityId: "financial-priority-id",
+                linkedAccountId: "account-id",
+                linkedCreditCardId: null,
+                linkedBucketId: null,
+                recurringTransactionAffectsAccountBalance: true,
+                recurringtransactionAffectsSerenityline: true,
+            }),
+        );
+
+        await waitFor(() => {
+            expect(
+                screen.getByText(
+                    "Movimento ricorrente simulato aggiornato correttamente.",
+                ),
+            ).toBeInTheDocument();
+        });
+
+        expect(screen.getByText("Affitto aggiornato")).toBeInTheDocument();
+
+        expect(
+            screen.queryByText("Modifica movimento ricorrente simulato"),
+        ).not.toBeInTheDocument();
+
+        expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
     });
 });

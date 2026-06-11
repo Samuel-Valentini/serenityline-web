@@ -53,11 +53,13 @@ import {
 import {
     RecurringTransactionForm,
     type RecurringTransactionFormState,
+    type RecurringTransactionFormSubmitMeta,
 } from "../../features/finance/transactionForms/RecurringTransactionForm";
 import {
     formatMoneyAmountForDisplay,
     moneyAmountToFormValue,
 } from "../../features/finance/transactionForms/moneyInput";
+import { getTodayIsoDate } from "../../features/finance/dailyBalances/financeDailyBalancesTypes";
 
 type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -323,6 +325,7 @@ export function SimulationsPage() {
     async function handleUpdateSimulationRecurringTransaction(
         recurringTransaction: RecurringTransactionResponseDto,
         requests: RecurringTransactionCreateRequestDto[],
+        meta?: RecurringTransactionFormSubmitMeta,
     ) {
         if (requests.length !== 1) {
             setRecurringTransactionUpdateError(
@@ -331,13 +334,29 @@ export function SimulationsPage() {
             return;
         }
 
+        if (!meta) {
+            setRecurringTransactionUpdateError(t("movementEdit.errorFallback"));
+            return;
+        }
+
         const request = requests[0];
 
-        const effectiveFrom = request.recurringTransactionFirstPaymentDate;
+        const effectiveFrom =
+            meta.editScope === "FULL_SERIES"
+                ? request.recurringTransactionFirstPaymentDate
+                : meta.editScope === "FROM_TODAY"
+                  ? getTodayIsoDate()
+                  : meta.editEffectiveFrom;
+
+        const cadenceAnchorDate = request.recurringTransactionFirstPaymentDate;
 
         const patchRequest: RecurringTransactionPatchRequestDto = {
-            recurringTransactionFirstPaymentDate:
-                request.recurringTransactionFirstPaymentDate,
+            ...(meta.editScope === "FULL_SERIES"
+                ? {
+                      recurringTransactionFirstPaymentDate:
+                          request.recurringTransactionFirstPaymentDate,
+                  }
+                : {}),
             recurringTransactionAmountIsAdjustable:
                 request.recurringTransactionAmountIsAdjustable ?? false,
             recurringTransactionIsSimulated: true,
@@ -347,7 +366,7 @@ export function SimulationsPage() {
             rule: {
                 effectiveFrom,
                 dayOfUnit: deriveDayOfUnit(
-                    effectiveFrom,
+                    cadenceAnchorDate,
                     request.recurrenceUnit,
                 ),
                 paymentAmount: request.paymentAmount,
@@ -1998,6 +2017,9 @@ export function SimulationsPage() {
                                                                                                                                 allowedAccountIds:
                                                                                                                                     simulationGroup.accountIds,
                                                                                                                             }}
+                                                                                                                            editOptions={{
+                                                                                                                                enabled: true,
+                                                                                                                            }}
                                                                                                                             idPrefix={`simulation-${simulationGroup.simulationGroupId}-recurringTransaction-${recurringTransaction.recurringTransactionId}-editForm`}
                                                                                                                             initialValues={getRecurringTransactionInitialValues(
                                                                                                                                 recurringTransaction,
@@ -2010,10 +2032,12 @@ export function SimulationsPage() {
                                                                                                                             }
                                                                                                                             onSubmit={(
                                                                                                                                 requests,
+                                                                                                                                meta,
                                                                                                                             ) =>
                                                                                                                                 handleUpdateSimulationRecurringTransaction(
                                                                                                                                     recurringTransaction,
                                                                                                                                     requests,
+                                                                                                                                    meta,
                                                                                                                                 )
                                                                                                                             }
                                                                                                                             submitLabel={t(

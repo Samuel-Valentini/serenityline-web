@@ -1624,6 +1624,7 @@ export const resources = {
                     finalPaymentAmount: "Importo rata finale",
                     reminderEnabled: "Attiva promemoria",
                     reminderDaysBefore: "Giorni di anticipo del promemoria",
+                    editEffectiveFrom: "Applica modifica dal",
                 },
                 placeholders: {
                     amount: "Es. 250,50",
@@ -1682,6 +1683,16 @@ export const resources = {
                         "Inserisci un importo rata finale valido.",
                     reminderDaysInvalid:
                         "Inserisci un numero di giorni di promemoria valido.",
+                    editEffectiveFromRequired:
+                        "Indica la data da cui applicare la modifica.",
+                },
+                editScope: {
+                    title: "Ambito modifica",
+                    fullSeries: "Modifica tutta la ricorrenza",
+                    fromToday: "Modifica da oggi in poi",
+                    fromDate: "Modifica da una data specifica in poi",
+                    effectiveFromHint:
+                        "Le occorrenze precedenti continueranno a usare i valori già salvati.",
                 },
                 bucketAmountSignHint:
                     "Con un portafoglio collegato, usa + per trasferire al portafoglio e - per pagare usando il portafoglio.",
@@ -3405,26 +3416,26 @@ export const resources = {
                 loadedDays: "Loaded days",
             },
             expenseCategories: {
-    eyebrow: "Expenses by category",
-    title: "Where your SerenityLine is most affected",
-    subtitleLoadedPeriod:
-        "Total outgoing movements in the period currently loaded in the Dashboard.",
-    subtitleYear:
-        "Total recorded and projected outgoing movements for {{year}}.",
-    periodLabel: "Period",
-    loadedPeriod: "Dashboard period",
-    loading: "Loading expenses by category...",
-    empty: "No outgoing movements found for the selected period.",
-    error: "Could not load expenses by category.",
-    chartLabel: "Pie chart of expenses by category",
-    unknownCategory: "Unknown category",
-    total: "Total expenses",
-    table: {
-        category: "Category",
-        amount: "Total",
-        percentage: "%",
-    },
-},
+                eyebrow: "Expenses by category",
+                title: "Where your SerenityLine is most affected",
+                subtitleLoadedPeriod:
+                    "Total outgoing movements in the period currently loaded in the Dashboard.",
+                subtitleYear:
+                    "Total recorded and projected outgoing movements for {{year}}.",
+                periodLabel: "Period",
+                loadedPeriod: "Dashboard period",
+                loading: "Loading expenses by category...",
+                empty: "No outgoing movements found for the selected period.",
+                error: "Could not load expenses by category.",
+                chartLabel: "Pie chart of expenses by category",
+                unknownCategory: "Unknown category",
+                total: "Total expenses",
+                table: {
+                    category: "Category",
+                    amount: "Total",
+                    percentage: "%",
+                },
+            },
             quickActions: {
                 eyebrow: "Quick actions",
                 title: "Go where it matters",
@@ -4003,6 +4014,7 @@ export const resources = {
                     finalPaymentAmount: "Final payment amount",
                     reminderEnabled: "Enable reminder",
                     reminderDaysBefore: "Reminder days before",
+                    editEffectiveFrom: "Apply change from",
                 },
                 placeholders: {
                     amount: "E.g. 250.50",
@@ -4058,6 +4070,16 @@ export const resources = {
                         "Enter a valid final payment amount.",
                     reminderDaysInvalid:
                         "Enter a valid number of reminder days.",
+                    editEffectiveFromRequired:
+                        "Enter the date from which the change applies.",
+                },
+                editScope: {
+                    title: "Edit scope",
+                    fullSeries: "Edit the whole recurring transaction",
+                    fromToday: "Edit from today onward",
+                    fromDate: "Edit from a specific date onward",
+                    effectiveFromHint:
+                        "Previous occurrences will keep using the values already saved.",
                 },
                 bucketAmountSignHint:
                     "With a linked bucket, use + to transfer money to the bucket and - to pay using the bucket.",

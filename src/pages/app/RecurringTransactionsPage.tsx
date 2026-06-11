@@ -29,12 +29,14 @@ import { financeDailyBalancesCleared } from "../../features/finance/dailyBalance
 import {
     RecurringTransactionForm,
     type RecurringTransactionFormState,
+    type RecurringTransactionFormSubmitMeta,
 } from "../../features/finance/transactionForms/RecurringTransactionForm";
 import {
     formatMoneyAmountForDisplay,
     moneyAmountToFormValue,
 } from "../../features/finance/transactionForms/moneyInput";
 import { ApiError } from "../../shared/api";
+import { getTodayIsoDate } from "../../features/finance/dailyBalances/financeDailyBalancesTypes";
 
 type PageStatus = "idle" | "loading" | "loaded" | "failed";
 
@@ -406,18 +408,36 @@ export function RecurringTransactionsPage() {
     async function handleUpdateRecurringTransaction(
         recurringTransaction: RecurringTransactionResponseDto,
         requests: RecurringTransactionCreateRequestDto[],
+        meta?: RecurringTransactionFormSubmitMeta,
     ) {
         if (requests.length !== 1) {
             setRecurringTransactionUpdateError(t("edit.singleRequestRequired"));
             return;
         }
 
+        if (!meta) {
+            setRecurringTransactionUpdateError(t("edit.errorFallback"));
+            return;
+        }
+
         const request = requests[0];
-        const effectiveFrom = request.recurringTransactionFirstPaymentDate;
+
+        const effectiveFrom =
+            meta.editScope === "FULL_SERIES"
+                ? request.recurringTransactionFirstPaymentDate
+                : meta.editScope === "FROM_TODAY"
+                  ? getTodayIsoDate()
+                  : meta.editEffectiveFrom;
+
+        const cadenceAnchorDate = request.recurringTransactionFirstPaymentDate;
 
         const patchRequest: RecurringTransactionPatchRequestDto = {
-            recurringTransactionFirstPaymentDate:
-                request.recurringTransactionFirstPaymentDate,
+            ...(meta.editScope === "FULL_SERIES"
+                ? {
+                      recurringTransactionFirstPaymentDate:
+                          request.recurringTransactionFirstPaymentDate,
+                  }
+                : {}),
             recurringTransactionAmountIsAdjustable:
                 request.recurringTransactionAmountIsAdjustable ?? false,
             recurringTransactionIsSimulated:
@@ -433,7 +453,7 @@ export function RecurringTransactionsPage() {
             rule: {
                 effectiveFrom,
                 dayOfUnit: deriveDayOfUnit(
-                    effectiveFrom,
+                    cadenceAnchorDate,
                     request.recurrenceUnit,
                 ),
                 paymentAmount: request.paymentAmount,
@@ -1132,6 +1152,9 @@ export function RecurringTransactionsPage() {
                                                                             context={{
                                                                                 type: "standard",
                                                                             }}
+                                                                            editOptions={{
+                                                                                enabled: true,
+                                                                            }}
                                                                             idPrefix={`recurringTransaction-${recurringTransaction.recurringTransactionId}-editForm`}
                                                                             initialValues={getRecurringTransactionInitialValues(
                                                                                 recurringTransaction,
@@ -1144,10 +1167,12 @@ export function RecurringTransactionsPage() {
                                                                             }
                                                                             onSubmit={(
                                                                                 requests,
+                                                                                meta,
                                                                             ) =>
                                                                                 handleUpdateRecurringTransaction(
                                                                                     recurringTransaction,
                                                                                     requests,
+                                                                                    meta,
                                                                                 )
                                                                             }
                                                                             submitLabel={t(
