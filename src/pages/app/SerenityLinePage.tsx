@@ -151,6 +151,31 @@ const SERENITYLINE_ANALYTICS_COLORS = {
     futureLinearTrend: "#8aa9c7",
 };
 
+function useMediaQuery(query: string) {
+    const [matches, setMatches] = useState(false);
+
+    useEffect(() => {
+        if (typeof window === "undefined" || !window.matchMedia) {
+            return;
+        }
+
+        const mediaQueryList = window.matchMedia(query);
+
+        function handleChange() {
+            setMatches(mediaQueryList.matches);
+        }
+
+        handleChange();
+        mediaQueryList.addEventListener("change", handleChange);
+
+        return () => {
+            mediaQueryList.removeEventListener("change", handleChange);
+        };
+    }, [query]);
+
+    return matches;
+}
+
 function getSelectedAccountsSerenityLineValue(
     balance: FinanceCalendarDailyBalanceResponseDto,
     currency: string,
@@ -901,6 +926,37 @@ export function SerenityLinePage() {
         [displayLanguage, selectedCurrency],
     );
 
+    const compactAmountFormatter = useMemo(
+        () =>
+            new Intl.NumberFormat(displayLanguage, {
+                currency: selectedCurrency,
+                maximumFractionDigits: 1,
+                notation: "compact",
+                style: "currency",
+            }),
+        [displayLanguage, selectedCurrency],
+    );
+
+    const isMobileSerenityLineChart = useMediaQuery("(max-width: 575.98px)");
+
+    const serenityLineChartMargin = useMemo(
+        () =>
+            isMobileSerenityLineChart
+                ? {
+                      top: 14,
+                      right: 0,
+                      bottom: 28,
+                      left: 0,
+                  }
+                : {
+                      top: 28,
+                      right: 40,
+                      bottom: 42,
+                      left: 16,
+                  },
+        [isMobileSerenityLineChart],
+    );
+
     const getSimulationGroupDisplayColor = useCallback(
         (simulationGroupId: string) => {
             const simulationGroupIndex = activeSimulationGroups.findIndex(
@@ -1294,315 +1350,380 @@ export function SerenityLinePage() {
 
                     {chartData.length > 0 ? (
                         <div className="sl-serenityline-chart-shell">
-                            <div
-                                aria-label={t("chart.accessibleLabel")}
-                                className="sl-serenityline-chart-window">
-                                <div className="sl-serenityline-chart-canvas">
-                                    <ResponsiveContainer
-                                        width="100%"
-                                        height="100%">
-                                        <ComposedChart
-                                            data={chartDataWithLayers}
-                                            margin={{
-                                                top: 28,
-                                                right: 40,
-                                                bottom: 42,
-                                                left: 16,
-                                            }}>
-                                            <CartesianGrid
-                                                stroke="var(--sl-chart-grid)"
-                                                vertical={false}
-                                            />
-                                            <XAxis
-                                                dataKey="date"
-                                                height={42}
-                                                minTickGap={48}
-                                                tickMargin={12}
-                                                tickFormatter={(date) =>
-                                                    new Intl.DateTimeFormat(
-                                                        displayLanguage,
+                            <div className="sl-serenityline-chart-main">
+                                {simulationLines.length > 0 ? (
+                                    <div className="sl-serenityline-chart-simulation-legend">
+                                        {simulationLines.map(
+                                            (simulationLine) => (
+                                                <span
+                                                    className="sl-serenityline-chart-simulation-legend-item"
+                                                    key={`simulation-legend-${simulationLine.dataKey}`}
+                                                    style={
                                                         {
-                                                            month: "short",
-                                                            year: "2-digit",
-                                                        },
-                                                    ).format(
-                                                        new Date(
-                                                            `${String(date)}T00:00:00`,
-                                                        ),
-                                                    )
-                                                }
-                                            />
-                                            <YAxis
-                                                tick={{
-                                                    fontSize: 10,
-                                                }}
-                                                tickFormatter={(value) =>
-                                                    amountFormatter.format(
-                                                        Number(value),
-                                                    )
-                                                }
-                                                width={72}
-                                            />
-                                            <Tooltip
-                                                content={({
-                                                    active,
-                                                    label,
-                                                    payload,
-                                                }) => (
-                                                    <SerenityLineTooltip
-                                                        active={active}
-                                                        amountFormatter={
-                                                            amountFormatter
-                                                        }
-                                                        dateFormatter={(date) =>
-                                                            formatIsoDateForDisplay(
-                                                                date,
-                                                                displayLanguage,
-                                                            )
-                                                        }
-                                                        label={String(label)}
-                                                        payload={
-                                                            payload as unknown as readonly TooltipPayloadItem[]
-                                                        }
+                                                            "--sl-simulation-color":
+                                                                simulationLine.color,
+                                                        } as CSSProperties
+                                                    }>
+                                                    <span
+                                                        aria-hidden="true"
+                                                        className="sl-serenityline-chart-simulation-legend-line"
                                                     />
+                                                    <span className="sl-serenityline-chart-simulation-legend-label">
+                                                        {simulationLine.name}
+                                                    </span>
+                                                </span>
+                                            ),
+                                        )}
+                                    </div>
+                                ) : null}
+
+                                <div
+                                    aria-label={t("chart.accessibleLabel")}
+                                    className="sl-serenityline-chart-window">
+                                    <div className="sl-serenityline-chart-canvas">
+                                        <ResponsiveContainer
+                                            width="100%"
+                                            height="100%">
+                                            <ComposedChart
+                                                data={chartDataWithLayers}
+                                                margin={
+                                                    serenityLineChartMargin
+                                                }>
+                                                <CartesianGrid
+                                                    stroke="var(--sl-chart-grid)"
+                                                    vertical={false}
+                                                />
+
+                                                <XAxis
+                                                    dataKey="date"
+                                                    height={
+                                                        isMobileSerenityLineChart
+                                                            ? 32
+                                                            : 42
+                                                    }
+                                                    minTickGap={
+                                                        isMobileSerenityLineChart
+                                                            ? 28
+                                                            : 48
+                                                    }
+                                                    tick={{
+                                                        fontSize:
+                                                            isMobileSerenityLineChart
+                                                                ? 10
+                                                                : 11,
+                                                    }}
+                                                    tickMargin={
+                                                        isMobileSerenityLineChart
+                                                            ? 8
+                                                            : 12
+                                                    }
+                                                    tickFormatter={(date) =>
+                                                        new Intl.DateTimeFormat(
+                                                            displayLanguage,
+                                                            {
+                                                                month: "short",
+                                                                year: "2-digit",
+                                                            },
+                                                        ).format(
+                                                            new Date(
+                                                                `${String(date)}T00:00:00`,
+                                                            ),
+                                                        )
+                                                    }
+                                                />
+
+                                                <YAxis
+                                                    axisLine={{
+                                                        stroke: "var(--sl-chart-grid)",
+                                                    }}
+                                                    mirror={
+                                                        isMobileSerenityLineChart
+                                                    }
+                                                    tick={{
+                                                        fontSize:
+                                                            isMobileSerenityLineChart
+                                                                ? 9
+                                                                : 10,
+                                                    }}
+                                                    tickFormatter={(value) =>
+                                                        isMobileSerenityLineChart
+                                                            ? compactAmountFormatter.format(
+                                                                  Number(value),
+                                                              )
+                                                            : amountFormatter.format(
+                                                                  Number(value),
+                                                              )
+                                                    }
+                                                    tickLine={
+                                                        !isMobileSerenityLineChart
+                                                    }
+                                                    tickMargin={
+                                                        isMobileSerenityLineChart
+                                                            ? 8
+                                                            : 5
+                                                    }
+                                                    width={
+                                                        isMobileSerenityLineChart
+                                                            ? 1
+                                                            : 72
+                                                    }
+                                                />
+
+                                                <Tooltip
+                                                    content={({
+                                                        active,
+                                                        label,
+                                                        payload,
+                                                    }) => (
+                                                        <SerenityLineTooltip
+                                                            active={active}
+                                                            amountFormatter={
+                                                                amountFormatter
+                                                            }
+                                                            dateFormatter={(
+                                                                date,
+                                                            ) =>
+                                                                formatIsoDateForDisplay(
+                                                                    date,
+                                                                    displayLanguage,
+                                                                )
+                                                            }
+                                                            label={String(
+                                                                label,
+                                                            )}
+                                                            payload={
+                                                                payload as unknown as readonly TooltipPayloadItem[]
+                                                            }
+                                                        />
+                                                    )}
+                                                />
+
+                                                <ReferenceLine
+                                                    ifOverflow="extendDomain"
+                                                    label="0 €"
+                                                    stroke="var(--sl-chart-zero)"
+                                                    strokeDasharray="6 6"
+                                                    y={0}
+                                                />
+
+                                                <ReferenceLine
+                                                    ifOverflow="extendDomain"
+                                                    label={t("chart.today")}
+                                                    stroke="var(--sl-chart-today)"
+                                                    strokeDasharray="4 4"
+                                                    x={todayIsoDate}
+                                                />
+
+                                                {bucketBands.map(
+                                                    (bucketBand) => (
+                                                        <Area
+                                                            connectNulls={false}
+                                                            dataKey={
+                                                                bucketBand.dataKey
+                                                            }
+                                                            fill={
+                                                                bucketBand.color
+                                                            }
+                                                            fillOpacity={0.28}
+                                                            isAnimationActive={
+                                                                false
+                                                            }
+                                                            key={
+                                                                bucketBand.dataKey
+                                                            }
+                                                            name={
+                                                                bucketBand.name
+                                                            }
+                                                            stroke={
+                                                                bucketBand.color
+                                                            }
+                                                            strokeOpacity={0.85}
+                                                            strokeWidth={1.2}
+                                                            type="natural"
+                                                        />
+                                                    ),
                                                 )}
-                                            />
-                                            <ReferenceLine
-                                                ifOverflow="extendDomain"
-                                                label="0 €"
-                                                stroke="var(--sl-chart-zero)"
-                                                strokeDasharray="6 6"
-                                                y={0}
-                                            />
-                                            <ReferenceLine
-                                                ifOverflow="extendDomain"
-                                                label={t("chart.today")}
-                                                stroke="var(--sl-chart-today)"
-                                                strokeDasharray="4 4"
-                                                x={todayIsoDate}
-                                            />
-                                            {bucketBands.map((bucketBand) => (
-                                                <Area
-                                                    connectNulls={false}
-                                                    dataKey={bucketBand.dataKey}
-                                                    fill={bucketBand.color}
-                                                    fillOpacity={0.28}
+
+                                                <Line
+                                                    activeDot={{ r: 5 }}
+                                                    dataKey="serenityline"
+                                                    dot={false}
                                                     isAnimationActive={false}
-                                                    key={bucketBand.dataKey}
-                                                    name={bucketBand.name}
-                                                    stroke={bucketBand.color}
-                                                    strokeOpacity={0.85}
-                                                    strokeWidth={1.2}
+                                                    name={t(
+                                                        "chart.serenityLine",
+                                                    )}
+                                                    stroke="var(--sl-chart-serenityline)"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={4}
                                                     type="natural"
                                                 />
-                                            ))}
 
-                                            <Line
-                                                activeDot={{ r: 5 }}
-                                                dataKey="serenityline"
-                                                dot={false}
-                                                isAnimationActive={false}
-                                                name={t("chart.serenityLine")}
-                                                stroke="var(--sl-chart-serenityline)"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={4}
-                                                type="natural"
-                                            />
-
-                                            {analyticalIndicators.movingAverage50 ? (
-                                                <Line
-                                                    activeDot={false}
-                                                    dataKey="movingAverage50"
-                                                    dot={false}
-                                                    isAnimationActive={false}
-                                                    name={t(
-                                                        "analytics.movingAverage50",
-                                                    )}
-                                                    stroke={
-                                                        SERENITYLINE_ANALYTICS_COLORS.movingAverage50
-                                                    }
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    type="monotone"
-                                                />
-                                            ) : null}
-
-                                            {analyticalIndicators.totalLinearTrend ? (
-                                                <Line
-                                                    activeDot={false}
-                                                    dataKey="totalLinearTrend"
-                                                    dot={false}
-                                                    isAnimationActive={false}
-                                                    name={t(
-                                                        "analytics.totalLinearTrend",
-                                                    )}
-                                                    stroke={
-                                                        SERENITYLINE_ANALYTICS_COLORS.totalLinearTrend
-                                                    }
-                                                    strokeDasharray="10 7"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    type="linear"
-                                                />
-                                            ) : null}
-
-                                            {analyticalIndicators.pastLinearTrend ? (
-                                                <Line
-                                                    activeDot={false}
-                                                    dataKey="pastLinearTrend"
-                                                    dot={false}
-                                                    isAnimationActive={false}
-                                                    name={t(
-                                                        "analytics.pastLinearTrend",
-                                                    )}
-                                                    stroke={
-                                                        SERENITYLINE_ANALYTICS_COLORS.pastLinearTrend
-                                                    }
-                                                    strokeDasharray="7 6"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    type="linear"
-                                                />
-                                            ) : null}
-
-                                            {analyticalIndicators.futureLinearTrend ? (
-                                                <Line
-                                                    activeDot={false}
-                                                    dataKey="futureLinearTrend"
-                                                    dot={false}
-                                                    isAnimationActive={false}
-                                                    name={t(
-                                                        "analytics.futureLinearTrend",
-                                                    )}
-                                                    stroke={
-                                                        SERENITYLINE_ANALYTICS_COLORS.futureLinearTrend
-                                                    }
-                                                    strokeDasharray="4 7"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    type="linear"
-                                                />
-                                            ) : null}
-
-                                            {simulationLines.map(
-                                                (simulationLine) => (
+                                                {analyticalIndicators.movingAverage50 ? (
                                                     <Line
-                                                        activeDot={{ r: 4 }}
-                                                        dataKey={
-                                                            simulationLine.dataKey
-                                                        }
+                                                        activeDot={false}
+                                                        dataKey="movingAverage50"
                                                         dot={false}
                                                         isAnimationActive={
                                                             false
                                                         }
-                                                        key={
-                                                            simulationLine.dataKey
-                                                        }
-                                                        name={
-                                                            simulationLine.name
-                                                        }
+                                                        name={t(
+                                                            "analytics.movingAverage50",
+                                                        )}
                                                         stroke={
-                                                            simulationLine.color
+                                                            SERENITYLINE_ANALYTICS_COLORS.movingAverage50
                                                         }
-                                                        strokeDasharray="8 7"
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
-                                                        strokeWidth={2.2}
-                                                        type="natural"
+                                                        strokeWidth={2}
+                                                        type="monotone"
                                                     />
-                                                ),
-                                            )}
-                                            {simulationLines.map(
-                                                (simulationLine) => {
-                                                    const lastPoint = [
-                                                        ...chartDataWithSimulations,
-                                                    ]
-                                                        .reverse()
-                                                        .find(
-                                                            (point) =>
-                                                                typeof point[
-                                                                    simulationLine
-                                                                        .dataKey
-                                                                ] === "number",
-                                                        );
+                                                ) : null}
 
-                                                    if (!lastPoint) {
-                                                        return null;
-                                                    }
+                                                {analyticalIndicators.totalLinearTrend ? (
+                                                    <Line
+                                                        activeDot={false}
+                                                        dataKey="totalLinearTrend"
+                                                        dot={false}
+                                                        isAnimationActive={
+                                                            false
+                                                        }
+                                                        name={t(
+                                                            "analytics.totalLinearTrend",
+                                                        )}
+                                                        stroke={
+                                                            SERENITYLINE_ANALYTICS_COLORS.totalLinearTrend
+                                                        }
+                                                        strokeDasharray="10 7"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        type="linear"
+                                                    />
+                                                ) : null}
 
-                                                    return (
+                                                {analyticalIndicators.pastLinearTrend ? (
+                                                    <Line
+                                                        activeDot={false}
+                                                        dataKey="pastLinearTrend"
+                                                        dot={false}
+                                                        isAnimationActive={
+                                                            false
+                                                        }
+                                                        name={t(
+                                                            "analytics.pastLinearTrend",
+                                                        )}
+                                                        stroke={
+                                                            SERENITYLINE_ANALYTICS_COLORS.pastLinearTrend
+                                                        }
+                                                        strokeDasharray="7 6"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        type="linear"
+                                                    />
+                                                ) : null}
+
+                                                {analyticalIndicators.futureLinearTrend ? (
+                                                    <Line
+                                                        activeDot={false}
+                                                        dataKey="futureLinearTrend"
+                                                        dot={false}
+                                                        isAnimationActive={
+                                                            false
+                                                        }
+                                                        name={t(
+                                                            "analytics.futureLinearTrend",
+                                                        )}
+                                                        stroke={
+                                                            SERENITYLINE_ANALYTICS_COLORS.futureLinearTrend
+                                                        }
+                                                        strokeDasharray="4 7"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        type="linear"
+                                                    />
+                                                ) : null}
+
+                                                {simulationLines.map(
+                                                    (simulationLine) => (
+                                                        <Line
+                                                            activeDot={{ r: 4 }}
+                                                            dataKey={
+                                                                simulationLine.dataKey
+                                                            }
+                                                            dot={false}
+                                                            isAnimationActive={
+                                                                false
+                                                            }
+                                                            key={
+                                                                simulationLine.dataKey
+                                                            }
+                                                            name={
+                                                                simulationLine.name
+                                                            }
+                                                            stroke={
+                                                                simulationLine.color
+                                                            }
+                                                            strokeDasharray="8 7"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2.2}
+                                                            type="natural"
+                                                        />
+                                                    ),
+                                                )}
+
+                                                {maximumMarkers.map(
+                                                    (marker) => (
                                                         <ReferenceDot
-                                                            fill="transparent"
+                                                            fill="var(--sl-color-card)"
                                                             ifOverflow="extendDomain"
-                                                            key={`simulation-label-${simulationLine.dataKey}`}
-                                                            r={0}
-                                                            stroke="transparent"
-                                                            x={lastPoint.date}
+                                                            key={`maximum-${marker.date}`}
+                                                            r={6}
+                                                            stroke="var(--sl-chart-maximum)"
+                                                            strokeWidth={2}
+                                                            x={marker.date}
                                                             y={
-                                                                lastPoint[
-                                                                    simulationLine
-                                                                        .dataKey
-                                                                ] as number
+                                                                marker.serenitylineMaximum
                                                             }
                                                             label={{
-                                                                value: simulationLine.name,
-                                                                position:
-                                                                    "right",
+                                                                value: marker.serenitylineMaximumLabel,
+                                                                position: "top",
                                                                 className:
-                                                                    "sl-serenityline-simulation-line-label",
+                                                                    "sl-serenityline-extremum-label sl-serenityline-extremum-label-maximum",
                                                             }}
                                                         />
-                                                    );
-                                                },
-                                            )}
-                                            {maximumMarkers.map((marker) => (
-                                                <ReferenceDot
-                                                    fill="var(--sl-color-card)"
-                                                    ifOverflow="extendDomain"
-                                                    key={`maximum-${marker.date}`}
-                                                    r={6}
-                                                    stroke="var(--sl-chart-maximum)"
-                                                    strokeWidth={2}
-                                                    x={marker.date}
-                                                    y={
-                                                        marker.serenitylineMaximum
-                                                    }
-                                                    label={{
-                                                        value: marker.serenitylineMaximumLabel,
-                                                        position: "top",
-                                                        className:
-                                                            "sl-serenityline-extremum-label sl-serenityline-extremum-label-maximum",
-                                                    }}
-                                                />
-                                            ))}
+                                                    ),
+                                                )}
 
-                                            {minimumMarkers.map((marker) => (
-                                                <ReferenceDot
-                                                    fill="var(--sl-color-card)"
-                                                    ifOverflow="extendDomain"
-                                                    key={`minimum-${marker.date}`}
-                                                    r={6}
-                                                    stroke="var(--sl-chart-minimum)"
-                                                    strokeWidth={2}
-                                                    x={marker.date}
-                                                    y={
-                                                        marker.serenitylineMinimum
-                                                    }
-                                                    label={{
-                                                        value: marker.serenitylineMinimumLabel,
-                                                        position: "bottom",
-                                                        className:
-                                                            "sl-serenityline-extremum-label sl-serenityline-extremum-label-minimum",
-                                                    }}
-                                                />
-                                            ))}
-                                        </ComposedChart>
-                                    </ResponsiveContainer>
+                                                {minimumMarkers.map(
+                                                    (marker) => (
+                                                        <ReferenceDot
+                                                            fill="var(--sl-color-card)"
+                                                            ifOverflow="extendDomain"
+                                                            key={`minimum-${marker.date}`}
+                                                            r={6}
+                                                            stroke="var(--sl-chart-minimum)"
+                                                            strokeWidth={2}
+                                                            x={marker.date}
+                                                            y={
+                                                                marker.serenitylineMinimum
+                                                            }
+                                                            label={{
+                                                                value: marker.serenitylineMinimumLabel,
+                                                                position:
+                                                                    "bottom",
+                                                                className:
+                                                                    "sl-serenityline-extremum-label sl-serenityline-extremum-label-minimum",
+                                                            }}
+                                                        />
+                                                    ),
+                                                )}
+                                            </ComposedChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 </div>
                             </div>
 

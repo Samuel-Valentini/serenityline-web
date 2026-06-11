@@ -3950,3 +3950,78 @@ h6 {
 .sl-legal-consent-item a:hover {
     color: var(--sl-color-green-800);
 }
+
+.sl-serenityline-chart-main {
+    width: 100%;
+    min-width: 0;
+}
+
+.sl-serenityline-chart-simulation-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.9rem;
+    margin-bottom: 0.75rem;
+}
+
+.sl-serenityline-chart-simulation-legend-item {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    max-width: 100%;
+    gap: 0.45rem;
+    color: var(--sl-color-text-muted);
+    font-size: 0.78rem;
+    font-weight: 750;
+}
+
+.sl-serenityline-chart-simulation-legend-line {
+    width: 1.75rem;
+    flex: 0 0 auto;
+    border-top: 2px dashed var(--sl-simulation-color, var(--sl-color-gold));
+}
+
+.sl-serenityline-chart-simulation-legend-label {
+    min-width: 0;
+    max-width: 18rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+    .sl-serenityline-chart-card {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .sl-serenityline-chart-card > .alert,
+    .sl-serenityline-chart-card > p {
+        margin-right: 1rem;
+        margin-left: 1rem;
+    }
+
+    .sl-serenityline-chart-window {
+        width: 100%;
+    }
+
+    .sl-serenityline-chart-canvas {
+        width: 100%;
+        height: 30rem;
+        min-height: 30rem;
+    }
+
+    .sl-serenityline-range-toggle-wrap {
+        padding-right: 1rem;
+        padding-left: 1rem;
+    }
+
+    .sl-serenityline-chart-simulation-legend {
+        padding-right: 1rem;
+        padding-left: 1rem;
+    }
+
+    .sl-serenityline-chart-simulation-legend-label {
+        max-width: 13rem;
+    }
+}
