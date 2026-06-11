@@ -110,19 +110,6 @@ export function TransactionForm({
     const categories = useAppSelector(selectCategories);
     const creditCards = useAppSelector(selectCreditCards);
 
-    const [form, setForm] = useState<TransactionFormState>(() => ({
-        ...getInitialFormState(),
-        ...initialValues,
-    }));
-    const [formError, setFormError] = useState<string | null>(null);
-    const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] =
-        useState(false);
-    const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] =
-        useState(false);
-    const [isCreateCreditCardModalOpen, setIsCreateCreditCardModalOpen] =
-        useState(false);
-    const [isCreateBucketModalOpen, setIsCreateBucketModalOpen] =
-        useState(false);
     const isSimulated = isSimulationMovementContext(context);
     const showStandardTransactionOptions = !isSimulated;
 
@@ -143,6 +130,34 @@ export function TransactionForm({
                 : accounts,
         [accounts, allowedAccountIds],
     );
+
+    const [form, setForm] = useState<TransactionFormState>(() => {
+        const initialForm = {
+            ...getInitialFormState(),
+            ...initialValues,
+        };
+
+        if (!initialForm.accountId && availableAccounts.length === 1) {
+            return {
+                ...initialForm,
+                accountId: availableAccounts[0].accountId,
+                creditCardId: "",
+                bucketId: "",
+            };
+        }
+
+        return initialForm;
+    });
+
+    const [formError, setFormError] = useState<string | null>(null);
+    const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] =
+        useState(false);
+    const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] =
+        useState(false);
+    const [isCreateCreditCardModalOpen, setIsCreateCreditCardModalOpen] =
+        useState(false);
+    const [isCreateBucketModalOpen, setIsCreateBucketModalOpen] =
+        useState(false);
 
     const activeCategories = useMemo(
         () =>

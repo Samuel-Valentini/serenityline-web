@@ -156,29 +156,8 @@ export function RecurringTransactionForm({
     const creditCards = useAppSelector(selectCreditCards);
     const financialPriorities = useAppSelector(selectFinancialPriorities);
     const currentUser = useAppSelector(selectCurrentUser);
-
-    const [form, setForm] = useState<RecurringTransactionFormState>(() => ({
-        ...getInitialFormState(editOptions?.defaultEffectiveFrom),
-        ...initialValues,
-    }));
-    const [formError, setFormError] = useState<string | null>(null);
-
     const isSimulated = isSimulationMovementContext(context);
     const showStandardRecurringOptions = !isSimulated;
-
-    const shouldShowGlobalReminderDisabledWarning =
-        showStandardRecurringOptions &&
-        form.recurringTransactionReminderEnabled &&
-        currentUser?.paymentEmailRemindersEnabled === false;
-
-    const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] =
-        useState(false);
-    const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] =
-        useState(false);
-    const [isCreateCreditCardModalOpen, setIsCreateCreditCardModalOpen] =
-        useState(false);
-    const [isCreateBucketModalOpen, setIsCreateBucketModalOpen] =
-        useState(false);
 
     const allowedAccountIds = useMemo(() => {
         if (!isSimulationMovementContext(context)) {
@@ -198,6 +177,39 @@ export function RecurringTransactionForm({
         [accounts, allowedAccountIds],
     );
 
+    const [form, setForm] = useState<RecurringTransactionFormState>(() => {
+        const initialForm = {
+            ...getInitialFormState(editOptions?.defaultEffectiveFrom),
+            ...initialValues,
+        };
+
+        if (!initialForm.linkedAccountId && availableAccounts.length === 1) {
+            return {
+                ...initialForm,
+                linkedAccountId: availableAccounts[0].accountId,
+                linkedCreditCardId: "",
+                linkedBucketId: "",
+            };
+        }
+
+        return initialForm;
+    });
+
+    const [formError, setFormError] = useState<string | null>(null);
+
+    const shouldShowGlobalReminderDisabledWarning =
+        showStandardRecurringOptions &&
+        form.recurringTransactionReminderEnabled &&
+        currentUser?.paymentEmailRemindersEnabled === false;
+
+    const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] =
+        useState(false);
+    const [isCreateAccountModalOpen, setIsCreateAccountModalOpen] =
+        useState(false);
+    const [isCreateCreditCardModalOpen, setIsCreateCreditCardModalOpen] =
+        useState(false);
+    const [isCreateBucketModalOpen, setIsCreateBucketModalOpen] =
+        useState(false);
     const activeCategories = useMemo(
         () =>
             categories

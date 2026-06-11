@@ -290,7 +290,7 @@ describe("TransactionsPage", () => {
         expect(screen.getByLabelText("Descrizione")).toHaveValue("");
         expect(screen.getByLabelText("Importo")).toHaveValue("");
         expect(screen.getByLabelText("Categoria")).toHaveValue("");
-        expect(screen.getByLabelText("Conto")).toHaveValue("");
+        expect(screen.getByLabelText("Conto")).toHaveValue("account-id");
         expect(
             screen.getByLabelText("Transazione già confermata"),
         ).not.toBeChecked();

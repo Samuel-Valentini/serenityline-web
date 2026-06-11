@@ -716,4 +716,50 @@ describe("TransactionForm", () => {
             ),
         ).toBeInTheDocument();
     });
+
+    it("does not preselect an account when multiple accounts are available", () => {
+        renderForm();
+
+        expect(screen.getByLabelText("Conto")).toHaveValue("");
+    });
+
+    it("preselects the only available account", () => {
+        store.dispatch(financeDataCleared());
+        store.dispatch(
+            financeReferenceDataLoaded({
+                ...referenceData,
+                accounts: [account],
+                creditCards: [creditCard],
+                buckets: [bucket, closedBucket],
+            }),
+        );
+
+        renderForm();
+
+        expect(screen.getByLabelText("Conto")).toHaveValue("account-id");
+    });
+
+    it("preselects the only allowed simulation account", () => {
+        renderForm({
+            context: {
+                type: "simulation",
+                simulationGroupId: "simulation-group-id",
+                allowedAccountIds: ["account-id"],
+            },
+        });
+
+        expect(screen.getByLabelText("Conto")).toHaveValue("account-id");
+        expect(screen.getByText("Conto principale")).toBeInTheDocument();
+        expect(screen.queryByText("Conto riserva")).not.toBeInTheDocument();
+    });
+
+    it("does not overwrite the initial account value", () => {
+    renderForm({
+        initialValues: {
+            accountId: "second-account-id",
+        },
+    });
+
+    expect(screen.getByLabelText("Conto")).toHaveValue("second-account-id");
+});
 });
