@@ -733,12 +733,26 @@ export function SimulationsPage() {
                 }),
             ]);
 
+            const simulatedRecurringTransactions = recurringTransactions.filter(
+                (recurringTransaction) =>
+                    recurringTransaction.recurringTransactionIsSimulated ===
+                        true &&
+                    recurringTransaction.simulationGroupId ===
+                        simulationGroupId,
+            );
+
+            const simulatedTransactions = transactions.filter(
+                (transaction) =>
+                    transaction.transactionIsSimulated === true &&
+                    transaction.simulationGroupId === simulationGroupId,
+            );
+
             setMovementsBySimulationGroupId((currentState) => ({
                 ...currentState,
                 [simulationGroupId]: {
                     status: "loaded",
-                    recurringTransactions,
-                    transactions,
+                    recurringTransactions: simulatedRecurringTransactions,
+                    transactions: simulatedTransactions,
                     error: null,
                 },
             }));

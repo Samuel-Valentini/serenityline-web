@@ -162,6 +162,21 @@ const updatedSimulatedTransaction = {
     transactionUpdatedAt: "2026-06-06T10:00:00Z",
 };
 
+const baseTransactionReturnedWithSimulation = {
+    ...simulatedTransaction,
+    transactionId: "base-transaction-id",
+    transactionDescription: "Spesa reale caricata con lo scenario",
+    transactionIsSimulated: false,
+    simulationGroupId: null,
+};
+
+const otherSimulationTransaction = {
+    ...simulatedTransaction,
+    transactionId: "other-simulation-transaction-id",
+    transactionDescription: "Spesa di un altro scenario",
+    simulationGroupId: "other-simulation-group-id",
+};
+
 const simulatedRecurringTransaction = {
     recurringTransactionId: "recurring-transaction-id",
     recurringTransactionAmountIsAdjustable: false,
@@ -203,6 +218,22 @@ const updatedSimulatedRecurringTransaction = {
     paymentAmount: -900,
     recurringTransactionFirstPaymentDate: "2026-07-01",
     recurringTransactionUpdatedAt: "2026-07-01T10:00:00Z",
+};
+
+const baseRecurringTransactionReturnedWithSimulation = {
+    ...simulatedRecurringTransaction,
+    recurringTransactionId: "base-recurring-transaction-id",
+    recurringTransactionDescription:
+        "Ricorrente reale caricata con lo scenario",
+    recurringTransactionIsSimulated: false,
+    simulationGroupId: null,
+};
+
+const otherSimulationRecurringTransaction = {
+    ...simulatedRecurringTransaction,
+    recurringTransactionId: "other-simulation-recurring-transaction-id",
+    recurringTransactionDescription: "Ricorrente di un altro scenario",
+    simulationGroupId: "other-simulation-group-id",
 };
 
 const referenceData: FinanceReferenceData = {
@@ -994,6 +1025,58 @@ describe("SimulationsPage", () => {
         expect(
             screen.getByText("Nuovo movimento ricorrente simulato"),
         ).toBeInTheDocument();
+    });
+
+    it("shows only simulated movements belonging to the selected simulation group", async () => {
+        vi.mocked(listRecurringTransactions).mockResolvedValueOnce([
+            simulatedRecurringTransaction,
+            baseRecurringTransactionReturnedWithSimulation,
+            otherSimulationRecurringTransaction,
+        ]);
+
+        vi.mocked(listTransactions).mockResolvedValueOnce([
+            simulatedTransaction,
+            baseTransactionReturnedWithSimulation,
+            otherSimulationTransaction,
+        ]);
+
+        renderPage();
+
+        fireEvent.click(
+            getSimulationGroupActionButton(
+                "Scenario base",
+                "Visualizza movimenti collegati",
+            ),
+        );
+
+        expect(await screen.findByText("Spesa simulata")).toBeInTheDocument();
+        expect(screen.getByText("Affitto simulato")).toBeInTheDocument();
+
+        expect(
+            screen.queryByText("Spesa reale caricata con lo scenario"),
+        ).not.toBeInTheDocument();
+
+        expect(
+            screen.queryByText("Spesa di un altro scenario"),
+        ).not.toBeInTheDocument();
+
+        expect(
+            screen.queryByText("Ricorrente reale caricata con lo scenario"),
+        ).not.toBeInTheDocument();
+
+        expect(
+            screen.queryByText("Ricorrente di un altro scenario"),
+        ).not.toBeInTheDocument();
+
+        expect(listRecurringTransactions).toHaveBeenCalledWith({
+            simulationGroupIds: ["simulation-group-id"],
+        });
+
+        expect(listTransactions).toHaveBeenCalledWith({
+            from: "2026-01-01",
+            to: "2031-01-01",
+            simulationGroupId: "simulation-group-id",
+        });
     });
 
     it("opens the edit form for a simulated transaction", async () => {
