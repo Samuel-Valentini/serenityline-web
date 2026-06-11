@@ -784,6 +784,7 @@ export const resources = {
                 buckets: "Portafogli",
                 simulations: "Simulazioni",
                 priorities: "Priorità",
+                categories: "Categorie",
                 loadedDays: "Giorni caricati",
             },
             quickActions: {
@@ -3379,6 +3380,7 @@ export const resources = {
                 buckets: "Portfolios",
                 simulations: "Simulations",
                 priorities: "Priorities",
+                categories: "Categories",
                 loadedDays: "Loaded days",
             },
             quickActions: {

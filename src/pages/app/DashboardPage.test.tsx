@@ -203,7 +203,7 @@ describe("DashboardPage", () => {
         expect(screen.getByText("Conti")).toBeInTheDocument();
         expect(screen.getByText("Portafogli")).toBeInTheDocument();
         expect(screen.getByText("Simulazioni")).toBeInTheDocument();
-        expect(screen.getByText("Priorità")).toBeInTheDocument();
+        expect(screen.getByText("Categorie")).toBeInTheDocument();
     });
 
     it("renders a risk signal when the future SerenityLine goes below zero", async () => {

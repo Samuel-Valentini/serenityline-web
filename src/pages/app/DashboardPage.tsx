@@ -21,7 +21,6 @@ import {
     selectCreditCards,
     selectFinanceDataError,
     selectFinanceDataStatus,
-    selectFinancialPriorities,
     selectSimulationGroups,
 } from "../../features/finance/financeDataSelectors";
 import { ROUTES } from "../../shared/constants/routes";
@@ -220,7 +219,6 @@ export function DashboardPage() {
     const activeCategories = useAppSelector(selectActiveCategories);
     const buckets = useAppSelector(selectBuckets);
     const simulationGroups = useAppSelector(selectSimulationGroups);
-    const financialPriorities = useAppSelector(selectFinancialPriorities);
 
     const balances = useAppSelector((state) =>
         selectDailyBalancesForScenario(state, BASE_DAILY_BALANCES_SCENARIO_KEY),
@@ -263,30 +261,30 @@ export function DashboardPage() {
     );
 
     useEffect(() => {
-    if (
-        financeDataStatus !== "loaded" ||
-        accounts.length === 0 ||
-        cacheEntry.status === "failed" ||
-        cacheEntry.loadedFrom ||
-        cacheEntry.pendingRangeKeys.length > 0
-    ) {
-        return;
-    }
+        if (
+            financeDataStatus !== "loaded" ||
+            accounts.length === 0 ||
+            cacheEntry.status === "failed" ||
+            cacheEntry.loadedFrom ||
+            cacheEntry.pendingRangeKeys.length > 0
+        ) {
+            return;
+        }
 
-    void dispatch(
-        loadDailyBalancesRange({
-            range: initialRange,
-        }),
-    );
-}, [
-    accounts.length,
-    cacheEntry.loadedFrom,
-    cacheEntry.pendingRangeKeys.length,
-    cacheEntry.status,
-    dispatch,
-    financeDataStatus,
-    initialRange,
-]);
+        void dispatch(
+            loadDailyBalancesRange({
+                range: initialRange,
+            }),
+        );
+    }, [
+        accounts.length,
+        cacheEntry.loadedFrom,
+        cacheEntry.pendingRangeKeys.length,
+        cacheEntry.status,
+        dispatch,
+        financeDataStatus,
+        initialRange,
+    ]);
 
     const todayBalance = useMemo(
         () => findBalanceOnOrAfter(balances, todayIsoDate),
@@ -693,8 +691,8 @@ export function DashboardPage() {
                                 <dd>{simulationGroups.length}</dd>
                             </div>
                             <div>
-                                <dt>{t("value.priorities")}</dt>
-                                <dd>{financialPriorities.length}</dd>
+                                <dt>{t("value.categories")}</dt>
+                                <dd>{activeCategories.length}</dd>
                             </div>
                             <div>
                                 <dt>{t("value.loadedDays")}</dt>
