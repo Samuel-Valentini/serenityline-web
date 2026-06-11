@@ -287,6 +287,13 @@ describe("TransactionsPage", () => {
         expect(await screen.findByText("Affitto")).toBeInTheDocument();
         expect(screen.getByText("Confermata")).toBeInTheDocument();
         expect(getEditButtonForTransaction("Affitto")).toBeEnabled();
+        expect(screen.getByLabelText("Descrizione")).toHaveValue("");
+        expect(screen.getByLabelText("Importo")).toHaveValue("");
+        expect(screen.getByLabelText("Categoria")).toHaveValue("");
+        expect(screen.getByLabelText("Conto")).toHaveValue("");
+        expect(
+            screen.getByLabelText("Transazione già confermata"),
+        ).not.toBeChecked();
 
         expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
         expectDailyBalancesCacheCleared();

@@ -89,6 +89,7 @@ export function TransactionsPage() {
         TransactionResponseDto[]
     >([]);
     const [isCreateSubmitting, setIsCreateSubmitting] = useState(false);
+    const [createFormResetKey, setCreateFormResetKey] = useState(0);
     const [createError, setCreateError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [editingTransaction, setEditingTransaction] =
@@ -342,6 +343,7 @@ export function TransactionsPage() {
             invalidateFinanceProjectionCaches();
 
             setSuccessMessage(t("create.success"));
+            setCreateFormResetKey((currentKey) => currentKey + 1);
         } catch (error) {
             setCreateError(getErrorMessage(error, t("create.errorFallback")));
         } finally {
@@ -537,6 +539,7 @@ export function TransactionsPage() {
                         ) : null}
 
                         <TransactionForm
+                            key={createFormResetKey}
                             context={{ type: "standard" }}
                             isSubmitting={isCreateSubmitting}
                             onSubmit={handleCreateTransactions}
