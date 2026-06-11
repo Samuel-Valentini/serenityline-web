@@ -14,6 +14,11 @@ import {
     listTransactions,
     updateTransaction,
 } from "../../features/finance/api/financeApi";
+import { clearFinanceCalendarCache } from "../../features/finance/calendar/useFinanceCalendarCache";
+import {
+    financeDailyBalancesCleared,
+    financeDailyBalancesRangeLoaded,
+} from "../../features/finance/dailyBalances/financeDailyBalancesSlice";
 import {
     financeDataCleared,
     financeReferenceDataLoaded,
@@ -30,6 +35,10 @@ vi.mock("../../features/finance/api/financeApi", () => ({
     createCategory: vi.fn(),
     createCreditCard: vi.fn(),
     listTransactions: vi.fn(),
+}));
+
+vi.mock("../../features/finance/calendar/useFinanceCalendarCache", () => ({
+    clearFinanceCalendarCache: vi.fn(),
 }));
 
 const account = {
@@ -178,16 +187,60 @@ function getEditFormCell() {
     return editFormCell;
 }
 
+function seedDailyBalancesCache() {
+    store.dispatch(
+        financeDailyBalancesRangeLoaded({
+            scenarioKey: "base",
+            rangeKey: "2026-06-01:2026-06-30",
+            range: {
+                from: "2026-06-01",
+                to: "2026-06-30",
+            },
+            balances: [
+                {
+                    date: "2026-06-04",
+                    accounts: [
+                        {
+                            accountId: "account-id",
+                            currency: "EUR",
+                            endOfDayAccountBalance: 1000,
+                            endOfDaySerenityline: 1000,
+                            endOfDayBucketsBalance: 0,
+                            buckets: [],
+                        },
+                    ],
+                    buckets: [],
+                    totalsByCurrency: [
+                        {
+                            currency: "EUR",
+                            endOfDayAccountsBalance: 1000,
+                            endOfDaySerenityline: 1000,
+                            endOfDayBucketsBalance: 0,
+                        },
+                    ],
+                },
+            ],
+            loadedAt: 1,
+        }),
+    );
+}
+
+function expectDailyBalancesCacheCleared() {
+    expect(store.getState().financeDailyBalances.scenarios).toEqual({});
+}
+
 describe("TransactionsPage", () => {
     beforeEach(async () => {
         await i18n.changeLanguage("it");
         vi.clearAllMocks();
         store.dispatch(financeDataCleared());
+        store.dispatch(financeDailyBalancesCleared());
         store.dispatch(financeReferenceDataLoaded(referenceData));
     });
 
     it("creates a transaction and shows it in the current session", async () => {
         vi.mocked(createTransaction).mockResolvedValue(createdTransaction);
+        seedDailyBalancesCache();
 
         renderPage();
 
@@ -234,6 +287,9 @@ describe("TransactionsPage", () => {
         expect(await screen.findByText("Affitto")).toBeInTheDocument();
         expect(screen.getByText("Confermata")).toBeInTheDocument();
         expect(getEditButtonForTransaction("Affitto")).toBeEnabled();
+
+        expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
+        expectDailyBalancesCacheCleared();
     });
 
     it("edits a transaction added in the current session", async () => {
@@ -264,6 +320,9 @@ describe("TransactionsPage", () => {
         );
 
         expect(await screen.findByText("Affitto")).toBeInTheDocument();
+
+        vi.mocked(clearFinanceCalendarCache).mockClear();
+        seedDailyBalancesCache();
 
         fireEvent.click(getEditButtonForTransaction("Affitto"));
 
@@ -305,6 +364,9 @@ describe("TransactionsPage", () => {
         expect(
             await screen.findByText("Affitto aggiornato"),
         ).toBeInTheDocument();
+
+        expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
+        expectDailyBalancesCacheCleared();
     });
 
     it("searches user-entered transactions and edits a search result", async () => {
@@ -315,6 +377,7 @@ describe("TransactionsPage", () => {
         vi.mocked(updateTransaction).mockResolvedValue(
             updatedSearchedTransaction,
         );
+        seedDailyBalancesCache();
 
         renderPage();
 
@@ -373,6 +436,9 @@ describe("TransactionsPage", () => {
         expect(
             await screen.findByText("Spesa farmacia aggiornata"),
         ).toBeInTheDocument();
+
+        expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
+        expectDailyBalancesCacheCleared();
     });
 
     it("blocks editing when the update would generate multiple technical movements", async () => {

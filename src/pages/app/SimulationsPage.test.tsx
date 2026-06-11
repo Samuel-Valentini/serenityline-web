@@ -26,6 +26,7 @@ import {
     financeDataCleared,
     financeReferenceDataLoaded,
 } from "../../features/finance/financeDataSlice";
+import { clearFinanceCalendarCache } from "../../features/finance/calendar/useFinanceCalendarCache";
 import type { FinanceReferenceData } from "../../features/finance/financeDataTypes";
 import { i18n } from "../../shared/i18n/i18n";
 import { SimulationsPage } from "./SimulationsPage";
@@ -43,6 +44,10 @@ vi.mock("../../features/finance/api/financeApi", () => ({
     unlinkSimulationGroupAccount: vi.fn(),
     updateSimulationGroup: vi.fn(),
     updateTransaction: vi.fn(),
+}));
+
+vi.mock("../../features/finance/calendar/useFinanceCalendarCache", () => ({
+    clearFinanceCalendarCache: vi.fn(),
 }));
 
 const category = {
@@ -756,6 +761,8 @@ describe("SimulationsPage", () => {
         expect(store.getState().financeData.simulationGroups).toContainEqual(
             updatedSimulationGroup,
         );
+
+        expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
     });
 
     it("unlinks an account from an active simulation group with multiple linked accounts", async () => {
@@ -1276,5 +1283,35 @@ describe("SimulationsPage", () => {
         expect(
             screen.getByText("Modifica movimento ricorrente simulato"),
         ).toBeInTheDocument();
+    });
+
+    it("clears projection caches after linking a simulation account", async () => {
+        vi.mocked(linkSimulationGroupAccount).mockResolvedValueOnce({
+            ...simulationGroup,
+            accountIds: ["account-id", "second-account-id"],
+        });
+
+        renderPage();
+
+        const simulationGroupRow = getSimulationGroupRow("Scenario base");
+
+        fireEvent.click(
+            within(simulationGroupRow).getByRole("button", {
+                name: "Gestisci conti",
+            }),
+        );
+
+        fireEvent.click(
+            within(simulationGroupRow).getByLabelText("Conto riserva"),
+        );
+
+        await waitFor(() => {
+            expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
+        });
+
+        expect(linkSimulationGroupAccount).toHaveBeenCalledWith(
+            "simulation-group-id",
+            "second-account-id",
+        );
     });
 });

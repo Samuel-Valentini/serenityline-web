@@ -24,6 +24,8 @@ import {
     selectFinancialPriorities,
 } from "../../features/finance/financeDataSelectors";
 import { financeReportSummaryLoaded } from "../../features/finance/financeDataSlice";
+import { clearFinanceCalendarCache } from "../../features/finance/calendar/useFinanceCalendarCache";
+import { financeDailyBalancesCleared } from "../../features/finance/dailyBalances/financeDailyBalancesSlice";
 import {
     RecurringTransactionForm,
     type RecurringTransactionFormState,
@@ -327,6 +329,11 @@ export function RecurringTransactionsPage() {
         }
     }
 
+    function invalidateFinanceProjectionCaches() {
+        clearFinanceCalendarCache();
+        dispatch(financeDailyBalancesCleared());
+    }
+
     async function handleCreateRecurringTransactions(
         requests: RecurringTransactionCreateRequestDto[],
     ) {
@@ -349,6 +356,8 @@ export function RecurringTransactionsPage() {
                 ...createdRecurringTransactions,
                 ...currentRecurringTransactions,
             ]);
+
+            invalidateFinanceProjectionCaches();
 
             setIsCreateFormVisible(false);
             setSuccessMessage(t("createSuccess"));
@@ -459,6 +468,8 @@ export function RecurringTransactionsPage() {
                             : currentRecurringTransaction,
                 ),
             );
+
+            invalidateFinanceProjectionCaches();
 
             setEditingRecurringTransactionId(null);
             setSuccessMessage(t("edit.success"));

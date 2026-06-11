@@ -18,6 +18,10 @@ import {
 } from "../../features/finance/api/financeApi";
 import { clearFinanceCalendarCacheForTests } from "../../features/finance/calendar/useFinanceCalendarCache";
 import {
+    financeDailyBalancesCleared,
+    financeDailyBalancesRangeLoaded,
+} from "../../features/finance/dailyBalances/financeDailyBalancesSlice";
+import {
     financeDataCleared,
     financeReferenceDataLoaded,
 } from "../../features/finance/financeDataSlice";
@@ -257,12 +261,55 @@ function openSimulationGroupsPanel() {
     }
 }
 
+function seedDailyBalancesCache() {
+    store.dispatch(
+        financeDailyBalancesRangeLoaded({
+            scenarioKey: "base",
+            rangeKey: "2026-06-01:2026-06-30",
+            range: {
+                from: "2026-06-01",
+                to: "2026-06-30",
+            },
+            balances: [
+                {
+                    date: "2026-06-04",
+                    accounts: [
+                        {
+                            accountId: "account-id",
+                            currency: "EUR",
+                            endOfDayAccountBalance: 1000,
+                            endOfDaySerenityline: 1000,
+                            endOfDayBucketsBalance: 0,
+                            buckets: [],
+                        },
+                    ],
+                    buckets: [],
+                    totalsByCurrency: [
+                        {
+                            currency: "EUR",
+                            endOfDayAccountsBalance: 1000,
+                            endOfDaySerenityline: 1000,
+                            endOfDayBucketsBalance: 0,
+                        },
+                    ],
+                },
+            ],
+            loadedAt: 1,
+        }),
+    );
+}
+
+function expectDailyBalancesCacheCleared() {
+    expect(store.getState().financeDailyBalances.scenarios).toEqual({});
+}
+
 describe("CalendarPage", () => {
     beforeEach(async () => {
         await i18n.changeLanguage("it");
         vi.clearAllMocks();
         clearFinanceCalendarCacheForTests();
         store.dispatch(financeDataCleared());
+        store.dispatch(financeDailyBalancesCleared());
         store.dispatch(financeReferenceDataLoaded(referenceData));
     });
 
@@ -416,6 +463,7 @@ describe("CalendarPage", () => {
         ]);
         vi.mocked(getTransaction).mockResolvedValue(unconfirmedTransaction);
         vi.mocked(updateTransaction).mockResolvedValue(confirmedTransaction);
+        seedDailyBalancesCache();
 
         renderPage();
 
@@ -439,6 +487,8 @@ describe("CalendarPage", () => {
         expect(
             await screen.findByText("Transazione confermata."),
         ).toBeInTheDocument();
+
+        expectDailyBalancesCacheCleared();
     });
 
     it("confirms a projected recurring movement with editable amount and charge date", async () => {
@@ -448,6 +498,7 @@ describe("CalendarPage", () => {
         vi.mocked(confirmRecurringTransactionOccurrence).mockResolvedValue(
             confirmedRecurringTransaction,
         );
+        seedDailyBalancesCache();
 
         renderPage();
 
@@ -492,6 +543,8 @@ describe("CalendarPage", () => {
                 "Ricorrenza confermata e salvata come transazione.",
             ),
         ).toBeInTheDocument();
+
+        expectDailyBalancesCacheCleared();
     });
 
     it("reloads the calendar when a simulation group is selected", async () => {
@@ -570,53 +623,55 @@ describe("CalendarPage", () => {
     });
 
     it("shows separate SerenityLine and movement amounts using the effect flags", async () => {
-    vi.mocked(listCalendarMovements).mockResolvedValue([
-        serenitylineOnlyMovement,
-        accountBalanceOnlyMovement,
-    ]);
+        vi.mocked(listCalendarMovements).mockResolvedValue([
+            serenitylineOnlyMovement,
+            accountBalanceOnlyMovement,
+        ]);
 
-    renderPage();
+        renderPage();
 
-    const serenitylineOnlyRow = (
-        await screen.findByText("Acquisto carta")
-    ).closest("tr");
+        const serenitylineOnlyRow = (
+            await screen.findByText("Acquisto carta")
+        ).closest("tr");
 
-    expect(serenitylineOnlyRow).not.toBeNull();
+        expect(serenitylineOnlyRow).not.toBeNull();
 
-    const serenitylineOnlyAmountCell =
-        within(serenitylineOnlyRow!).getAllByRole("cell")[1];
+        const serenitylineOnlyAmountCell = within(
+            serenitylineOnlyRow!,
+        ).getAllByRole("cell")[1];
 
-    expect(
-        within(serenitylineOnlyAmountCell).getByRole("group", {
-            name: "SerenityLine",
-        }),
-    ).toHaveTextContent(/-50,00\s€/);
+        expect(
+            within(serenitylineOnlyAmountCell).getByRole("group", {
+                name: "SerenityLine",
+            }),
+        ).toHaveTextContent(/-50,00\s€/);
 
-    expect(
-        within(serenitylineOnlyAmountCell).getByRole("group", {
-            name: "Movimento",
-        }),
-    ).toHaveTextContent(/0,00\s€/);
+        expect(
+            within(serenitylineOnlyAmountCell).getByRole("group", {
+                name: "Movimento",
+            }),
+        ).toHaveTextContent(/0,00\s€/);
 
-    const accountBalanceOnlyRow = (
-        await screen.findByText("Addebito tecnico già considerato")
-    ).closest("tr");
+        const accountBalanceOnlyRow = (
+            await screen.findByText("Addebito tecnico già considerato")
+        ).closest("tr");
 
-    expect(accountBalanceOnlyRow).not.toBeNull();
+        expect(accountBalanceOnlyRow).not.toBeNull();
 
-    const accountBalanceOnlyAmountCell =
-        within(accountBalanceOnlyRow!).getAllByRole("cell")[1];
+        const accountBalanceOnlyAmountCell = within(
+            accountBalanceOnlyRow!,
+        ).getAllByRole("cell")[1];
 
-    expect(
-        within(accountBalanceOnlyAmountCell).getByRole("group", {
-            name: "SerenityLine",
-        }),
-    ).toHaveTextContent(/0,00\s€/);
+        expect(
+            within(accountBalanceOnlyAmountCell).getByRole("group", {
+                name: "SerenityLine",
+            }),
+        ).toHaveTextContent(/0,00\s€/);
 
-    expect(
-        within(accountBalanceOnlyAmountCell).getByRole("group", {
-            name: "Movimento",
-        }),
-    ).toHaveTextContent(/-50,00\s€/);
-});
+        expect(
+            within(accountBalanceOnlyAmountCell).getByRole("group", {
+                name: "Movimento",
+            }),
+        ).toHaveTextContent(/-50,00\s€/);
+    });
 });

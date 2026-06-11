@@ -43,6 +43,8 @@ import {
     simulationGroupAdded,
     simulationGroupUpdated,
 } from "../../features/finance/financeDataSlice";
+import { clearFinanceCalendarCache } from "../../features/finance/calendar/useFinanceCalendarCache";
+import { financeDailyBalancesCleared } from "../../features/finance/dailyBalances/financeDailyBalancesSlice";
 import { ApiError } from "../../shared/api";
 import {
     TransactionForm,
@@ -261,6 +263,11 @@ export function SimulationsPage() {
         );
     }
 
+    function invalidateFinanceProjectionCaches() {
+        clearFinanceCalendarCache();
+        dispatch(financeDailyBalancesCleared());
+    }
+
     function getRecurringTransactionInitialValues(
         recurringTransaction: RecurringTransactionResponseDto,
     ): Partial<RecurringTransactionFormState> {
@@ -407,6 +414,8 @@ export function SimulationsPage() {
                     };
                 });
             }
+
+            invalidateFinanceProjectionCaches();
 
             setEditingRecurringTransactionId(null);
             setSuccessMessage(t("recurringTransactionUpdateSuccess"));
@@ -792,6 +801,8 @@ export function SimulationsPage() {
                 await createRecurringTransaction(request);
             }
 
+            invalidateFinanceProjectionCaches();
+
             setRecurringTransactionFormSimulationGroupId(null);
             setSuccessMessage(t("recurringTransactionCreateSuccess"));
         } catch (error) {
@@ -825,6 +836,8 @@ export function SimulationsPage() {
             for (const request of requests) {
                 await createTransaction(request);
             }
+
+            invalidateFinanceProjectionCaches();
 
             setTransactionFormSimulationGroupId(null);
             setSuccessMessage(t("transactionCreateSuccess"));
@@ -916,6 +929,8 @@ export function SimulationsPage() {
                     };
                 });
             }
+
+            invalidateFinanceProjectionCaches();
 
             setEditingTransactionId(null);
             setSuccessMessage(t("transactionUpdateSuccess"));
@@ -1013,6 +1028,7 @@ export function SimulationsPage() {
                 await archiveSimulationGroup(simulationGroupId);
 
             dispatch(simulationGroupUpdated(archivedSimulationGroup));
+
             setSuccessMessage(t("archiveSuccess"));
         } catch (error) {
             setEditError(getErrorMessage(error, t("archiveErrorFallback")));
@@ -1031,6 +1047,7 @@ export function SimulationsPage() {
                 await restoreSimulationGroup(simulationGroupId);
 
             dispatch(simulationGroupUpdated(restoredSimulationGroup));
+
             setSuccessMessage(t("restoreSuccess"));
         } catch (error) {
             setEditError(getErrorMessage(error, t("restoreErrorFallback")));
@@ -1068,6 +1085,9 @@ export function SimulationsPage() {
                   );
 
             dispatch(simulationGroupUpdated(updatedSimulationGroup));
+
+            invalidateFinanceProjectionCaches();
+
             setSuccessMessage(
                 isLinked ? t("accountUnlinkSuccess") : t("accountLinkSuccess"),
             );

@@ -7,7 +7,7 @@ import {
     getTransaction,
     updateTransaction,
 } from "../../features/finance/api/financeApi";
-import { useAppSelector } from "../../app/store/hooks";
+import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 import type {
     FinanceCalendarMovementResponseDto,
     RecurringTransactionOccurrenceConfirmRequestDto,
@@ -29,6 +29,7 @@ import {
     selectFinanceDataStatus,
     selectSimulationGroups,
 } from "../../features/finance/financeDataSelectors";
+import { financeDailyBalancesCleared } from "../../features/finance/dailyBalances/financeDailyBalancesSlice";
 import {
     formatMoneyAmountForDisplay,
     moneyAmountToFormValue,
@@ -131,6 +132,8 @@ function getSelectedValues(options: HTMLCollectionOf<HTMLOptionElement>) {
 export function CalendarPage() {
     const { i18n, t } = useTranslation("calendar");
     const navigate = useNavigate();
+
+    const dispatch = useAppDispatch();
 
     const displayLanguage = i18n.resolvedLanguage || i18n.language || "it";
     const todayIsoDate = useMemo(() => getTodayIsoDate(), []);
@@ -534,6 +537,9 @@ export function CalendarPage() {
                 movement,
                 updatedTransaction,
             );
+
+            dispatch(financeDailyBalancesCleared());
+
             setConfirmationSuccess(t("confirmation.persistedSuccess"));
         } catch (error) {
             setConfirmationError(
@@ -590,6 +596,9 @@ export function CalendarPage() {
                 movement,
                 confirmedTransaction,
             );
+
+            dispatch(financeDailyBalancesCleared());
+            
             setConfirmingMovement(null);
             setConfirmationSuccess(t("confirmation.recurringSuccess"));
         } catch (error) {

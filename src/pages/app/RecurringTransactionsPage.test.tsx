@@ -15,6 +15,11 @@ import {
     listRecurringTransactions,
     patchRecurringTransaction,
 } from "../../features/finance/api/financeApi";
+import { clearFinanceCalendarCache } from "../../features/finance/calendar/useFinanceCalendarCache";
+import {
+    financeDailyBalancesCleared,
+    financeDailyBalancesRangeLoaded,
+} from "../../features/finance/dailyBalances/financeDailyBalancesSlice";
 import {
     financeDataCleared,
     financeReferenceDataLoaded,
@@ -28,6 +33,10 @@ vi.mock("../../features/finance/api/financeApi", () => ({
     getFinanceReportSummary: vi.fn(),
     listRecurringTransactions: vi.fn(),
     patchRecurringTransaction: vi.fn(),
+}));
+
+vi.mock("../../features/finance/calendar/useFinanceCalendarCache", () => ({
+    clearFinanceCalendarCache: vi.fn(),
 }));
 
 const account = {
@@ -286,6 +295,48 @@ function submitEditForm() {
     fireEvent.submit(form!);
 }
 
+function seedDailyBalancesCache() {
+    store.dispatch(
+        financeDailyBalancesRangeLoaded({
+            scenarioKey: "base",
+            rangeKey: "2026-06-01:2026-06-30",
+            range: {
+                from: "2026-06-01",
+                to: "2026-06-30",
+            },
+            balances: [
+                {
+                    date: "2026-06-04",
+                    accounts: [
+                        {
+                            accountId: "account-id",
+                            currency: "EUR",
+                            endOfDayAccountBalance: 1000,
+                            endOfDaySerenityline: 1000,
+                            endOfDayBucketsBalance: 0,
+                            buckets: [],
+                        },
+                    ],
+                    buckets: [],
+                    totalsByCurrency: [
+                        {
+                            currency: "EUR",
+                            endOfDayAccountsBalance: 1000,
+                            endOfDaySerenityline: 1000,
+                            endOfDayBucketsBalance: 0,
+                        },
+                    ],
+                },
+            ],
+            loadedAt: 1,
+        }),
+    );
+}
+
+function expectDailyBalancesCacheCleared() {
+    expect(store.getState().financeDailyBalances.scenarios).toEqual({});
+}
+
 describe("RecurringTransactionsPage", () => {
     beforeEach(async () => {
         await i18n.changeLanguage("it");
@@ -293,6 +344,7 @@ describe("RecurringTransactionsPage", () => {
         vi.clearAllMocks();
 
         store.dispatch(financeDataCleared());
+        store.dispatch(financeDailyBalancesCleared());
         store.dispatch(financeReferenceDataLoaded(referenceData));
 
         vi.mocked(getFinanceReportSummary).mockResolvedValue(
@@ -342,6 +394,7 @@ describe("RecurringTransactionsPage", () => {
         vi.mocked(createRecurringTransaction).mockResolvedValueOnce(
             createdRecurringTransaction,
         );
+        seedDailyBalancesCache();
 
         renderPage();
 
@@ -388,12 +441,16 @@ describe("RecurringTransactionsPage", () => {
         await waitFor(() => {
             expect(getFinanceReportSummary).toHaveBeenCalledTimes(2);
         });
+
+        expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
+        expectDailyBalancesCacheCleared();
     });
 
     it("patches a recurring transaction and refreshes the report", async () => {
         vi.mocked(patchRecurringTransaction).mockResolvedValueOnce(
             updatedRecurringTransaction,
         );
+        seedDailyBalancesCache();
 
         renderPage();
 
@@ -460,6 +517,9 @@ describe("RecurringTransactionsPage", () => {
         await waitFor(() => {
             expect(getFinanceReportSummary).toHaveBeenCalledTimes(2);
         });
+
+        expect(clearFinanceCalendarCache).toHaveBeenCalledTimes(1);
+        expectDailyBalancesCacheCleared();
     });
 
     it("shows an error when page data loading fails", async () => {

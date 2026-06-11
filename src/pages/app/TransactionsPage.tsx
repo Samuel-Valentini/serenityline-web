@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useAppSelector } from "../../app/store/hooks";
+import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 import {
     createTransaction,
     listTransactions,
@@ -20,6 +20,8 @@ import {
     selectFinanceDataError,
     selectFinanceDataStatus,
 } from "../../features/finance/financeDataSelectors";
+import { clearFinanceCalendarCache } from "../../features/finance/calendar/useFinanceCalendarCache";
+import { financeDailyBalancesCleared } from "../../features/finance/dailyBalances/financeDailyBalancesSlice";
 import {
     TransactionForm,
     type TransactionFormState,
@@ -74,6 +76,7 @@ function getFirstDayOfCurrentMonthIsoDate() {
 
 export function TransactionsPage() {
     const { i18n, t } = useTranslation("transactions");
+    const dispatch = useAppDispatch();
 
     const financeDataStatus = useAppSelector(selectFinanceDataStatus);
     const financeDataError = useAppSelector(selectFinanceDataError);
@@ -246,6 +249,11 @@ export function TransactionsPage() {
         );
     }
 
+    function invalidateFinanceProjectionCaches() {
+        clearFinanceCalendarCache();
+        dispatch(financeDailyBalancesCleared());
+    }
+
     async function handleUpdateTransactionFromForm(
         transaction: TransactionResponseDto,
         requests: TransactionCreateRequestDto[],
@@ -298,6 +306,8 @@ export function TransactionsPage() {
                 replaceTransaction(currentTransactions, updatedTransaction),
             );
 
+            invalidateFinanceProjectionCaches();
+
             setEditingTransaction(null);
             setSuccessMessage(t("edit.success"));
         } catch (error) {
@@ -328,6 +338,8 @@ export function TransactionsPage() {
                 ...createdTransactions,
                 ...currentTransactions,
             ]);
+
+            invalidateFinanceProjectionCaches();
 
             setSuccessMessage(t("create.success"));
         } catch (error) {
