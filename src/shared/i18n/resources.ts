@@ -1458,6 +1458,7 @@ export const resources = {
             table: {
                 name: "Nome",
                 accounts: "Conti",
+                todayBalance: "Saldo oggi",
                 status: "Stato",
             },
             status: {
@@ -1466,6 +1467,11 @@ export const resources = {
             },
             linkedAccountsCount: "{{count}} conti collegati",
             accountFallback: "Conto non disponibile",
+            todayBalance: {
+                loading: "Caricamento saldo...",
+                unavailable: "Saldo non disponibile",
+                empty: "—",
+            },
             formEyebrow: "Nuovo portafoglio",
             formTitle: "Aggiungi portafoglio",
             formIntro:
@@ -3816,6 +3822,7 @@ export const resources = {
             table: {
                 name: "Name",
                 accounts: "Accounts",
+                todayBalance: "Balance today",
                 status: "Status",
             },
             status: {
@@ -3824,6 +3831,11 @@ export const resources = {
             },
             linkedAccountsCount: "{{count}} linked accounts",
             accountFallback: "Account unavailable",
+            todayBalance: {
+                loading: "Loading balance...",
+                unavailable: "Balance unavailable",
+                empty: "—",
+            },
             formEyebrow: "New bucket",
             formTitle: "Add bucket",
             formIntro:

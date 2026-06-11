@@ -14,10 +14,13 @@ import {
     createBucket,
     findBucket,
     linkBucketAccount,
+    listDailyBalances,
     reopenBucket,
     unlinkBucketAccount,
     updateBucket,
 } from "../../features/finance/api/financeApi";
+import { financeDailyBalancesCleared } from "../../features/finance/dailyBalances/financeDailyBalancesSlice";
+import { getTodayIsoDate } from "../../features/finance/dailyBalances/financeDailyBalancesTypes";
 import {
     financeDataCleared,
     financeReferenceDataLoaded,
@@ -33,6 +36,7 @@ vi.mock("../../features/finance/api/financeApi", () => ({
     createBucket: vi.fn(),
     findBucket: vi.fn(),
     linkBucketAccount: vi.fn(),
+    listDailyBalances: vi.fn(),
     reopenBucket: vi.fn(),
     unlinkBucketAccount: vi.fn(),
     updateBucket: vi.fn(),
@@ -137,7 +141,11 @@ describe("BucketsPage", () => {
     beforeEach(async () => {
         await i18n.changeLanguage("it");
         vi.clearAllMocks();
+
         store.dispatch(financeDataCleared());
+        store.dispatch(financeDailyBalancesCleared());
+
+        vi.mocked(listDailyBalances).mockResolvedValue([]);
 
         vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
     });
@@ -150,12 +158,46 @@ describe("BucketsPage", () => {
         expect(
             screen.getByRole("heading", { name: "Portafogli" }),
         ).toBeInTheDocument();
+
         expect(screen.getByText("Risparmio")).toBeInTheDocument();
         expect(
             screen.getByText("Portafoglio per obiettivi di risparmio"),
         ).toBeInTheDocument();
         expect(screen.getByText("1 conti collegati")).toBeInTheDocument();
-        expect(screen.getByText("Attivo")).toBeInTheDocument();
+
+        expect(screen.getAllByText("Attivo").length).toBeGreaterThanOrEqual(1);
+    });
+
+    it("renders today's total balance for each bucket", async () => {
+        const today = getTodayIsoDate();
+
+        store.dispatch(financeReferenceDataLoaded(referenceData));
+
+        vi.mocked(listDailyBalances).mockResolvedValueOnce([
+            {
+                date: today,
+                accounts: [],
+                buckets: [
+                    {
+                        bucketId: "bucket-id",
+                        currency: "EUR",
+                        endOfDayBucketBalance: 350.5,
+                    },
+                ],
+                totalsByCurrency: [],
+            },
+        ]);
+
+        renderPage();
+
+        expect(await screen.findByText(/350,50\s€|350,50 €/)).toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(listDailyBalances).toHaveBeenCalledWith({
+                from: today,
+                to: today,
+            });
+        });
     });
 
     it("renders the loading state", () => {
@@ -257,9 +299,13 @@ describe("BucketsPage", () => {
         });
 
         expect(screen.getByText("Dettaglio portafoglio")).toBeInTheDocument();
-        expect(screen.getAllByText("Risparmio")).not.toHaveLength(0);
-        expect(screen.getAllByText("Conto principale")).not.toHaveLength(0);
-        expect(screen.getAllByText("Attivo")).not.toHaveLength(0);
+        expect(screen.getAllByText("Risparmio").length).toBeGreaterThanOrEqual(
+            1,
+        );
+        expect(
+            screen.getAllByText("Conto principale").length,
+        ).toBeGreaterThanOrEqual(1);
+        expect(screen.getAllByText("Attivo").length).toBeGreaterThanOrEqual(1);
     });
 
     it("updates a bucket and stores it in finance data", async () => {

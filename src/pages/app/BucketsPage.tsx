@@ -1,6 +1,7 @@
 import {
     Fragment,
     type ComponentProps,
+    useEffect,
     useMemo,
     useRef,
     useState,
@@ -33,6 +34,16 @@ import {
     bucketAdded,
     bucketUpdated,
 } from "../../features/finance/financeDataSlice";
+import {
+    selectDailyBalanceByDate,
+    selectDailyBalancesScenarioEntry,
+} from "../../features/finance/dailyBalances/financeDailyBalancesSelectors";
+import { loadDailyBalancesRange } from "../../features/finance/dailyBalances/financeDailyBalancesThunks";
+import {
+    BASE_DAILY_BALANCES_SCENARIO_KEY,
+    getDailyBalancesRangeKey,
+    getTodayIsoDate,
+} from "../../features/finance/dailyBalances/financeDailyBalancesTypes";
 import { ApiError } from "../../shared/api";
 
 type BucketFormState = {
@@ -112,15 +123,109 @@ function toBucketEditFormState(bucket: BucketResponseDto): BucketEditFormState {
     };
 }
 
+function formatMoneyAmount(amount: number, currency: string, language: string) {
+    return new Intl.NumberFormat(language, {
+        currency,
+        maximumFractionDigits: 2,
+        style: "currency",
+    }).format(amount);
+}
+
+function getBucketCurrencies(
+    bucket: BucketResponseDto,
+    accounts: AccountResponseDto[],
+    todayBalance:
+        | {
+              buckets: {
+                  bucketId: string;
+                  currency: string;
+              }[];
+          }
+        | undefined,
+) {
+    const currencies = new Set<string>();
+
+    todayBalance?.buckets
+        .filter((bucketBalance) => bucketBalance.bucketId === bucket.bucketId)
+        .forEach((bucketBalance) => {
+            currencies.add(bucketBalance.currency);
+        });
+
+    bucket.accountIds.forEach((accountId) => {
+        const account = accounts.find(
+            (currentAccount) => currentAccount.accountId === accountId,
+        );
+
+        if (account) {
+            currencies.add(account.currency);
+        }
+    });
+
+    return [...currencies].sort();
+}
+
+function getBucketBalanceAmount(
+    bucketId: string,
+    currency: string,
+    todayBalance:
+        | {
+              buckets: {
+                  bucketId: string;
+                  currency: string;
+                  endOfDayBucketBalance: number;
+              }[];
+          }
+        | undefined,
+) {
+    return (
+        todayBalance?.buckets.find(
+            (bucketBalance) =>
+                bucketBalance.bucketId === bucketId &&
+                bucketBalance.currency === currency,
+        )?.endOfDayBucketBalance ?? 0
+    );
+}
+
 export function BucketsPage() {
-    const { t } = useTranslation("buckets");
+    const { i18n, t } = useTranslation("buckets");
+    const displayLanguage = i18n.resolvedLanguage || i18n.language || "it";
     const dispatch = useAppDispatch();
     const bucketWorkspaceRef = useRef<HTMLElement | null>(null);
+
+    const todayIsoDate = useMemo(() => getTodayIsoDate(), []);
+
+    const todayBalanceRange = useMemo(
+        () => ({
+            from: todayIsoDate,
+            to: todayIsoDate,
+        }),
+        [todayIsoDate],
+    );
+
+    const todayBalanceRangeKey = useMemo(
+        () => getDailyBalancesRangeKey(todayBalanceRange),
+        [todayBalanceRange],
+    );
 
     const accounts = useAppSelector(selectAccounts);
     const buckets = useAppSelector(selectBuckets);
     const financeDataStatus = useAppSelector(selectFinanceDataStatus);
     const financeDataError = useAppSelector(selectFinanceDataError);
+
+    const todayBalance = useAppSelector((state) =>
+        selectDailyBalanceByDate(
+            state,
+            BASE_DAILY_BALANCES_SCENARIO_KEY,
+            todayIsoDate,
+        ),
+    );
+
+    const todayBalancesCacheEntry = useAppSelector((state) =>
+        selectDailyBalancesScenarioEntry(
+            state,
+            BASE_DAILY_BALANCES_SCENARIO_KEY,
+        ),
+    );
 
     const [form, setForm] = useState<BucketFormState>(initialFormState);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -148,6 +253,29 @@ export function BucketsPage() {
     const [accountLinkError, setAccountLinkError] = useState<string | null>(
         null,
     );
+
+    const hasRequestedTodayBalance =
+        todayBalancesCacheEntry.loadedRangeKeys.includes(
+            todayBalanceRangeKey,
+        ) ||
+        todayBalancesCacheEntry.pendingRangeKeys.includes(todayBalanceRangeKey);
+
+    useEffect(() => {
+        if (financeDataStatus !== "loaded" || hasRequestedTodayBalance) {
+            return;
+        }
+
+        void dispatch(
+            loadDailyBalancesRange({
+                range: todayBalanceRange,
+            }),
+        );
+    }, [
+        dispatch,
+        financeDataStatus,
+        hasRequestedTodayBalance,
+        todayBalanceRange,
+    ]);
 
     const sortedBuckets = useMemo(
         () =>
@@ -463,6 +591,12 @@ export function BucketsPage() {
     const isLoading =
         financeDataStatus === "idle" || financeDataStatus === "loading";
 
+    const isTodayBalanceLoading =
+        todayBalancesCacheEntry.status === "loading" && !todayBalance;
+
+    const isTodayBalanceUnavailable =
+        todayBalancesCacheEntry.status === "failed" && !todayBalance;
+
     return (
         <section className="sl-page">
             <header className="sl-page-header">
@@ -518,6 +652,11 @@ export function BucketsPage() {
                                                 {t("table.accounts")}
                                             </th>
                                             <th scope="col">
+                                                {t("table.todayBalance")}
+                                            </th>
+                                            <th
+                                                className="d-none d-md-table-cell"
+                                                scope="col">
                                                 {t("table.status")}
                                             </th>
                                         </tr>
@@ -529,6 +668,12 @@ export function BucketsPage() {
                                                 selectedBucketId;
                                             const isClosed =
                                                 isBucketClosed(bucket);
+                                            const bucketCurrencies =
+                                                getBucketCurrencies(
+                                                    bucket,
+                                                    accounts,
+                                                    todayBalance,
+                                                );
 
                                             return (
                                                 <Fragment key={bucket.bucketId}>
@@ -539,14 +684,31 @@ export function BucketsPage() {
                                                                 : undefined
                                                         }>
                                                         <td className="border-bottom-0">
-                                                            <strong>
-                                                                {getBucketDisplayName(
-                                                                    bucket,
-                                                                    t(
-                                                                        "unnamedBucket",
-                                                                    ),
-                                                                )}
-                                                            </strong>
+                                                            <div className="d-grid gap-1">
+                                                                <strong>
+                                                                    {getBucketDisplayName(
+                                                                        bucket,
+                                                                        t(
+                                                                            "unnamedBucket",
+                                                                        ),
+                                                                    )}
+                                                                </strong>
+
+                                                                <span
+                                                                    className={
+                                                                        isClosed
+                                                                            ? "badge text-bg-secondary align-self-start d-inline-flex d-md-none"
+                                                                            : "badge text-bg-success align-self-start d-inline-flex d-md-none"
+                                                                    }>
+                                                                    {isClosed
+                                                                        ? t(
+                                                                              "status.closed",
+                                                                          )
+                                                                        : t(
+                                                                              "status.active",
+                                                                          )}
+                                                                </span>
+                                                            </div>
                                                         </td>
                                                         <td className="border-bottom-0">
                                                             {t(
@@ -559,6 +721,51 @@ export function BucketsPage() {
                                                             )}
                                                         </td>
                                                         <td className="border-bottom-0">
+                                                            {isTodayBalanceLoading ? (
+                                                                <span className="text-muted">
+                                                                    {t(
+                                                                        "todayBalance.loading",
+                                                                    )}
+                                                                </span>
+                                                            ) : isTodayBalanceUnavailable ? (
+                                                                <span className="text-muted">
+                                                                    {t(
+                                                                        "todayBalance.unavailable",
+                                                                    )}
+                                                                </span>
+                                                            ) : bucketCurrencies.length >
+                                                              0 ? (
+                                                                <div className="d-grid gap-1">
+                                                                    {bucketCurrencies.map(
+                                                                        (
+                                                                            currency,
+                                                                        ) => (
+                                                                            <span
+                                                                                key={
+                                                                                    currency
+                                                                                }>
+                                                                                {formatMoneyAmount(
+                                                                                    getBucketBalanceAmount(
+                                                                                        bucket.bucketId,
+                                                                                        currency,
+                                                                                        todayBalance,
+                                                                                    ),
+                                                                                    currency,
+                                                                                    displayLanguage,
+                                                                                )}
+                                                                            </span>
+                                                                        ),
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-muted">
+                                                                    {t(
+                                                                        "todayBalance.empty",
+                                                                    )}
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td className="border-bottom-0 d-none d-md-table-cell">
                                                             <span
                                                                 className={
                                                                     isClosed
@@ -582,7 +789,7 @@ export function BucketsPage() {
                                                                 ? "table-active"
                                                                 : undefined
                                                         }>
-                                                        <td colSpan={3}>
+                                                        <td colSpan={4}>
                                                             <div className="d-grid gap-2">
                                                                 <p className="text-muted mb-0">
                                                                     {bucket.bucketDescription ??
