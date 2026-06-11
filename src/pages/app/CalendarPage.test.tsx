@@ -12,6 +12,7 @@ import { AppProviders } from "../../app/providers/AppProviders";
 import { store } from "../../app/store/store";
 import {
     confirmRecurringTransactionOccurrence,
+    getRecurringTransaction,
     getTransaction,
     listCalendarMovements,
     updateTransaction,
@@ -31,6 +32,7 @@ import { CalendarPage } from "./CalendarPage";
 
 vi.mock("../../features/finance/api/financeApi", () => ({
     confirmRecurringTransactionOccurrence: vi.fn(),
+    getRecurringTransaction: vi.fn(),
     getTransaction: vi.fn(),
     listCalendarMovements: vi.fn(),
     updateTransaction: vi.fn(),
@@ -94,6 +96,41 @@ const confirmedRecurringTransaction = {
     transactionChargeDate: "2026-06-21",
     recurringTransactionId: "recurring-transaction-id",
     recurringTransactionLogicalDate: "2026-06-20",
+};
+
+const recurringTransaction = {
+    recurringTransactionId: "recurring-transaction-id",
+    recurringTransactionAmountIsAdjustable: true,
+    recurringTransactionFirstPaymentDate: "2026-06-20",
+    recurringTransactionIsSimulated: false,
+    simulationGroupId: null,
+    recurringTransactionReminderEnabled: false,
+    recurringTransactionReminderDaysBefore: 7,
+    recurringTransactionCreatedAt: "2026-06-01T00:00:00Z",
+    recurringTransactionUpdatedAt: "2026-06-01T00:00:00Z",
+
+    recurringTransactionHistoryId: "recurring-transaction-history-id",
+    effectiveFrom: "2026-06-20",
+    effectiveTo: null,
+    dayOfUnit: 20,
+    recurrenceInterval: 1,
+    recurrenceUnit: "MONTH" as const,
+    paymentDateAdjustmentPolicy: "NONE" as const,
+    paymentAmount: -850,
+    recurringTransactionEndDate: null,
+    finalPaymentAmount: null,
+
+    recurringTransactionDetailsHistoryId:
+        "recurring-transaction-details-history-id",
+    recurringTransactionDescription: "Affitto previsto",
+    categoryId: "category-id",
+    financialPriorityId: "financial-priority-id",
+    linkedAccountId: "account-id",
+    linkedCreditCardId: null,
+    linkedBucketId: null,
+    recurringTransactionAffectsAccountBalance: true,
+    recurringtransactionAffectsSerenityline: true,
+    recurringTransactionDetailsEffectiveFrom: "2026-06-20",
 };
 
 const account = {
@@ -495,6 +532,10 @@ describe("CalendarPage", () => {
         vi.mocked(listCalendarMovements).mockResolvedValue([
             projectedRecurringMovement,
         ]);
+        vi.mocked(getRecurringTransaction).mockResolvedValue({
+            ...recurringTransaction,
+            recurringTransactionAmountIsAdjustable: true,
+        });
         vi.mocked(confirmRecurringTransactionOccurrence).mockResolvedValue(
             confirmedRecurringTransaction,
         );
@@ -506,17 +547,28 @@ describe("CalendarPage", () => {
 
         fireEvent.click(screen.getByRole("button", { name: "Conferma" }));
 
-        const confirmCell = screen
-            .getByRole("heading", {
+        await waitFor(() => {
+            expect(getRecurringTransaction).toHaveBeenCalledWith(
+                "recurring-transaction-id",
+            );
+        });
+
+        const confirmCell = (
+            await screen.findByRole("heading", {
                 name: "Conferma ricorrenza prevista",
             })
-            .closest("td");
+        ).closest("td");
 
         expect(confirmCell).not.toBeNull();
 
-        fireEvent.change(within(confirmCell!).getByLabelText("Importo"), {
+        const amountInput = within(confirmCell!).getByLabelText("Importo");
+
+        expect(amountInput).not.toBeDisabled();
+
+        fireEvent.change(amountInput, {
             target: { value: "-900,00" },
         });
+
         fireEvent.change(within(confirmCell!).getByLabelText("Data addebito"), {
             target: { value: "2026-06-21" },
         });
@@ -533,6 +585,77 @@ describe("CalendarPage", () => {
                 {
                     logicalDate: "2026-06-20",
                     transactionAmount: "-900.00",
+                    transactionChargeDate: "2026-06-21",
+                },
+            );
+        });
+
+        expect(
+            await screen.findByText(
+                "Ricorrenza confermata e salvata come transazione.",
+            ),
+        ).toBeInTheDocument();
+
+        expectDailyBalancesCacheCleared();
+    });
+
+    it("confirms a projected recurring movement without editable amount when the recurring amount is fixed", async () => {
+        vi.mocked(listCalendarMovements).mockResolvedValue([
+            projectedRecurringMovement,
+        ]);
+        vi.mocked(getRecurringTransaction).mockResolvedValue({
+            ...recurringTransaction,
+            recurringTransactionAmountIsAdjustable: false,
+        });
+        vi.mocked(confirmRecurringTransactionOccurrence).mockResolvedValue(
+            confirmedRecurringTransaction,
+        );
+        seedDailyBalancesCache();
+
+        renderPage();
+
+        expect(await screen.findByText("Affitto previsto")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "Conferma" }));
+
+        await waitFor(() => {
+            expect(getRecurringTransaction).toHaveBeenCalledWith(
+                "recurring-transaction-id",
+            );
+        });
+
+        const confirmCell = (
+            await screen.findByRole("heading", {
+                name: "Conferma ricorrenza prevista",
+            })
+        ).closest("td");
+
+        expect(confirmCell).not.toBeNull();
+
+        expect(within(confirmCell!).getByLabelText("Importo")).toBeDisabled();
+
+        expect(
+            within(confirmCell!).getByText(
+                /ricorrenza ha un importo fisso:/i,
+            ),
+        ).toBeInTheDocument();
+
+        fireEvent.change(within(confirmCell!).getByLabelText("Data addebito"), {
+            target: { value: "2026-06-21" },
+        });
+
+        fireEvent.click(
+            within(confirmCell!).getByRole("button", {
+                name: "Conferma ricorrenza",
+            }),
+        );
+
+        await waitFor(() => {
+            expect(confirmRecurringTransactionOccurrence).toHaveBeenCalledWith(
+                "recurring-transaction-id",
+                {
+                    logicalDate: "2026-06-20",
+                    transactionAmount: null,
                     transactionChargeDate: "2026-06-21",
                 },
             );

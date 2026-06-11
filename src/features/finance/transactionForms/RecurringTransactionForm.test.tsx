@@ -12,6 +12,7 @@ import {
 import type { FinanceReferenceData } from "../financeDataTypes";
 import { RecurringTransactionForm } from "./RecurringTransactionForm";
 import type { FinancialPriorityResponseDto } from "../api/financeApiTypes";
+import { accountCleared, accountLoaded } from "../../account/accountSlice";
 
 const account = {
     accountId: "account-id",
@@ -163,6 +164,23 @@ describe("RecurringTransactionForm", () => {
         vi.clearAllMocks();
         store.dispatch(financeDataCleared());
         store.dispatch(financeReferenceDataLoaded(referenceData));
+        store.dispatch(accountCleared());
+        store.dispatch(
+            accountLoaded({
+                userId: "11111111-1111-4111-8111-111111111111",
+                userName: "Samuel",
+                email: "samuel@example.com",
+                userGroupId: "22222222-2222-4222-8222-222222222222",
+                userGroupName: "Gruppo Samuel",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+                emailTwoFactorEnabled: false,
+                paymentEmailRemindersEnabled: true,
+            }),
+        );
     });
 
     it("submits a standard recurring transaction request with normalized money amount", async () => {
@@ -177,7 +195,7 @@ describe("RecurringTransactionForm", () => {
                 {
                     recurringTransactionDescription: "Affitto",
                     paymentAmount: "850.00",
-                    recurringTransactionAmountIsAdjustable: false,
+                    recurringTransactionAmountIsAdjustable: true,
                     recurringTransactionFirstPaymentDate: "2026-06-04",
                     recurrenceInterval: 1,
                     recurrenceUnit: "MONTH",
@@ -338,5 +356,40 @@ describe("RecurringTransactionForm", () => {
                 "Ricorda: gli importi in uscita vanno inseriti con il segno meno (-) ad es. -50 €.",
             ),
         ).toBeInTheDocument();
+    });
+
+    it("warns when recurring reminders are enabled but global reminders are disabled", () => {
+        store.dispatch(
+            accountLoaded({
+                userId: "11111111-1111-4111-8111-111111111111",
+                userName: "Samuel",
+                email: "samuel@example.com",
+                userGroupId: "22222222-2222-4222-8222-222222222222",
+                userGroupName: "Gruppo Samuel",
+                userRole: "OWNER",
+                userPlatformRole: "USER",
+                preferredLocale: "it-IT",
+                preferredTheme: "DEFAULT",
+                wantsInvoice: false,
+                emailTwoFactorEnabled: false,
+                paymentEmailRemindersEnabled: false,
+            }),
+        );
+
+        renderForm();
+
+        fireEvent.click(
+            screen.getByRole("checkbox", {
+                name: "Attiva promemoria",
+            }),
+        );
+
+        expect(
+            screen.getByText(/Hai i promemoria disattivati/i),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("link", { name: "impostazioni generali" }),
+        ).toHaveAttribute("href", "/app/impostazioni");
     });
 });

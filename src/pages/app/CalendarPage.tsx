@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 
 import {
     confirmRecurringTransactionOccurrence,
+    getRecurringTransaction,
     getTransaction,
     updateTransaction,
 } from "../../features/finance/api/financeApi";
@@ -83,6 +84,7 @@ type RecurringConfirmationState = {
     movementKey: string;
     amount: string;
     chargeDate: string;
+    amountIsAdjustable: boolean;
 } | null;
 
 function isPersistedTransactionMovement(
@@ -496,16 +498,41 @@ export function CalendarPage() {
         setConfirmationSuccess(null);
     }
 
-    function startConfirmingRecurringMovement(
+    async function startConfirmingRecurringMovement(
         movement: FinanceCalendarMovementResponseDto,
     ) {
         clearConfirmationFeedback();
 
-        setConfirmingMovement({
-            movementKey: getFinanceCalendarMovementKey(movement),
-            amount: moneyAmountToFormValue(movement.amount, displayLanguage),
-            chargeDate: movement.chargeDate,
-        });
+        if (!movement.recurringTransactionId) {
+            return;
+        }
+
+        const movementKey = getFinanceCalendarMovementKey(movement);
+
+        setConfirmationSubmittingKey(movementKey);
+
+        try {
+            const recurringTransaction = await getRecurringTransaction(
+                movement.recurringTransactionId,
+            );
+
+            setConfirmingMovement({
+                movementKey,
+                amount: moneyAmountToFormValue(
+                    movement.amount,
+                    displayLanguage,
+                ),
+                chargeDate: movement.chargeDate,
+                amountIsAdjustable:
+                    recurringTransaction.recurringTransactionAmountIsAdjustable,
+            });
+        } catch (error) {
+            setConfirmationError(
+                getErrorMessage(error, t("confirmation.errorFallback")),
+            );
+        } finally {
+            setConfirmationSubmittingKey(null);
+        }
     }
 
     function cancelConfirmingRecurringMovement() {
@@ -576,7 +603,9 @@ export function CalendarPage() {
 
         const request: RecurringTransactionOccurrenceConfirmRequestDto = {
             logicalDate: movement.logicalDate,
-            transactionAmount: normalizedAmount,
+            transactionAmount: confirmingMovement.amountIsAdjustable
+                ? normalizedAmount
+                : null,
             transactionChargeDate: confirmingMovement.chargeDate,
         };
 
@@ -598,7 +627,7 @@ export function CalendarPage() {
             );
 
             dispatch(financeDailyBalancesCleared());
-            
+
             setConfirmingMovement(null);
             setConfirmationSuccess(t("confirmation.recurringSuccess"));
         } catch (error) {
@@ -770,7 +799,9 @@ export function CalendarPage() {
                 <button
                     className="btn btn-sm btn-outline-success"
                     disabled={isSubmitting}
-                    onClick={() => startConfirmingRecurringMovement(movement)}
+                    onClick={() => {
+                        void startConfirmingRecurringMovement(movement);
+                    }}
                     type="button">
                     {t("confirmation.confirm")}
                 </button>
@@ -1366,6 +1397,9 @@ export function CalendarPage() {
                                                                     </label>
                                                                     <input
                                                                         className="form-control"
+                                                                        disabled={
+                                                                            !confirmingMovement.amountIsAdjustable
+                                                                        }
                                                                         id={`calendar-confirm-amount-${movementKey}`}
                                                                         onChange={(
                                                                             event,
@@ -1463,6 +1497,13 @@ export function CalendarPage() {
                                                                         )}
                                                                     </button>
                                                                 </div>
+                                                                {!confirmingMovement.amountIsAdjustable ? (
+                                                                    <div className="form-text">
+                                                                        {t(
+                                                                            "confirmation.amountNotAdjustable",
+                                                                        )}
+                                                                    </div>
+                                                                ) : null}
                                                             </div>
                                                         </div>
                                                     </td>

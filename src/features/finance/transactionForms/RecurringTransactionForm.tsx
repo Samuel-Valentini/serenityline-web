@@ -8,6 +8,8 @@ import {
 } from "./recurringTransactionRequestBuilder";
 
 import { useAppSelector } from "../../../app/store/hooks";
+import { selectCurrentUser } from "../../account/accountSelectors";
+import { ROUTES } from "../../../shared/constants/routes";
 import type {
     BucketResponseDto,
     CreditCardResponseDto,
@@ -88,7 +90,7 @@ function getInitialFormState(): RecurringTransactionFormState {
     return {
         recurringTransactionDescription: "",
         paymentAmount: "",
-        recurringTransactionAmountIsAdjustable: false,
+        recurringTransactionAmountIsAdjustable: true,
         recurringTransactionFirstPaymentDate: getTodayIsoDate(),
         recurrenceInterval: "1",
         recurrenceUnit: "MONTH",
@@ -127,12 +129,21 @@ export function RecurringTransactionForm({
     const categories = useAppSelector(selectCategories);
     const creditCards = useAppSelector(selectCreditCards);
     const financialPriorities = useAppSelector(selectFinancialPriorities);
+    const currentUser = useAppSelector(selectCurrentUser);
 
     const [form, setForm] = useState<RecurringTransactionFormState>(() => ({
         ...getInitialFormState(),
         ...initialValues,
     }));
     const [formError, setFormError] = useState<string | null>(null);
+
+    const isSimulated = isSimulationMovementContext(context);
+    const showStandardRecurringOptions = !isSimulated;
+
+    const shouldShowGlobalReminderDisabledWarning =
+        showStandardRecurringOptions &&
+        form.recurringTransactionReminderEnabled &&
+        currentUser?.paymentEmailRemindersEnabled === false;
 
     const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] =
         useState(false);
@@ -142,8 +153,6 @@ export function RecurringTransactionForm({
         useState(false);
     const [isCreateBucketModalOpen, setIsCreateBucketModalOpen] =
         useState(false);
-    const isSimulated = isSimulationMovementContext(context);
-    const showStandardRecurringOptions = !isSimulated;
 
     const allowedAccountIds = useMemo(() => {
         if (!isSimulationMovementContext(context)) {
@@ -873,24 +882,46 @@ export function RecurringTransactionForm({
                     />
                 </div>
                 {showStandardRecurringOptions ? (
-                    <div className="form-check">
-                        <input
-                            checked={form.recurringTransactionReminderEnabled}
-                            className="form-check-input"
-                            id={`${idPrefix}-reminderEnabled`}
-                            onChange={(event) =>
-                                updateField(
-                                    "recurringTransactionReminderEnabled",
-                                    event.target.checked,
-                                )
-                            }
-                            type="checkbox"
-                        />
-                        <label
-                            className="form-check-label"
-                            htmlFor={`${idPrefix}-reminderEnabled`}>
-                            {t("recurring.fields.reminderEnabled")}
-                        </label>
+                    <div>
+                        <div className="form-check">
+                            <input
+                                checked={
+                                    form.recurringTransactionReminderEnabled
+                                }
+                                className="form-check-input"
+                                id={`${idPrefix}-reminderEnabled`}
+                                onChange={(event) =>
+                                    updateField(
+                                        "recurringTransactionReminderEnabled",
+                                        event.target.checked,
+                                    )
+                                }
+                                type="checkbox"
+                            />
+                            <label
+                                className="form-check-label"
+                                htmlFor={`${idPrefix}-reminderEnabled`}>
+                                {t("recurring.fields.reminderEnabled")}
+                            </label>
+                        </div>
+
+                        {shouldShowGlobalReminderDisabledWarning ? (
+                            <div
+                                className="alert alert-warning mt-2 mb-0"
+                                role="status">
+                                {t(
+                                    "recurring.globalReminderDisabledWarning.beforeLink",
+                                )}
+                                <a href={ROUTES.app.settings}>
+                                    {t(
+                                        "recurring.globalReminderDisabledWarning.settingsLink",
+                                    )}
+                                </a>
+                                {t(
+                                    "recurring.globalReminderDisabledWarning.afterLink",
+                                )}
+                            </div>
+                        ) : null}
                     </div>
                 ) : null}
 

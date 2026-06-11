@@ -1006,6 +1006,8 @@ export const resources = {
                     amount: "Inserisci un importo valido.",
                     chargeDate: "Inserisci una data di addebito valida.",
                 },
+                amountNotAdjustable:
+                    "Questa ricorrenza ha un importo fisso: puoi confermarla, ma non modificarne l’importo.",
             },
             simulations: {
                 title: "Scenari simulati",
@@ -1597,6 +1599,12 @@ export const resources = {
                 },
                 placeholders: {
                     amount: "Es. 250,50",
+                },
+                globalReminderDisabledWarning: {
+                    beforeLink: "Hai i promemoria disattivati nelle ",
+                    settingsLink: "impostazioni generali",
+                    afterLink:
+                        ". Puoi salvare la preferenza di questo movimento ricorrente, ma se non attivi i promemoria nelle impostazioni generali non ti arriverà nessun avviso.",
                 },
                 options: {
                     selectCategory: "Seleziona categoria",
@@ -3243,6 +3251,8 @@ export const resources = {
                     amount: "Enter a valid amount.",
                     chargeDate: "Enter a valid charge date.",
                 },
+                amountNotAdjustable:
+                    "This recurrence has a fixed amount: you can confirm it, but you can’t change the amount.",
             },
             simulations: {
                 title: "Simulated scenarios",
@@ -3940,6 +3950,12 @@ export const resources = {
                 },
                 placeholders: {
                     amount: "E.g. 250.50",
+                },
+                globalReminderDisabledWarning: {
+                    beforeLink: "You have reminders disabled in ",
+                    settingsLink: "general settings",
+                    afterLink:
+                        ". You can save the preference for this recurring movement, but unless you enable reminders in general settings, you will not receive any alert.",
                 },
                 options: {
                     selectCategory: "Select category",
