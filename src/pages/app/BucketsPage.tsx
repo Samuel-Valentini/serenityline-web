@@ -463,29 +463,20 @@ export function BucketsPage() {
     const isTodayBalanceUnavailable =
         todayBalancesCacheEntry.status === "failed" && !todayBalance;
 
-    const selectedBucketNonZeroBalances = useMemo(() => {
-        if (!selectedBucket || !todayBalance) {
-            return [];
-        }
-
-        return getBucketCurrencies(selectedBucket, accounts, todayBalance)
-            .map((currency) => ({
-                currency,
-                amount: getBucketBalanceAmount(
-                    selectedBucket.bucketId,
-                    currency,
-                    todayBalance,
-                ),
-            }))
-            .filter((balance) => Math.abs(balance.amount) > 0.005);
-    }, [accounts, selectedBucket, todayBalance]);
+    const selectedBucketNonZeroAccountBalances = useMemo(
+        () =>
+            selectedBucketAccountCoverageBalances.filter(
+                (coverageBalance) => Math.abs(coverageBalance.balance) > 0.005,
+            ),
+        [selectedBucketAccountCoverageBalances],
+    );
 
     const isSelectedBucketCloseDisabledByBalance =
         selectedBucket !== null &&
         !isBucketClosed(selectedBucket) &&
         !isTodayBalanceLoading &&
         !isTodayBalanceUnavailable &&
-        selectedBucketNonZeroBalances.length > 0;
+        selectedBucketNonZeroAccountBalances.length > 0;
 
     function requestBucketWorkspaceScroll() {
         if (typeof window === "undefined") {
