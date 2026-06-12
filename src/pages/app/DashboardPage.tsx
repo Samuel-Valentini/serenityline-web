@@ -6,6 +6,8 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { useAppDispatch, useAppSelector } from "../../app/store/hooks";
 import { listCalendarMovements } from "../../features/finance/api/financeApi";
 import type {
+    AccountResponseDto,
+    BucketResponseDto,
     CategoryResponseDto,
     FinanceCalendarDailyBalanceResponseDto,
     FinanceCalendarMovementResponseDto,
@@ -62,6 +64,17 @@ type DashboardCategoryExpense = {
     categoryName: string;
     total: number;
     percentage: number;
+};
+
+type DashboardBucketCoverageWarning = {
+    key: string;
+    bucketName: string;
+    negativeAccountName: string;
+    negativeAmount: number;
+    positiveAccountName: string | null;
+    positiveAmount: number | null;
+    positiveTotal: number;
+    positiveAccountCount: number;
 };
 
 const DASHBOARD_EXPENSE_CHART_COLORS = [
@@ -303,6 +316,113 @@ function getCategoryExpenseBreakdown(
         .sort((first, second) => second.total - first.total);
 }
 
+function getDashboardBucketCoverageWarnings(
+    balance: FinanceCalendarDailyBalanceResponseDto | null | undefined,
+    accounts: AccountResponseDto[],
+    buckets: BucketResponseDto[],
+    currency: string,
+    unknownAccountName: string,
+    unknownBucketName: string,
+): DashboardBucketCoverageWarning[] {
+    if (!balance) {
+        return [];
+    }
+
+    const accountsById = new Map(
+        accounts.map((account) => [account.accountId, account]),
+    );
+
+    const bucketsById = new Map(
+        buckets.map((bucket) => [bucket.bucketId, bucket]),
+    );
+
+    const balancesByBucketId = new Map<
+        string,
+        {
+            accountId: string;
+            accountName: string;
+            bucketId: string;
+            bucketName: string;
+            balance: number;
+        }[]
+    >();
+
+    balance.accounts
+        .filter((accountBalance) => accountBalance.currency === currency)
+        .forEach((accountBalance) => {
+            const account = accountsById.get(accountBalance.accountId);
+
+            accountBalance.buckets.forEach((bucketBalance) => {
+                const value = Number(bucketBalance.endOfDayBucketBalance);
+
+                if (!Number.isFinite(value) || value === 0) {
+                    return;
+                }
+
+                const bucket = bucketsById.get(bucketBalance.bucketId);
+                const currentBalances =
+                    balancesByBucketId.get(bucketBalance.bucketId) ?? [];
+
+                currentBalances.push({
+                    accountId: accountBalance.accountId,
+                    accountName: account?.accountName ?? unknownAccountName,
+                    bucketId: bucketBalance.bucketId,
+                    bucketName: bucket?.bucketName ?? unknownBucketName,
+                    balance: value,
+                });
+
+                balancesByBucketId.set(bucketBalance.bucketId, currentBalances);
+            });
+        });
+
+    return [...balancesByBucketId.values()]
+        .flatMap((bucketAccountBalances) =>
+            bucketAccountBalances
+                .filter(
+                    (bucketAccountBalance) => bucketAccountBalance.balance < 0,
+                )
+                .map((negativeBalance) => {
+                    const positiveBalances = bucketAccountBalances
+                        .filter(
+                            (bucketAccountBalance) =>
+                                bucketAccountBalance.accountId !==
+                                    negativeBalance.accountId &&
+                                bucketAccountBalance.balance > 0,
+                        )
+                        .sort(
+                            (first, second) => second.balance - first.balance,
+                        );
+
+                    const positiveTotal = positiveBalances.reduce(
+                        (sum, positiveBalance) => sum + positiveBalance.balance,
+                        0,
+                    );
+
+                    return {
+                        key: `${negativeBalance.bucketId}:${negativeBalance.accountId}`,
+                        bucketName: negativeBalance.bucketName,
+                        negativeAccountName: negativeBalance.accountName,
+                        negativeAmount: Math.abs(negativeBalance.balance),
+                        positiveAccountName:
+                            positiveBalances.length === 1
+                                ? positiveBalances[0].accountName
+                                : null,
+                        positiveAmount:
+                            positiveBalances.length === 1
+                                ? positiveBalances[0].balance
+                                : null,
+                        positiveTotal,
+                        positiveAccountCount: positiveBalances.length,
+                    };
+                }),
+        )
+        .sort((first, second) =>
+            `${first.bucketName}:${first.negativeAccountName}`.localeCompare(
+                `${second.bucketName}:${second.negativeAccountName}`,
+            ),
+        );
+}
+
 function DashboardMetricCard({
     label,
     value,
@@ -542,6 +662,19 @@ export function DashboardPage() {
     const todayBalance = useMemo(
         () => findBalanceOnOrAfter(balances, todayIsoDate),
         [balances, todayIsoDate],
+    );
+
+    const bucketCoverageWarnings = useMemo(
+        () =>
+            getDashboardBucketCoverageWarnings(
+                todayBalance,
+                accounts,
+                buckets,
+                selectedCurrency,
+                t("bucketWarnings.unknownAccount"),
+                t("bucketWarnings.unknownBucket"),
+            ),
+        [accounts, buckets, selectedCurrency, t, todayBalance],
     );
 
     const yearEndDate = useMemo(
@@ -813,6 +946,94 @@ export function DashboardPage() {
                     </div>
                 )}
             </article>
+
+            {bucketCoverageWarnings.length > 0 ? (
+                <section
+                    aria-labelledby="dashboardBucketWarningsTitle"
+                    aria-live="polite"
+                    className="sl-panel sl-dashboard-bucket-warnings">
+                    <div className="sl-section-heading">
+                        <div>
+                            <p className="sl-eyebrow">
+                                {t("bucketWarnings.eyebrow")}
+                            </p>
+                            <h2 id="dashboardBucketWarningsTitle">
+                                {t("bucketWarnings.title")}
+                            </h2>
+                            <p>{t("bucketWarnings.subtitle")}</p>
+                        </div>
+
+                        <div className="text-center">
+                            <Link
+                                className="btn btn-outline-primary btn-sm"
+                                to={ROUTES.app.buckets}>
+                                {t("bucketWarnings.cta")}
+                            </Link>
+                        </div>
+                    </div>
+
+                    <div className="sl-dashboard-bucket-warning-list">
+                        {bucketCoverageWarnings.map((warning) => (
+                            <article
+                                className="sl-dashboard-bucket-warning"
+                                key={warning.key}>
+                                <span aria-hidden="true">!</span>
+                                <p>
+                                    {warning.positiveAccountCount === 1 &&
+                                    warning.positiveAccountName &&
+                                    warning.positiveAmount != null
+                                        ? t(
+                                              "bucketWarnings.withSinglePositive",
+                                              {
+                                                  bucketName:
+                                                      warning.bucketName,
+                                                  negativeAccountName:
+                                                      warning.negativeAccountName,
+                                                  negativeAmount:
+                                                      detailedAmountFormatter.format(
+                                                          warning.negativeAmount,
+                                                      ),
+                                                  positiveAccountName:
+                                                      warning.positiveAccountName,
+                                                  positiveAmount:
+                                                      detailedAmountFormatter.format(
+                                                          warning.positiveAmount,
+                                                      ),
+                                              },
+                                          )
+                                        : warning.positiveAccountCount > 1
+                                          ? t(
+                                                "bucketWarnings.withMultiplePositive",
+                                                {
+                                                    bucketName:
+                                                        warning.bucketName,
+                                                    negativeAccountName:
+                                                        warning.negativeAccountName,
+                                                    negativeAmount:
+                                                        detailedAmountFormatter.format(
+                                                            warning.negativeAmount,
+                                                        ),
+                                                    positiveTotal:
+                                                        detailedAmountFormatter.format(
+                                                            warning.positiveTotal,
+                                                        ),
+                                                },
+                                            )
+                                          : t("bucketWarnings.negativeOnly", {
+                                                bucketName: warning.bucketName,
+                                                negativeAccountName:
+                                                    warning.negativeAccountName,
+                                                negativeAmount:
+                                                    detailedAmountFormatter.format(
+                                                        warning.negativeAmount,
+                                                    ),
+                                            })}
+                                </p>
+                            </article>
+                        ))}
+                    </div>
+                </section>
+            ) : null}
 
             <div className="row g-3">
                 <div className="col-12 col-md-6 col-xl-3">

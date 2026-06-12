@@ -43,6 +43,18 @@ const referenceData: FinanceReferenceData = {
             accountCreatedAt: "2026-01-01T00:00:00Z",
             accountUpdatedAt: "2026-01-01T00:00:00Z",
         },
+        {
+            accountId: "second-account-id",
+            accountName: "Conto secondario",
+            accountDescription: null,
+            currency: "EUR",
+            issuingInstitution: null,
+            openingBalance: 500,
+            openingBalanceDate: "2026-01-01",
+            userGroupId: "group-id",
+            accountCreatedAt: "2026-01-01T00:00:00Z",
+            accountUpdatedAt: "2026-01-01T00:00:00Z",
+        },
     ],
     creditCards: [],
     categories: [
@@ -64,7 +76,7 @@ const referenceData: FinanceReferenceData = {
             bucketId: "bucket-id",
             bucketName: "Essenziali",
             bucketDescription: null,
-            accountIds: ["account-id"],
+            accountIds: ["account-id", "second-account-id"],
             userGroupId: "group-id",
             bucketCreatedAt: "2026-01-01T00:00:00Z",
             bucketUpdatedAt: "2026-01-01T00:00:00Z",
@@ -124,6 +136,73 @@ function createDailyBalance(
                 endOfDayAccountsBalance: accountBalance,
                 endOfDaySerenityline: serenityline,
                 endOfDayBucketsBalance: 0,
+            },
+        ],
+    };
+}
+
+function createDailyBalanceWithBucketBalances({
+    firstAccountBucketBalance,
+    secondAccountBucketBalance = 0,
+}: {
+    firstAccountBucketBalance: number;
+    secondAccountBucketBalance?: number;
+}): FinanceCalendarDailyBalanceResponseDto {
+    const today = getTodayIsoDate();
+
+    return {
+        date: today,
+        accounts: [
+            {
+                accountId: "account-id",
+                currency: "EUR",
+                endOfDayAccountBalance: 1000,
+                endOfDaySerenityline: 700,
+                endOfDayBucketsBalance: firstAccountBucketBalance,
+                buckets:
+                    firstAccountBucketBalance === 0
+                        ? []
+                        : [
+                              {
+                                  bucketId: "bucket-id",
+                                  endOfDayBucketBalance:
+                                      firstAccountBucketBalance,
+                              },
+                          ],
+            },
+            {
+                accountId: "second-account-id",
+                currency: "EUR",
+                endOfDayAccountBalance: 500,
+                endOfDaySerenityline: 500,
+                endOfDayBucketsBalance: secondAccountBucketBalance,
+                buckets:
+                    secondAccountBucketBalance === 0
+                        ? []
+                        : [
+                              {
+                                  bucketId: "bucket-id",
+                                  endOfDayBucketBalance:
+                                      secondAccountBucketBalance,
+                              },
+                          ],
+            },
+        ],
+        buckets: [
+            {
+                bucketId: "bucket-id",
+                currency: "EUR",
+                endOfDayBucketBalance:
+                    firstAccountBucketBalance + secondAccountBucketBalance,
+            },
+        ],
+        totalsByCurrency: [
+            {
+                currency: "EUR",
+                endOfDayAccountsBalance: 1500,
+                endOfDaySerenityline: 1200,
+                endOfDayBucketsBalance:
+                    firstAccountBucketBalance + secondAccountBucketBalance,
             },
         ],
     };
@@ -418,5 +497,58 @@ describe("DashboardPage", () => {
                 "Non è stato possibile aggiornare la proiezione dei saldi.",
             ),
         ).toBeInTheDocument();
+    });
+
+    it("renders a warning when a bucket is negative on an account", async () => {
+        vi.mocked(listDailyBalances).mockResolvedValueOnce([
+            createDailyBalanceWithBucketBalances({
+                firstAccountBucketBalance: -300,
+            }),
+        ]);
+
+        store.dispatch(financeReferenceDataLoaded(referenceData));
+
+        renderPage();
+
+        expect(
+            await screen.findByText("Ci sono portafogli in negativo"),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText(/portafoglio “Essenziali” è sotto/i),
+        ).toBeInTheDocument();
+
+        expect(screen.getByText(/Conto principale/i)).toBeInTheDocument();
+
+        expect(
+            screen.getByText(/SerenityLine tiene già conto della scopertura/i),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("link", { name: "Apri portafogli" }),
+        ).toHaveAttribute("href", "/app/portafogli");
+    });
+
+    it("suggests rebalancing when the same bucket is positive on another account", async () => {
+        vi.mocked(listDailyBalances).mockResolvedValueOnce([
+            createDailyBalanceWithBucketBalances({
+                firstAccountBucketBalance: -300,
+                secondAccountBucketBalance: 500,
+            }),
+        ]);
+
+        store.dispatch(financeReferenceDataLoaded(referenceData));
+
+        renderPage();
+
+        expect(
+            await screen.findByText("Ci sono portafogli in negativo"),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText(/Sul conto “Conto secondario”/i),
+        ).toBeInTheDocument();
+
+        expect(screen.getByText(/Valuta un riequilibrio/i)).toBeInTheDocument();
     });
 });

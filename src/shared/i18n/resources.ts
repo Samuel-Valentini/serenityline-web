@@ -725,6 +725,21 @@ export const resources = {
                     cta: "Apri SerenityLine",
                 },
             },
+            bucketWarnings: {
+                eyebrow: "Portafogli",
+                title: "Ci sono portafogli in negativo",
+                subtitle:
+                    "SerenityLine tiene già conto delle scoperture. Questi avvisi ti aiutano a capire dove può servire un riequilibrio.",
+                cta: "Apri portafogli",
+                unknownAccount: "Conto non disponibile",
+                unknownBucket: "Portafoglio non disponibile",
+                negativeOnly:
+                    "A fine giornata il portafoglio “{{bucketName}}” è sotto di {{negativeAmount}} sul conto “{{negativeAccountName}}”. SerenityLine tiene già conto della scopertura.",
+                withSinglePositive:
+                    "A fine giornata il portafoglio “{{bucketName}}” è sotto di {{negativeAmount}} sul conto “{{negativeAccountName}}”. Sul conto “{{positiveAccountName}}” lo stesso portafoglio ha {{positiveAmount}} disponibili. Valuta un riequilibrio. SerenityLine tiene già conto della scopertura.",
+                withMultiplePositive:
+                    "A fine giornata il portafoglio “{{bucketName}}” è sotto di {{negativeAmount}} sul conto “{{negativeAccountName}}”. Su altri conti lo stesso portafoglio ha {{positiveTotal}} disponibili. Valuta un riequilibrio. SerenityLine tiene già conto della scopertura.",
+            },
             metrics: {
                 serenityLineToday: "SerenityLine oggi",
                 totalBalance: "Saldo totale",
@@ -3352,6 +3367,21 @@ export const resources = {
                     text: "No negative threshold appears in the loaded period. You can now use simulations and portfolios to decide more clearly.",
                     cta: "Open SerenityLine",
                 },
+            },
+            bucketWarnings: {
+                eyebrow: "Portfolios",
+                title: "Some portfolios are under-covered",
+                subtitle:
+                    "SerenityLine already accounts for these shortfalls. These notices help you understand where a rebalance may be useful.",
+                cta: "Open portfolios",
+                unknownAccount: "Unknown account",
+                unknownBucket: "Unknown portfolio",
+                negativeOnly:
+                    "At the end of the day, portfolio “{{bucketName}}” is short by {{negativeAmount}} on account “{{negativeAccountName}}”. SerenityLine already accounts for this shortfall.",
+                withSinglePositive:
+                    "At the end of the day, portfolio “{{bucketName}}” is short by {{negativeAmount}} on account “{{negativeAccountName}}”. On account “{{positiveAccountName}}”, the same portfolio has {{positiveAmount}} available. Consider rebalancing it. SerenityLine already accounts for this shortfall.",
+                withMultiplePositive:
+                    "At the end of the day, portfolio “{{bucketName}}” is short by {{negativeAmount}} on account “{{negativeAccountName}}”. On other accounts, the same portfolio has {{positiveTotal}} available. Consider rebalancing it. SerenityLine already accounts for this shortfall.",
             },
             metrics: {
                 serenityLineToday: "SerenityLine today",
