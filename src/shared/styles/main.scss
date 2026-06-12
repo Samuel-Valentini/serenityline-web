@@ -2771,6 +2771,7 @@ h6 {
 
 .sl-how-hero,
 .sl-how-story-card,
+.sl-how-tutorial,
 .sl-how-serenityline,
 .sl-how-actions-section,
 .sl-how-getting-started,
@@ -2810,6 +2811,7 @@ h6 {
 
 .sl-how-preview,
 .sl-how-story-card,
+.sl-how-video-card,
 .sl-how-line-card,
 .sl-how-useful-card,
 .sl-how-comparison-card,
@@ -2927,6 +2929,7 @@ h6 {
 }
 
 .sl-how-story-card,
+.sl-how-tutorial,
 .sl-how-comparison-grid,
 .sl-how-final-card,
 .sl-how-serenityline,
@@ -3098,6 +3101,31 @@ h6 {
     .sl-how-preview dl {
         grid-template-columns: 1fr;
     }
+}
+
+.sl-how-video-card {
+    overflow: hidden;
+    padding: clamp(0.65rem, 2vw, 0.9rem);
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(216, 195, 155, 0.18),
+            transparent 24rem
+        ),
+        var(--sl-color-card);
+}
+
+.sl-how-video {
+    display: block;
+    width: 100%;
+    border: 1px solid rgba(231, 223, 208, 0.86);
+    border-radius: 1rem;
+    background: var(--sl-color-green-900);
+    aspect-ratio: 16 / 9;
+}
+
+#tutorial-serenityline {
+    scroll-margin-top: 6rem;
 }
 
 #guida-rapida {
@@ -4201,4 +4229,40 @@ h6 {
     box-shadow: none;
     opacity: 1;
     cursor: not-allowed;
+}
+
+.sl-hero-video-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.sl-hero-video-cta-icon {
+    display: inline-flex;
+    width: 1.55rem;
+    height: 1.55rem;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(167, 123, 45, 0.48);
+    border-radius: 999px;
+    color: currentColor;
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.sl-hero-video-cta-icon svg {
+    width: 0.78rem;
+    height: 0.78rem;
+    margin-left: 0.08rem;
+    fill: currentColor;
+}
+
+.sl-hero-video-cta:hover .sl-hero-video-cta-icon,
+.sl-hero-video-cta:focus-visible .sl-hero-video-cta-icon {
+    transform: translateX(1px);
+    border-color: currentColor;
+    background-color: rgba(167, 123, 45, 0.08);
 }

@@ -34,7 +34,7 @@ export const resources = {
                 subtitle:
                     "SerenityLine ti aiuta a capire dove stai andando: prevede la tua liquidità futura, confronta scenari e rende più chiare le decisioni economiche importanti.",
                 primaryCta: "Inizia gratis",
-                secondaryCta: "Scopri come funziona",
+                secondaryCta: "Guarda SerenityLine in azione",
                 trustBadgesLabel: "Elementi di fiducia",
                 trustBadges: [
                     "Nessuna carta richiesta",
@@ -258,6 +258,15 @@ export const resources = {
                     "SerenityLine nasce per ridurre questa incertezza. Mette in relazione saldo contabile e liquidità realmente disponibile per aiutarti a rispondere a una domanda concreta:",
                 ],
                 quote: "Se continuo così, tra qualche settimana o tra qualche mese sarò ancora tranquillo?",
+            },
+            tutorial: {
+                eyebrow: "Tutorial guidato",
+                title: "Guarda SerenityLine in azione.",
+                subtitle:
+                    "Un tour completo per vedere come conti, ricorrenze, simulazioni e portafogli diventano una previsione chiara della tua liquidità futura.",
+                videoLabel: "Video tutorial di SerenityLine",
+                unsupported:
+                    "Il tuo browser non supporta la riproduzione del video.",
             },
             serenityLine: {
                 eyebrow: "La SerenityLine",
@@ -2485,7 +2494,7 @@ export const resources = {
                 subtitle:
                     "SerenityLine helps you understand where you are going: it forecasts your future liquidity, compares scenarios and makes important financial decisions clearer.",
                 primaryCta: "Start for free",
-                secondaryCta: "See how it works",
+                secondaryCta: "Watch SerenityLine in action",
                 trustBadgesLabel: "Trust elements",
                 trustBadges: [
                     "No card required",
@@ -2709,6 +2718,14 @@ export const resources = {
                     "SerenityLine was created to reduce this uncertainty. It connects accounting balance and truly available liquidity to help you answer a concrete question:",
                 ],
                 quote: "If I keep going like this, will I still feel safe in a few weeks or a few months?",
+            },
+            tutorial: {
+                eyebrow: "Guided tutorial",
+                title: "Watch SerenityLine in action.",
+                subtitle:
+                    "A complete tour showing how accounts, recurring items, simulations and portfolios become a clear forecast of your future liquidity.",
+                videoLabel: "SerenityLine tutorial video",
+                unsupported: "Your browser does not support video playback.",
             },
             serenityLine: {
                 eyebrow: "The SerenityLine",

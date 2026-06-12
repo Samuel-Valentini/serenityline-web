@@ -107,6 +107,29 @@ export function HowItWorksPage() {
                 </div>
             </section>
 
+            <section className="sl-how-tutorial" id="tutorial-serenityline">
+                <div className="sl-section-heading">
+                    <p className="sl-eyebrow">{t("tutorial.eyebrow")}</p>
+                    <h2>{t("tutorial.title")}</h2>
+                    <p>{t("tutorial.subtitle")}</p>
+                </div>
+
+                <div className="sl-how-video-card">
+                    <video
+                        className="sl-how-video"
+                        controls
+                        playsInline
+                        preload="metadata"
+                        aria-label={t("tutorial.videoLabel")}>
+                        <source
+                            src="/media/tutorial-serenityline.mp4"
+                            type="video/mp4"
+                        />
+                        {t("tutorial.unsupported")}
+                    </video>
+                </div>
+            </section>
+
             <section className="sl-how-serenityline">
                 <div className="sl-section-heading">
                     <p className="sl-eyebrow">{t("serenityLine.eyebrow")}</p>

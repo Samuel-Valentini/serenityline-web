@@ -69,9 +69,19 @@ export function HomePage() {
                         </Link>
 
                         <Link
-                            className="btn btn-outline-primary btn-lg"
-                            to={ROUTES.public.howItWorks}>
-                            {t("hero.secondaryCta")}
+                            className="btn btn-outline-primary btn-lg sl-hero-video-cta"
+                            to={`${ROUTES.public.howItWorks}#tutorial-serenityline`}>
+                            <span
+                                className="sl-hero-video-cta-icon"
+                                aria-hidden="true">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    focusable="false"
+                                    role="img">
+                                    <path d="M8 5.5v13l10-6.5-10-6.5Z" />
+                                </svg>
+                            </span>
+                            <span>{t("hero.secondaryCta")}</span>
                         </Link>
                     </div>
 
