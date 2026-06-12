@@ -137,6 +137,71 @@ function renderPage() {
     );
 }
 
+function createTodayBalanceWithBucketCoverage({
+    firstAccountBalance,
+    secondAccountBalance = 0,
+}: {
+    firstAccountBalance: number;
+    secondAccountBalance?: number;
+}) {
+    const today = getTodayIsoDate();
+
+    return {
+        date: today,
+        accounts: [
+            {
+                accountId: "account-id",
+                currency: "EUR",
+                endOfDayAccountBalance: 1000,
+                endOfDaySerenityline: 700,
+                endOfDayBucketsBalance: firstAccountBalance,
+                buckets:
+                    firstAccountBalance === 0
+                        ? []
+                        : [
+                              {
+                                  bucketId: "bucket-id",
+                                  endOfDayBucketBalance: firstAccountBalance,
+                              },
+                          ],
+            },
+            {
+                accountId: "second-account-id",
+                currency: "EUR",
+                endOfDayAccountBalance: 500,
+                endOfDaySerenityline: 500,
+                endOfDayBucketsBalance: secondAccountBalance,
+                buckets:
+                    secondAccountBalance === 0
+                        ? []
+                        : [
+                              {
+                                  bucketId: "bucket-id",
+                                  endOfDayBucketBalance: secondAccountBalance,
+                              },
+                          ],
+            },
+        ],
+        buckets: [
+            {
+                bucketId: "bucket-id",
+                currency: "EUR",
+                endOfDayBucketBalance:
+                    firstAccountBalance + secondAccountBalance,
+            },
+        ],
+        totalsByCurrency: [
+            {
+                currency: "EUR",
+                endOfDayAccountsBalance: 1500,
+                endOfDaySerenityline: 1200,
+                endOfDayBucketsBalance:
+                    firstAccountBalance + secondAccountBalance,
+            },
+        ],
+    };
+}
+
 describe("BucketsPage", () => {
     beforeEach(async () => {
         await i18n.changeLanguage("it");
@@ -190,7 +255,9 @@ describe("BucketsPage", () => {
 
         renderPage();
 
-        expect(await screen.findByText(/350,50\s€|350,50 €/)).toBeInTheDocument();
+        expect(
+            await screen.findByText(/350,50\s€|350,50 €/),
+        ).toBeInTheDocument();
 
         await waitFor(() => {
             expect(listDailyBalances).toHaveBeenCalledWith({
@@ -498,5 +565,115 @@ describe("BucketsPage", () => {
         expect(store.getState().financeData.buckets).toEqual([
             bucketWithoutAccount,
         ]);
+    });
+
+    it("shows selected bucket coverage by account", async () => {
+        const bucketLinkedToBothAccounts = {
+            ...bucket,
+            accountIds: ["account-id", "second-account-id"],
+        };
+
+        store.dispatch(
+            financeReferenceDataLoaded({
+                ...referenceData,
+                buckets: [bucketLinkedToBothAccounts],
+            }),
+        );
+
+        vi.mocked(listDailyBalances).mockResolvedValueOnce([
+            createTodayBalanceWithBucketCoverage({
+                firstAccountBalance: -300,
+                secondAccountBalance: 500,
+            }),
+        ]);
+
+        vi.mocked(findBucket).mockResolvedValueOnce(bucketLinkedToBothAccounts);
+
+        renderPage();
+
+        fireEvent.click(screen.getByRole("button", { name: "Vedi dettaglio" }));
+
+        expect(
+            await screen.findByText("Copertura per conto"),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getAllByText("Conto principale").length,
+        ).toBeGreaterThanOrEqual(1);
+        expect(
+            screen.getAllByText("Conto riserva").length,
+        ).toBeGreaterThanOrEqual(1);
+
+        expect(screen.getByText("Sotto copertura")).toBeInTheDocument();
+        expect(screen.getByText("Disponibile")).toBeInTheDocument();
+
+        expect(
+            screen.getByText(
+                /Sul conto “Conto riserva” lo stesso portafoglio ha/i,
+            ),
+        ).toBeInTheDocument();
+
+        expect(screen.getByText(/Valuta un riequilibrio/i)).toBeInTheDocument();
+    });
+
+    it("shows a calm message when selected bucket has no account shortfall", async () => {
+        const bucketLinkedToBothAccounts = {
+            ...bucket,
+            accountIds: ["account-id", "second-account-id"],
+        };
+
+        store.dispatch(
+            financeReferenceDataLoaded({
+                ...referenceData,
+                buckets: [bucketLinkedToBothAccounts],
+            }),
+        );
+
+        vi.mocked(listDailyBalances).mockResolvedValueOnce([
+            createTodayBalanceWithBucketCoverage({
+                firstAccountBalance: 300,
+                secondAccountBalance: 0,
+            }),
+        ]);
+
+        vi.mocked(findBucket).mockResolvedValueOnce(bucketLinkedToBothAccounts);
+
+        renderPage();
+
+        fireEvent.click(screen.getByRole("button", { name: "Vedi dettaglio" }));
+
+        expect(
+            await screen.findByText("Copertura per conto"),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Nessuna scopertura per conto rilevata oggi."),
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByText(/Valuta un riequilibrio/i),
+        ).not.toBeInTheDocument();
+    });
+
+    it("disables close bucket button when selected bucket balance is not zero", async () => {
+        store.dispatch(financeReferenceDataLoaded(referenceData));
+
+        vi.mocked(listDailyBalances).mockResolvedValueOnce([
+            createTodayBalanceWithBucketCoverage({
+                firstAccountBalance: -300,
+            }),
+        ]);
+
+        vi.mocked(findBucket).mockResolvedValueOnce(bucket);
+
+        renderPage();
+
+        fireEvent.click(screen.getByRole("button", { name: "Vedi dettaglio" }));
+
+        const closeButton = await screen.findByRole("button", {
+            name: "Chiudi portafoglio",
+        });
+
+        expect(closeButton).toBeDisabled();
     });
 });

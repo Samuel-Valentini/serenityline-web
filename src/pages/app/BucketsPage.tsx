@@ -22,6 +22,7 @@ import type {
     AccountResponseDto,
     BucketResponseDto,
     CreateBucketRequestDto,
+    FinanceCalendarDailyBalanceResponseDto,
     UpdateBucketRequestDto,
 } from "../../features/finance/api/financeApiTypes";
 import {
@@ -55,6 +56,26 @@ type BucketFormState = {
 type BucketEditFormState = {
     bucketName: string;
     bucketDescription: string;
+};
+
+type BucketAccountCoverageBalance = {
+    accountId: string;
+    accountName: string;
+    currency: string;
+    balance: number;
+    linked: boolean;
+};
+
+type BucketAccountCoverageWarning = {
+    key: string;
+    bucketName: string;
+    negativeAccountName: string;
+    negativeAmount: number;
+    positiveAccountName: string | null;
+    positiveAmount: number | null;
+    positiveTotal: number;
+    positiveAccountCount: number;
+    currency: string;
 };
 
 type FormSubmitEvent = Parameters<
@@ -186,6 +207,107 @@ function getBucketBalanceAmount(
     );
 }
 
+function getBucketAccountCoverageBalances(
+    bucket: BucketResponseDto,
+    accounts: AccountResponseDto[],
+    todayBalance: FinanceCalendarDailyBalanceResponseDto | undefined,
+    accountFallback: string,
+): BucketAccountCoverageBalance[] {
+    const accountsById = new Map(
+        accounts.map((account) => [account.accountId, account]),
+    );
+
+    const dailyAccountsById = new Map(
+        todayBalance?.accounts.map((accountBalance) => [
+            accountBalance.accountId,
+            accountBalance,
+        ]) ?? [],
+    );
+
+    const accountIds = new Set(bucket.accountIds);
+
+    todayBalance?.accounts.forEach((accountBalance) => {
+        const hasBucketBalance = accountBalance.buckets.some(
+            (bucketBalance) =>
+                bucketBalance.bucketId === bucket.bucketId &&
+                bucketBalance.endOfDayBucketBalance !== 0,
+        );
+
+        if (hasBucketBalance) {
+            accountIds.add(accountBalance.accountId);
+        }
+    });
+
+    return [...accountIds]
+        .map((accountId) => {
+            const account = accountsById.get(accountId);
+            const dailyAccountBalance = dailyAccountsById.get(accountId);
+
+            const bucketBalance =
+                dailyAccountBalance?.buckets.find(
+                    (currentBucketBalance) =>
+                        currentBucketBalance.bucketId === bucket.bucketId,
+                )?.endOfDayBucketBalance ?? 0;
+
+            const numericBalance = Number(bucketBalance);
+
+            return {
+                accountId,
+                accountName: account?.accountName ?? accountFallback,
+                currency:
+                    dailyAccountBalance?.currency ?? account?.currency ?? "EUR",
+                balance: Number.isFinite(numericBalance) ? numericBalance : 0,
+                linked: bucket.accountIds.includes(accountId),
+            };
+        })
+        .sort((first, second) =>
+            first.accountName.localeCompare(second.accountName),
+        );
+}
+
+function getBucketAccountCoverageWarnings(
+    bucket: BucketResponseDto,
+    bucketName: string,
+    coverageBalances: BucketAccountCoverageBalance[],
+): BucketAccountCoverageWarning[] {
+    return coverageBalances
+        .filter((coverageBalance) => coverageBalance.balance < 0)
+        .map((negativeBalance) => {
+            const positiveBalances = coverageBalances
+                .filter(
+                    (coverageBalance) =>
+                        coverageBalance.accountId !==
+                            negativeBalance.accountId &&
+                        coverageBalance.currency === negativeBalance.currency &&
+                        coverageBalance.balance > 0,
+                )
+                .sort((first, second) => second.balance - first.balance);
+
+            const positiveTotal = positiveBalances.reduce(
+                (sum, positiveBalance) => sum + positiveBalance.balance,
+                0,
+            );
+
+            return {
+                key: `${bucket.bucketId}:${negativeBalance.accountId}:${negativeBalance.currency}`,
+                bucketName,
+                negativeAccountName: negativeBalance.accountName,
+                negativeAmount: Math.abs(negativeBalance.balance),
+                positiveAccountName:
+                    positiveBalances.length === 1
+                        ? positiveBalances[0].accountName
+                        : null,
+                positiveAmount:
+                    positiveBalances.length === 1
+                        ? positiveBalances[0].balance
+                        : null,
+                positiveTotal,
+                positiveAccountCount: positiveBalances.length,
+                currency: negativeBalance.currency,
+            };
+        });
+}
+
 export function BucketsPage() {
     const { i18n, t } = useTranslation("buckets");
     const displayLanguage = i18n.resolvedLanguage || i18n.language || "it";
@@ -306,6 +428,64 @@ export function BucketsPage() {
                 : null,
         [buckets, selectedBucketId],
     );
+
+    const selectedBucketAccountCoverageBalances = useMemo(
+        () =>
+            selectedBucket
+                ? getBucketAccountCoverageBalances(
+                      selectedBucket,
+                      accounts,
+                      todayBalance,
+                      t("accountFallback"),
+                  )
+                : [],
+        [accounts, selectedBucket, t, todayBalance],
+    );
+
+    const selectedBucketAccountCoverageWarnings = useMemo(
+        () =>
+            selectedBucket
+                ? getBucketAccountCoverageWarnings(
+                      selectedBucket,
+                      getBucketDisplayName(selectedBucket, t("unnamedBucket")),
+                      selectedBucketAccountCoverageBalances,
+                  )
+                : [],
+        [selectedBucket, selectedBucketAccountCoverageBalances, t],
+    );
+
+    const isLoading =
+        financeDataStatus === "idle" || financeDataStatus === "loading";
+
+    const isTodayBalanceLoading =
+        todayBalancesCacheEntry.status === "loading" && !todayBalance;
+
+    const isTodayBalanceUnavailable =
+        todayBalancesCacheEntry.status === "failed" && !todayBalance;
+
+    const selectedBucketNonZeroBalances = useMemo(() => {
+        if (!selectedBucket || !todayBalance) {
+            return [];
+        }
+
+        return getBucketCurrencies(selectedBucket, accounts, todayBalance)
+            .map((currency) => ({
+                currency,
+                amount: getBucketBalanceAmount(
+                    selectedBucket.bucketId,
+                    currency,
+                    todayBalance,
+                ),
+            }))
+            .filter((balance) => Math.abs(balance.amount) > 0.005);
+    }, [accounts, selectedBucket, todayBalance]);
+
+    const isSelectedBucketCloseDisabledByBalance =
+        selectedBucket !== null &&
+        !isBucketClosed(selectedBucket) &&
+        !isTodayBalanceLoading &&
+        !isTodayBalanceUnavailable &&
+        selectedBucketNonZeroBalances.length > 0;
 
     function requestBucketWorkspaceScroll() {
         if (typeof window === "undefined") {
@@ -587,15 +767,6 @@ export function BucketsPage() {
             setIsAccountLinkChanging(false);
         }
     }
-
-    const isLoading =
-        financeDataStatus === "idle" || financeDataStatus === "loading";
-
-    const isTodayBalanceLoading =
-        todayBalancesCacheEntry.status === "loading" && !todayBalance;
-
-    const isTodayBalanceUnavailable =
-        todayBalancesCacheEntry.status === "failed" && !todayBalance;
 
     return (
         <section className="sl-page">
@@ -1114,6 +1285,195 @@ export function BucketsPage() {
                                     </dd>
                                 </dl>
 
+                                <div className="sl-bucket-coverage-card mt-4">
+                                    <div>
+                                        <h4 className="h6 mb-1">
+                                            {t("coverage.title")}
+                                        </h4>
+                                        <p className="text-muted small">
+                                            {t("coverage.subtitle")}
+                                        </p>
+                                    </div>
+
+                                    {isTodayBalanceLoading ? (
+                                        <div
+                                            className="alert alert-info mt-3 mb-0"
+                                            role="status">
+                                            {t("coverage.loading")}
+                                        </div>
+                                    ) : isTodayBalanceUnavailable ? (
+                                        <div
+                                            className="alert alert-warning mt-3 mb-0"
+                                            role="status">
+                                            {t("coverage.unavailable")}
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {selectedBucketAccountCoverageBalances.length >
+                                            0 ? (
+                                                <div className="sl-bucket-coverage-list mt-3">
+                                                    {selectedBucketAccountCoverageBalances.map(
+                                                        (coverageBalance) => (
+                                                            <div
+                                                                className={[
+                                                                    "sl-bucket-coverage-row",
+                                                                    coverageBalance.balance <
+                                                                    0
+                                                                        ? "is-negative"
+                                                                        : coverageBalance.balance >
+                                                                            0
+                                                                          ? "is-positive"
+                                                                          : "is-zero",
+                                                                ].join(" ")}
+                                                                key={`${coverageBalance.accountId}:${coverageBalance.currency}`}>
+                                                                <div>
+                                                                    <strong>
+                                                                        {
+                                                                            coverageBalance.accountName
+                                                                        }
+                                                                    </strong>
+                                                                    <small>
+                                                                        {coverageBalance.linked
+                                                                            ? t(
+                                                                                  "coverage.linked",
+                                                                              )
+                                                                            : t(
+                                                                                  "coverage.notLinked",
+                                                                              )}
+                                                                    </small>
+                                                                </div>
+
+                                                                <div className="sl-bucket-coverage-amount">
+                                                                    <strong>
+                                                                        {formatMoneyAmount(
+                                                                            coverageBalance.balance,
+                                                                            coverageBalance.currency,
+                                                                            displayLanguage,
+                                                                        )}
+                                                                    </strong>
+                                                                    <small>
+                                                                        {coverageBalance.balance <
+                                                                        0
+                                                                            ? t(
+                                                                                  "coverage.states.negative",
+                                                                              )
+                                                                            : coverageBalance.balance >
+                                                                                0
+                                                                              ? t(
+                                                                                    "coverage.states.positive",
+                                                                                )
+                                                                              : t(
+                                                                                    "coverage.states.zero",
+                                                                                )}
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <p className="text-muted small mt-3 mb-0">
+                                                    {t("coverage.noBalances")}
+                                                </p>
+                                            )}
+
+                                            {selectedBucketAccountCoverageWarnings.length >
+                                            0 ? (
+                                                <div
+                                                    className="sl-bucket-coverage-warning-list mt-3"
+                                                    role="alert">
+                                                    {selectedBucketAccountCoverageWarnings.map(
+                                                        (warning) => (
+                                                            <article
+                                                                className="sl-bucket-coverage-warning"
+                                                                key={
+                                                                    warning.key
+                                                                }>
+                                                                <span aria-hidden="true">
+                                                                    !
+                                                                </span>
+                                                                <p>
+                                                                    {warning.positiveAccountCount ===
+                                                                        1 &&
+                                                                    warning.positiveAccountName &&
+                                                                    warning.positiveAmount !=
+                                                                        null
+                                                                        ? t(
+                                                                              "coverage.withSinglePositive",
+                                                                              {
+                                                                                  bucketName:
+                                                                                      warning.bucketName,
+                                                                                  negativeAccountName:
+                                                                                      warning.negativeAccountName,
+                                                                                  negativeAmount:
+                                                                                      formatMoneyAmount(
+                                                                                          warning.negativeAmount,
+                                                                                          warning.currency,
+                                                                                          displayLanguage,
+                                                                                      ),
+                                                                                  positiveAccountName:
+                                                                                      warning.positiveAccountName,
+                                                                                  positiveAmount:
+                                                                                      formatMoneyAmount(
+                                                                                          warning.positiveAmount,
+                                                                                          warning.currency,
+                                                                                          displayLanguage,
+                                                                                      ),
+                                                                              },
+                                                                          )
+                                                                        : warning.positiveAccountCount >
+                                                                            1
+                                                                          ? t(
+                                                                                "coverage.withMultiplePositive",
+                                                                                {
+                                                                                    bucketName:
+                                                                                        warning.bucketName,
+                                                                                    negativeAccountName:
+                                                                                        warning.negativeAccountName,
+                                                                                    negativeAmount:
+                                                                                        formatMoneyAmount(
+                                                                                            warning.negativeAmount,
+                                                                                            warning.currency,
+                                                                                            displayLanguage,
+                                                                                        ),
+                                                                                    positiveTotal:
+                                                                                        formatMoneyAmount(
+                                                                                            warning.positiveTotal,
+                                                                                            warning.currency,
+                                                                                            displayLanguage,
+                                                                                        ),
+                                                                                },
+                                                                            )
+                                                                          : t(
+                                                                                "coverage.negativeOnly",
+                                                                                {
+                                                                                    bucketName:
+                                                                                        warning.bucketName,
+                                                                                    negativeAccountName:
+                                                                                        warning.negativeAccountName,
+                                                                                    negativeAmount:
+                                                                                        formatMoneyAmount(
+                                                                                            warning.negativeAmount,
+                                                                                            warning.currency,
+                                                                                            displayLanguage,
+                                                                                        ),
+                                                                                },
+                                                                            )}
+                                                                </p>
+                                                            </article>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            ) : selectedBucketAccountCoverageBalances.length >
+                                              0 ? (
+                                                <p className="sl-bucket-coverage-ok mt-3">
+                                                    {t("coverage.noShortfalls")}
+                                                </p>
+                                            ) : null}
+                                        </>
+                                    )}
+                                </div>
+
                                 {editSuccessMessage ? (
                                     <div
                                         className="alert alert-success mt-4"
@@ -1202,19 +1562,28 @@ export function BucketsPage() {
                                     )}
                                 </div>
 
-                                <div className="border-top mt-4 pt-4">
+                                <div className="border-top mt-4 pt-4 text-center">
                                     <p className="text-muted small">
                                         {isBucketClosed(selectedBucket)
                                             ? t("reopenHint")
                                             : t("closeHint")}
                                     </p>
+
                                     <button
                                         className={
                                             isBucketClosed(selectedBucket)
                                                 ? "btn btn-outline-success btn-sm"
-                                                : "btn btn-outline-warning btn-sm"
+                                                : "btn btn-sm"
                                         }
-                                        disabled={isStatusChanging}
+                                        disabled={
+                                            isStatusChanging ||
+                                            isSelectedBucketCloseDisabledByBalance
+                                        }
+                                        id={
+                                            isBucketClosed(selectedBucket)
+                                                ? undefined
+                                                : "sl-close-bucket-button"
+                                        }
                                         onClick={() =>
                                             void handleStatusChange()
                                         }

@@ -1509,6 +1509,28 @@ export const resources = {
                 unavailable: "Saldo non disponibile",
                 empty: "—",
             },
+            coverage: {
+                title: "Copertura per conto",
+                subtitle:
+                    "Controlla se il portafoglio è coperto sui singoli conti collegati. Una scopertura su un conto resta rilevante anche se il totale aggregato del portafoglio è positivo.",
+                loading: "Caricamento copertura...",
+                unavailable: "Copertura non disponibile.",
+                noBalances: "Nessun saldo del portafoglio rilevato oggi.",
+                noShortfalls: "Nessuna scopertura per conto rilevata oggi.",
+                linked: "Conto collegato",
+                notLinked: "Conto non più collegato",
+                states: {
+                    negative: "Sotto copertura",
+                    positive: "Disponibile",
+                    zero: "In equilibrio",
+                },
+                negativeOnly:
+                    "A fine giornata il portafoglio “{{bucketName}}” è sotto di {{negativeAmount}} sul conto “{{negativeAccountName}}”. La SerenityLine tiene già conto della scopertura.",
+                withSinglePositive:
+                    "A fine giornata il portafoglio “{{bucketName}}” è sotto di {{negativeAmount}} sul conto “{{negativeAccountName}}”. Sul conto “{{positiveAccountName}}” lo stesso portafoglio ha {{positiveAmount}} disponibili. Valuta un riequilibrio. La SerenityLine tiene già conto della scopertura.",
+                withMultiplePositive:
+                    "A fine giornata il portafoglio “{{bucketName}}” è sotto di {{negativeAmount}} sul conto “{{negativeAccountName}}”. Su altri conti lo stesso portafoglio ha {{positiveTotal}} disponibili. Valuta un riequilibrio. La SerenityLine tiene già conto della scopertura.",
+            },
             formEyebrow: "Nuovo portafoglio",
             formTitle: "Aggiungi portafoglio",
             formIntro:
@@ -1558,7 +1580,7 @@ export const resources = {
             closeConfirm:
                 "Vuoi chiudere questo portafoglio? Potrai riaprirlo in seguito.",
             closeHint:
-                "Chiudi il portafoglio se non vuoi più usarlo per nuove pianificazioni.",
+                "Puoi chiudere il portafoglio solo quando il saldo è zero e non ci sono movimenti futuri o ricorrenti ancora collegate.",
             reopenHint:
                 "Riapri il portafoglio per renderlo nuovamente disponibile.",
             closeSubmit: "Chiudi portafoglio",
@@ -1569,6 +1591,8 @@ export const resources = {
             closeErrorFallback: "Non siamo riusciti a chiudere il portafoglio.",
             reopenErrorFallback:
                 "Non siamo riusciti a riaprire il portafoglio.",
+            closeDisabledByBalance:
+                "Il portafoglio non può essere chiuso perché il saldo attuale è {{balances}}. Portalo a zero prima di chiuderlo.",
         },
         transactionForms: {
             fields: {
@@ -3921,6 +3945,28 @@ export const resources = {
                 unavailable: "Balance unavailable",
                 empty: "—",
             },
+            coverage: {
+                title: "Coverage by account",
+                subtitle:
+                    "Check whether the bucket is covered on each linked account. A shortfall on one account still matters even when the aggregated bucket balance is positive.",
+                loading: "Loading coverage...",
+                unavailable: "Coverage unavailable.",
+                noBalances: "No bucket balance detected today.",
+                noShortfalls: "No account-level shortfall detected today.",
+                linked: "Linked account",
+                notLinked: "No longer linked",
+                states: {
+                    negative: "Under-covered",
+                    positive: "Available",
+                    zero: "Balanced",
+                },
+                negativeOnly:
+                    "At the end of the day, bucket “{{bucketName}}” is short by {{negativeAmount}} on account “{{negativeAccountName}}”. SerenityLine already accounts for this shortfall.",
+                withSinglePositive:
+                    "At the end of the day, bucket “{{bucketName}}” is short by {{negativeAmount}} on account “{{negativeAccountName}}”. On account “{{positiveAccountName}}”, the same bucket has {{positiveAmount}} available. Consider rebalancing it. SerenityLine already accounts for this shortfall.",
+                withMultiplePositive:
+                    "At the end of the day, bucket “{{bucketName}}” is short by {{negativeAmount}} on account “{{negativeAccountName}}”. On other accounts, the same bucket has {{positiveTotal}} available. Consider rebalancing it. SerenityLine already accounts for this shortfall.",
+            },
             formEyebrow: "New bucket",
             formTitle: "Add bucket",
             formIntro:
@@ -3968,7 +4014,7 @@ export const resources = {
             closeConfirm:
                 "Do you want to close this bucket? You can reopen it later.",
             closeHint:
-                "Close the bucket if you no longer want to use it for new planning.",
+                "You can close the bucket only when its balance is zero and there are no future movements or open recurring transactions still linked.",
             reopenHint: "Reopen the bucket to make it available again.",
             closeSubmit: "Close bucket",
             reopenSubmit: "Reopen bucket",
@@ -3977,6 +4023,8 @@ export const resources = {
             reopenSuccess: "Bucket reopened successfully.",
             closeErrorFallback: "We could not close the bucket.",
             reopenErrorFallback: "We could not reopen the bucket.",
+            closeDisabledByBalance:
+                "This bucket cannot be closed because its current balance is {{balances}}. Bring it to zero before closing it.",
         },
         transactionForms: {
             fields: {
