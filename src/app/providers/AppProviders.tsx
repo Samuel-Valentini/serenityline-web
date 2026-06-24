@@ -8,6 +8,7 @@ import { store } from "../store/store";
 import { AccountDataBootstrap } from "../../features/account/AccountDataBootstrap";
 import { AppLocaleBootstrap } from "./AppLocaleBootstrap";
 import { FinanceDataBootstrap } from "../../features/finance/FinanceDataBootstrap";
+import { HtmlLanguageSync } from "./HtmlLanguageSync";
 
 type AppProvidersProps = {
     children: ReactNode;
@@ -21,6 +22,7 @@ export function AppProviders({
     return (
         <Provider store={store}>
             <I18nextProvider i18n={i18n}>
+                <HtmlLanguageSync />
                 {enableAuthBootstrap ? (
                     <>
                         <AuthSessionBootstrap />
