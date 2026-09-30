@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+    canToggleMoneyInputSign,
     isValidMoneyInput,
     moneyAmountToFormValue,
     normalizeMoneyInput,
@@ -53,12 +54,29 @@ describe("moneyInput", () => {
         expect(toggleMoneyInputSign(value, language)).toBe(expected);
     });
 
-    it.each(["", "   ", "-", "+", "abc", "--12", "12,50,30"])(
-        "does not change an empty or invalid input: %s",
+    it("adds and removes a minus sign when the amount is empty", () => {
+        expect(toggleMoneyInputSign("", "it")).toBe("-");
+        expect(toggleMoneyInputSign("   ", "it")).toBe("-");
+        expect(toggleMoneyInputSign("-", "it")).toBe("");
+    });
+
+    it.each(["+", "abc", "--12", "12,50,30"])(
+        "does not change an invalid non-empty input: %s",
         (value) => {
             expect(toggleMoneyInputSign(value, "it")).toBe(value);
         },
     );
+
+    it("allows sign toggling for empty, negative-placeholder and valid amounts", () => {
+        expect(canToggleMoneyInputSign("", "it")).toBe(true);
+        expect(canToggleMoneyInputSign("-", "it")).toBe(true);
+        expect(canToggleMoneyInputSign("125,50", "it")).toBe(true);
+        expect(canToggleMoneyInputSign("-125,50", "it")).toBe(true);
+
+        expect(canToggleMoneyInputSign("abc", "it")).toBe(false);
+        expect(canToggleMoneyInputSign("--12", "it")).toBe(false);
+    });
+
     it("accepts both decimal separators for Italian input", () => {
         expect(normalizeMoneyInput("250,50", "it")).toBe("250.50");
         expect(normalizeMoneyInput("250.50", "it")).toBe("250.50");

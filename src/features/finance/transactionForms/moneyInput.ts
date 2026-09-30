@@ -121,11 +121,19 @@ export function isValidMoneyInput(value: string, language: string) {
 }
 
 export function toggleMoneyInputSign(value: string, language: string): string {
-    if (!isValidMoneyInput(value, language)) {
-        return value;
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+        return "-";
     }
 
-    const trimmedValue = value.trim();
+    if (trimmedValue === "-") {
+        return "";
+    }
+
+    if (!isValidMoneyInput(trimmedValue, language)) {
+        return value;
+    }
 
     if (trimmedValue.startsWith("-")) {
         return trimmedValue.slice(1);
@@ -136,6 +144,19 @@ export function toggleMoneyInputSign(value: string, language: string): string {
         : trimmedValue;
 
     return `-${unsignedValue}`;
+}
+
+export function canToggleMoneyInputSign(
+    value: string,
+    language: string,
+): boolean {
+    const trimmedValue = value.trim();
+
+    return (
+        trimmedValue === "" ||
+        trimmedValue === "-" ||
+        isValidMoneyInput(trimmedValue, language)
+    );
 }
 
 export function moneyAmountToFormValue(

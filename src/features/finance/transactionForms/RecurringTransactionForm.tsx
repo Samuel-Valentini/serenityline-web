@@ -33,7 +33,7 @@ import {
     type FinanceMovementFormContext,
 } from "./movementFormContext";
 import {
-    isValidMoneyInput,
+    canToggleMoneyInputSign,
     normalizeMoneyInput,
     toggleMoneyInputSign,
 } from "./moneyInput";
@@ -671,7 +671,7 @@ export function RecurringTransactionForm({
                             className="btn btn-outline-primary sl-amount-sign-toggle"
                             disabled={
                                 isSubmitting ||
-                                !isValidMoneyInput(
+                                !canToggleMoneyInputSign(
                                     form.paymentAmount,
                                     i18n.language,
                                 )
@@ -1083,7 +1083,7 @@ export function RecurringTransactionForm({
                             className="btn btn-outline-primary sl-amount-sign-toggle"
                             disabled={
                                 isSubmitting ||
-                                !isValidMoneyInput(
+                                !canToggleMoneyInputSign(
                                     form.finalPaymentAmount,
                                     i18n.language,
                                 )

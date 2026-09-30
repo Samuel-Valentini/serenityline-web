@@ -551,7 +551,7 @@ describe("RecurringTransactionForm", () => {
             name: "Cambia segno: Importo rata finale",
         });
 
-        expect(finalButton).toBeDisabled();
+        expect(finalButton).toBeEnabled();
 
         changeField("finalPaymentAmount", "200,00");
         changeField("endDate", "2026-12-31");
@@ -588,8 +588,6 @@ describe("RecurringTransactionForm", () => {
     });
 
     it.each([
-        { amount: "", isSubmitting: false },
-        { amount: "-", isSubmitting: false },
         { amount: "abc", isSubmitting: false },
         { amount: "125,50", isSubmitting: true },
     ])(
@@ -622,4 +620,40 @@ describe("RecurringTransactionForm", () => {
             expect(onSubmit).not.toHaveBeenCalled();
         },
     );
+
+    it("adds and removes minus signs on empty recurring amount fields", () => {
+        const { onSubmit } = renderForm();
+
+        const paymentInput = screen.getByLabelText("Importo pagamento");
+        const finalInput = screen.getByLabelText(
+            "Importo rata finale (opzionale)",
+        );
+
+        const paymentButton = screen.getByRole("button", {
+            name: "Cambia segno: Importo pagamento",
+        });
+        const finalButton = screen.getByRole("button", {
+            name: "Cambia segno: Importo rata finale",
+        });
+
+        expect(paymentButton).toBeEnabled();
+        expect(finalButton).toBeEnabled();
+
+        fireEvent.click(paymentButton);
+        fireEvent.click(finalButton);
+
+        expect(paymentInput).toHaveValue("-");
+        expect(finalInput).toHaveValue("-");
+
+        expect(paymentButton).toBeEnabled();
+        expect(finalButton).toBeEnabled();
+
+        fireEvent.click(paymentButton);
+        fireEvent.click(finalButton);
+
+        expect(paymentInput).toHaveValue("");
+        expect(finalInput).toHaveValue("");
+
+        expect(onSubmit).not.toHaveBeenCalled();
+    });
 });

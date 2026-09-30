@@ -805,8 +805,6 @@ describe("TransactionForm", () => {
     });
 
     it.each([
-        { amount: "", isSubmitting: false },
-        { amount: "-", isSubmitting: false },
         { amount: "abc", isSubmitting: false },
         { amount: "125,50", isSubmitting: true },
     ])(
@@ -840,5 +838,30 @@ describe("TransactionForm", () => {
         );
 
         expect(screen.getByLabelText("Amount")).toHaveValue("-1,250.50");
+    });
+
+    it("adds and removes a minus sign before entering an amount", () => {
+        const { onSubmit } = renderForm({
+            initialValues: { transactionAmount: "" },
+        });
+
+        const amountInput = screen.getByLabelText("Importo");
+        const toggleButton = screen.getByRole("button", {
+            name: "Cambia segno: Importo",
+        });
+
+        expect(toggleButton).toBeEnabled();
+        expect(amountInput).toHaveValue("");
+
+        fireEvent.click(toggleButton);
+
+        expect(amountInput).toHaveValue("-");
+        expect(toggleButton).toBeEnabled();
+        expect(onSubmit).not.toHaveBeenCalled();
+
+        fireEvent.click(toggleButton);
+
+        expect(amountInput).toHaveValue("");
+        expect(onSubmit).not.toHaveBeenCalled();
     });
 });

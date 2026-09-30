@@ -18,7 +18,7 @@ import {
     type FinanceMovementFormContext,
 } from "./movementFormContext";
 import {
-    isValidMoneyInput,
+    canToggleMoneyInputSign,
     normalizeMoneyInput,
     toggleMoneyInputSign,
 } from "./moneyInput";
@@ -456,7 +456,7 @@ export function TransactionForm({
                             className="btn btn-outline-primary sl-amount-sign-toggle"
                             disabled={
                                 isSubmitting ||
-                                !isValidMoneyInput(
+                                !canToggleMoneyInputSign(
                                     form.transactionAmount,
                                     i18n.language,
                                 )
