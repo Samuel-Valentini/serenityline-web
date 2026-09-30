@@ -1,9 +1,84 @@
 import type { MoneyAmountInput } from "../api/financeApiTypes";
 
-const MONEY_AMOUNT_PATTERN = /^[+-]?\d+(\.\d+)?$/;
+type MoneySeparator = "." | ",";
 
 function usesCommaDecimalSeparator(language: string) {
     return language.toLowerCase().startsWith("it");
+}
+
+function escapeRegExp(value: string) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeMoneyInputWithSeparators(
+    value: string,
+    decimalSeparator: MoneySeparator,
+    groupingSeparator: MoneySeparator,
+): MoneyAmountInput | null {
+    let unsignedValue = value;
+    let isNegative = false;
+
+    if (unsignedValue.startsWith("+") || unsignedValue.startsWith("-")) {
+        isNegative = unsignedValue.startsWith("-");
+        unsignedValue = unsignedValue.slice(1);
+    }
+
+    if (
+        !unsignedValue ||
+        unsignedValue.includes("+") ||
+        unsignedValue.includes("-")
+    ) {
+        return null;
+    }
+
+    const decimalParts = unsignedValue.split(decimalSeparator);
+
+    if (decimalParts.length > 2) {
+        return null;
+    }
+
+    const integerPart = decimalParts[0];
+    const decimalPart = decimalParts[1];
+
+    if (!integerPart) {
+        return null;
+    }
+
+    if (
+        decimalPart !== undefined &&
+        (decimalPart.length === 0 || !/^\d+$/.test(decimalPart))
+    ) {
+        return null;
+    }
+
+    let normalizedIntegerPart: string;
+
+    if (integerPart.includes(groupingSeparator)) {
+        const escapedGroupingSeparator = escapeRegExp(groupingSeparator);
+        const groupedIntegerPattern = new RegExp(
+            `^\\d{1,3}(?:${escapedGroupingSeparator}\\d{3})+$`,
+        );
+
+        if (!groupedIntegerPattern.test(integerPart)) {
+            return null;
+        }
+
+        normalizedIntegerPart = integerPart.split(groupingSeparator).join("");
+    } else {
+        if (!/^\d+$/.test(integerPart)) {
+            return null;
+        }
+
+        normalizedIntegerPart = integerPart;
+    }
+
+    const normalizedValue = [
+        isNegative ? "-" : "",
+        normalizedIntegerPart,
+        decimalPart !== undefined ? `.${decimalPart}` : "",
+    ].join("");
+
+    return normalizedValue as MoneyAmountInput;
 }
 
 export function normalizeMoneyInput(
@@ -16,19 +91,29 @@ export function normalizeMoneyInput(
         return null;
     }
 
-    const normalizedValue = usesCommaDecimalSeparator(language)
-        ? compactValue.replace(/\./g, "").replace(",", ".")
-        : compactValue.replace(/,/g, "");
+    const preferredDecimalSeparator: MoneySeparator = usesCommaDecimalSeparator(
+        language,
+    )
+        ? ","
+        : ".";
+    const preferredGroupingSeparator: MoneySeparator =
+        preferredDecimalSeparator === "," ? "." : ",";
 
-    if (!MONEY_AMOUNT_PATTERN.test(normalizedValue)) {
-        return null;
+    const preferredNormalization = normalizeMoneyInputWithSeparators(
+        compactValue,
+        preferredDecimalSeparator,
+        preferredGroupingSeparator,
+    );
+
+    if (preferredNormalization !== null) {
+        return preferredNormalization;
     }
 
-    return (
-        normalizedValue.startsWith("+")
-            ? normalizedValue.slice(1)
-            : normalizedValue
-    ) as MoneyAmountInput;
+    return normalizeMoneyInputWithSeparators(
+        compactValue,
+        preferredGroupingSeparator,
+        preferredDecimalSeparator,
+    );
 }
 
 export function isValidMoneyInput(value: string, language: string) {

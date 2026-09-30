@@ -59,4 +59,49 @@ describe("moneyInput", () => {
             expect(toggleMoneyInputSign(value, "it")).toBe(value);
         },
     );
+    it("accepts both decimal separators for Italian input", () => {
+        expect(normalizeMoneyInput("250,50", "it")).toBe("250.50");
+        expect(normalizeMoneyInput("250.50", "it")).toBe("250.50");
+        expect(normalizeMoneyInput("-850,25", "it")).toBe("-850.25");
+        expect(normalizeMoneyInput("-850.25", "it")).toBe("-850.25");
+    });
+
+    it("accepts both decimal separators for English input", () => {
+        expect(normalizeMoneyInput("250.50", "en")).toBe("250.50");
+        expect(normalizeMoneyInput("250,50", "en")).toBe("250.50");
+        expect(normalizeMoneyInput("-850.25", "en")).toBe("-850.25");
+        expect(normalizeMoneyInput("-850,25", "en")).toBe("-850.25");
+    });
+
+    it("keeps locale-specific grouping precedence for ambiguous inputs", () => {
+        expect(normalizeMoneyInput("1.250", "it")).toBe("1250");
+        expect(normalizeMoneyInput("1,250", "it")).toBe("1.250");
+
+        expect(normalizeMoneyInput("1,250", "en")).toBe("1250");
+        expect(normalizeMoneyInput("1.250", "en")).toBe("1.250");
+    });
+
+    it("accepts complete Italian and English formatted amounts in either language", () => {
+        expect(normalizeMoneyInput("1.250,50", "it")).toBe("1250.50");
+        expect(normalizeMoneyInput("1,250.50", "it")).toBe("1250.50");
+
+        expect(normalizeMoneyInput("1,250.50", "en")).toBe("1250.50");
+        expect(normalizeMoneyInput("1.250,50", "en")).toBe("1250.50");
+    });
+
+    it("accepts grouped amounts with multiple thousands separators", () => {
+        expect(normalizeMoneyInput("1.234.567,89", "it")).toBe("1234567.89");
+        expect(normalizeMoneyInput("1,234,567.89", "en")).toBe("1234567.89");
+
+        expect(normalizeMoneyInput("1,234,567.89", "it")).toBe("1234567.89");
+        expect(normalizeMoneyInput("1.234.567,89", "en")).toBe("1234567.89");
+    });
+
+    it("rejects malformed separator combinations", () => {
+        expect(normalizeMoneyInput("12,50,30", "it")).toBeNull();
+        expect(normalizeMoneyInput("12.50.30", "en")).toBeNull();
+        expect(normalizeMoneyInput("12.34,56", "it")).toBeNull();
+        expect(normalizeMoneyInput("12,34.56", "en")).toBeNull();
+        expect(normalizeMoneyInput("--12", "it")).toBeNull();
+    });
 });

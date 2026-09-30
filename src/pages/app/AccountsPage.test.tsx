@@ -281,4 +281,49 @@ describe("AccountsPage", () => {
 
         expect(store.getState().financeData.accounts).toEqual([updatedAccount]);
     });
+
+    it("accepts a dot decimal separator when the language is Italian", async () => {
+        store.dispatch(
+            financeReferenceDataLoaded({
+                accounts: [],
+                creditCards: [],
+                categories: [],
+                buckets: [],
+                simulationGroups: [],
+                financialPriorities: [],
+            }),
+        );
+
+        vi.mocked(createAccount).mockResolvedValueOnce(createdAccount);
+
+        renderPage();
+
+        fireEvent.change(screen.getByLabelText("Nome conto"), {
+            target: { value: "Conto risparmio" },
+        });
+        fireEvent.change(screen.getByLabelText("Valuta"), {
+            target: { value: "EUR" },
+        });
+        fireEvent.change(screen.getByLabelText("Saldo iniziale"), {
+            target: { value: "2500.50" },
+        });
+        fireEvent.change(screen.getByLabelText("Data saldo iniziale"), {
+            target: { value: "2026-06-03" },
+        });
+
+        fireEvent.click(
+            screen.getByRole("button", {
+                name: "Crea conto",
+            }),
+        );
+
+        await waitFor(() => {
+            expect(createAccount).toHaveBeenCalledWith({
+                accountName: "Conto risparmio",
+                currency: "EUR",
+                openingBalance: "2500.50",
+                openingBalanceDate: "2026-06-03",
+            });
+        });
+    });
 });

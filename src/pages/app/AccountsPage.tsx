@@ -29,6 +29,7 @@ import {
 } from "../../features/finance/financeDataSlice";
 import { ApiError } from "../../shared/api";
 import { getCurrencyOptions } from "../../features/finance/currencyOptions";
+import { normalizeMoneyInput } from "../../features/finance/transactionForms/moneyInput";
 
 type AccountFormState = {
     accountName: string;
@@ -99,28 +100,19 @@ function getDecimalSeparator(language: string): DecimalSeparator {
     return language.toLowerCase().startsWith("it") ? "," : ".";
 }
 
-function getOpeningBalancePattern(decimalSeparator: DecimalSeparator) {
-    const separator = decimalSeparator === "." ? "\\." : ",";
+const NORMALIZED_OPENING_BALANCE_PATTERN = /^-?\d{1,17}(\.\d{1,2})?$/;
 
-    return new RegExp(`^-?\\d{1,17}(${separator}\\d{1,2})?$`);
-}
+function normalizeOpeningBalance(value: string, language: string) {
+    const normalizedValue = normalizeMoneyInput(value, language);
 
-function isValidOpeningBalance(
-    value: string,
-    decimalSeparator: DecimalSeparator,
-) {
-    return getOpeningBalancePattern(decimalSeparator).test(value.trim());
-}
+    if (
+        normalizedValue === null ||
+        !NORMALIZED_OPENING_BALANCE_PATTERN.test(normalizedValue)
+    ) {
+        return null;
+    }
 
-function normalizeOpeningBalance(
-    value: string,
-    decimalSeparator: DecimalSeparator,
-) {
-    const trimmedValue = value.trim();
-
-    return decimalSeparator === ","
-        ? trimmedValue.replace(",", ".")
-        : trimmedValue;
+    return normalizedValue;
 }
 
 function formatOpeningBalanceForInput(
@@ -311,15 +303,15 @@ export function AccountsPage() {
             return;
         }
 
-        if (!isValidOpeningBalance(openingBalanceText, decimalSeparator)) {
+        const openingBalance = normalizeOpeningBalance(
+            openingBalanceText,
+            i18n.language,
+        );
+
+        if (openingBalance === null) {
             setFormError(t("validation.openingBalanceInvalid"));
             return;
         }
-
-        const openingBalance = normalizeOpeningBalance(
-            openingBalanceText,
-            decimalSeparator,
-        );
 
         if (!form.openingBalanceDate) {
             setFormError(t("validation.openingBalanceDateRequired"));
@@ -375,15 +367,15 @@ export function AccountsPage() {
             return;
         }
 
-        if (!isValidOpeningBalance(openingBalanceText, decimalSeparator)) {
+        const openingBalance = normalizeOpeningBalance(
+            openingBalanceText,
+            i18n.language,
+        );
+
+        if (openingBalance === null) {
             setEditError(t("validation.openingBalanceInvalid"));
             return;
         }
-
-        const openingBalance = normalizeOpeningBalance(
-            openingBalanceText,
-            decimalSeparator,
-        );
 
         if (!editForm.openingBalanceDate) {
             setEditError(t("validation.openingBalanceDateRequired"));
@@ -569,7 +561,10 @@ export function AccountsPage() {
                 </div>
 
                 <div className="col-12 col-xl-5">
-                    <article className="sl-panel" ref={accountWorkspaceRef} tabIndex={-1}>
+                    <article
+                        className="sl-panel"
+                        ref={accountWorkspaceRef}
+                        tabIndex={-1}>
                         {successMessage ? (
                             <div className="alert alert-success" role="status">
                                 {successMessage}
