@@ -32,7 +32,11 @@ import {
     isSimulationMovementContext,
     type FinanceMovementFormContext,
 } from "./movementFormContext";
-import { normalizeMoneyInput } from "./moneyInput";
+import {
+    isValidMoneyInput,
+    normalizeMoneyInput,
+    toggleMoneyInputSign,
+} from "./moneyInput";
 
 type FormSubmitEvent = Parameters<
     NonNullable<ComponentProps<"form">["onSubmit"]>
@@ -645,18 +649,49 @@ export function RecurringTransactionForm({
                         htmlFor={`${idPrefix}-paymentAmount`}>
                         {t("recurring.fields.paymentAmount")}
                     </label>
-                    <input
-                        className="form-control"
-                        id={`${idPrefix}-paymentAmount`}
-                        inputMode="decimal"
-                        onChange={(event) =>
-                            updateField("paymentAmount", event.target.value)
-                        }
-                        placeholder={t("recurring.placeholders.amount")}
-                        required
-                        type="text"
-                        value={form.paymentAmount}
-                    />
+                    <div className="input-group sl-amount-input-group">
+                        <input
+                            className="form-control"
+                            id={`${idPrefix}-paymentAmount`}
+                            inputMode="decimal"
+                            onChange={(event) =>
+                                updateField("paymentAmount", event.target.value)
+                            }
+                            placeholder={t("recurring.placeholders.amount")}
+                            required
+                            type="text"
+                            value={form.paymentAmount}
+                        />
+
+                        <button
+                            aria-controls={`${idPrefix}-paymentAmount`}
+                            aria-label={t("actions.toggleAmountSign", {
+                                field: t("recurring.fields.paymentAmount"),
+                            })}
+                            className="btn btn-outline-primary sl-amount-sign-toggle"
+                            disabled={
+                                isSubmitting ||
+                                !isValidMoneyInput(
+                                    form.paymentAmount,
+                                    i18n.language,
+                                )
+                            }
+                            onClick={() =>
+                                updateField(
+                                    "paymentAmount",
+                                    toggleMoneyInputSign(
+                                        form.paymentAmount,
+                                        i18n.language,
+                                    ),
+                                )
+                            }
+                            title={t("actions.toggleAmountSign", {
+                                field: t("recurring.fields.paymentAmount"),
+                            })}
+                            type="button">
+                            <span aria-hidden="true">±</span>
+                        </button>
+                    </div>
                     <div className="sl-amount-sign-reminder" role="note">
                         {t("amountSignReminder")}
                     </div>
@@ -1024,20 +1059,51 @@ export function RecurringTransactionForm({
                             ({t("fields.optional")})
                         </span>
                     </label>
-                    <input
-                        className="form-control"
-                        id={`${idPrefix}-finalPaymentAmount`}
-                        inputMode="decimal"
-                        onChange={(event) =>
-                            updateField(
-                                "finalPaymentAmount",
-                                event.target.value,
-                            )
-                        }
-                        placeholder={t("recurring.placeholders.amount")}
-                        type="text"
-                        value={form.finalPaymentAmount}
-                    />
+                    <div className="input-group sl-amount-input-group">
+                        <input
+                            className="form-control"
+                            id={`${idPrefix}-finalPaymentAmount`}
+                            inputMode="decimal"
+                            onChange={(event) =>
+                                updateField(
+                                    "finalPaymentAmount",
+                                    event.target.value,
+                                )
+                            }
+                            placeholder={t("recurring.placeholders.amount")}
+                            type="text"
+                            value={form.finalPaymentAmount}
+                        />
+
+                        <button
+                            aria-controls={`${idPrefix}-finalPaymentAmount`}
+                            aria-label={t("actions.toggleAmountSign", {
+                                field: t("recurring.fields.finalPaymentAmount"),
+                            })}
+                            className="btn btn-outline-primary sl-amount-sign-toggle"
+                            disabled={
+                                isSubmitting ||
+                                !isValidMoneyInput(
+                                    form.finalPaymentAmount,
+                                    i18n.language,
+                                )
+                            }
+                            onClick={() =>
+                                updateField(
+                                    "finalPaymentAmount",
+                                    toggleMoneyInputSign(
+                                        form.finalPaymentAmount,
+                                        i18n.language,
+                                    ),
+                                )
+                            }
+                            title={t("actions.toggleAmountSign", {
+                                field: t("recurring.fields.finalPaymentAmount"),
+                            })}
+                            type="button">
+                            <span aria-hidden="true">±</span>
+                        </button>
+                    </div>
                 </div>
                 {showStandardRecurringOptions ? (
                     <div>

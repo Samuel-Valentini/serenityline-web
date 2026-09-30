@@ -534,4 +534,92 @@ describe("RecurringTransactionForm", () => {
 
         expect(getAccountField()).toHaveValue("second-account-id");
     });
+
+    it("toggles payment and final payment signs independently without submitting", async () => {
+        const { onSubmit } = renderForm();
+        fillRequiredFields();
+        changeField("paymentAmount", "1.250,50");
+
+        const paymentInput = screen.getByLabelText("Importo pagamento");
+        const finalInput = screen.getByLabelText(
+            "Importo rata finale (opzionale)",
+        );
+        const paymentButton = screen.getByRole("button", {
+            name: "Cambia segno: Importo pagamento",
+        });
+        const finalButton = screen.getByRole("button", {
+            name: "Cambia segno: Importo rata finale",
+        });
+
+        expect(finalButton).toBeDisabled();
+
+        changeField("finalPaymentAmount", "200,00");
+        changeField("endDate", "2026-12-31");
+        expect(finalButton).toBeEnabled();
+
+        fireEvent.click(paymentButton);
+        expect(paymentInput).toHaveValue("-1.250,50");
+        expect(finalInput).toHaveValue("200,00");
+
+        fireEvent.click(paymentButton);
+        expect(paymentInput).toHaveValue("1.250,50");
+        fireEvent.click(paymentButton);
+
+        fireEvent.click(finalButton);
+        expect(finalInput).toHaveValue("-200,00");
+        expect(paymentInput).toHaveValue("-1.250,50");
+
+        fireEvent.click(finalButton);
+        expect(finalInput).toHaveValue("200,00");
+        fireEvent.click(finalButton);
+
+        expect(onSubmit).not.toHaveBeenCalled();
+        submitForm();
+
+        await waitFor(() => {
+            expect(onSubmit).toHaveBeenCalledTimes(1);
+            expect(onSubmit).toHaveBeenCalledWith([
+                expect.objectContaining({
+                    paymentAmount: "-1250.50",
+                    finalPaymentAmount: "-200.00",
+                }),
+            ]);
+        });
+    });
+
+    it.each([
+        { amount: "", isSubmitting: false },
+        { amount: "-", isSubmitting: false },
+        { amount: "abc", isSubmitting: false },
+        { amount: "125,50", isSubmitting: true },
+    ])(
+        "disables sign buttons for amount '$amount' and isSubmitting=$isSubmitting",
+        ({ amount, isSubmitting }) => {
+            const { onSubmit } = renderForm({
+                initialValues: {
+                    paymentAmount: amount,
+                    finalPaymentAmount: amount,
+                },
+                isSubmitting,
+            });
+
+            const buttons = screen.getAllByRole("button", {
+                name: /^Cambia segno:/,
+            });
+
+            expect(buttons).toHaveLength(2);
+            buttons.forEach((button) => {
+                expect(button).toBeDisabled();
+                fireEvent.click(button);
+            });
+
+            expect(screen.getByLabelText("Importo pagamento")).toHaveValue(
+                amount,
+            );
+            expect(
+                screen.getByLabelText("Importo rata finale (opzionale)"),
+            ).toHaveValue(amount);
+            expect(onSubmit).not.toHaveBeenCalled();
+        },
+    );
 });

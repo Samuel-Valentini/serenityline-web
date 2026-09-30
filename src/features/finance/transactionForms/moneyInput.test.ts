@@ -4,6 +4,7 @@ import {
     isValidMoneyInput,
     moneyAmountToFormValue,
     normalizeMoneyInput,
+    toggleMoneyInputSign,
 } from "./moneyInput";
 
 describe("moneyInput", () => {
@@ -37,4 +38,25 @@ describe("moneyInput", () => {
         expect(moneyAmountToFormValue(null)).toBe("");
         expect(moneyAmountToFormValue(undefined)).toBe("");
     });
+    it.each([
+        ["125,50", "it", "-125,50"],
+        ["-125,50", "it", "125,50"],
+        ["+125,50", "it", "-125,50"],
+        ["1.250,50", "it", "-1.250,50"],
+        ["1,250.50", "en", "-1,250.50"],
+        ["-1,250.50", "en", "1,250.50"],
+        [" 125,50 ", "it", "-125,50"],
+        ["99999999999999999,99", "it", "-99999999999999999,99"],
+        ["0,00", "it", "-0,00"],
+        ["-0,00", "it", "0,00"],
+    ])("changes only the sign of %s in %s", (value, language, expected) => {
+        expect(toggleMoneyInputSign(value, language)).toBe(expected);
+    });
+
+    it.each(["", "   ", "-", "+", "abc", "--12", "12,50,30"])(
+        "does not change an empty or invalid input: %s",
+        (value) => {
+            expect(toggleMoneyInputSign(value, "it")).toBe(value);
+        },
+    );
 });

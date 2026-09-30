@@ -35,6 +35,24 @@ export function isValidMoneyInput(value: string, language: string) {
     return normalizeMoneyInput(value, language) !== null;
 }
 
+export function toggleMoneyInputSign(value: string, language: string): string {
+    if (!isValidMoneyInput(value, language)) {
+        return value;
+    }
+
+    const trimmedValue = value.trim();
+
+    if (trimmedValue.startsWith("-")) {
+        return trimmedValue.slice(1);
+    }
+
+    const unsignedValue = trimmedValue.startsWith("+")
+        ? trimmedValue.slice(1)
+        : trimmedValue;
+
+    return `-${unsignedValue}`;
+}
+
 export function moneyAmountToFormValue(
     value: number | null | undefined,
     language = "en",

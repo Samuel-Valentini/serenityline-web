@@ -754,12 +754,91 @@ describe("TransactionForm", () => {
     });
 
     it("does not overwrite the initial account value", () => {
-    renderForm({
-        initialValues: {
-            accountId: "second-account-id",
-        },
+        renderForm({
+            initialValues: {
+                accountId: "second-account-id",
+            },
+        });
+
+        expect(screen.getByLabelText("Conto")).toHaveValue("second-account-id");
     });
 
-    expect(screen.getByLabelText("Conto")).toHaveValue("second-account-id");
-});
+    it("toggles the amount sign without submitting and saves the selected sign", async () => {
+        const { onSubmit } = renderForm({
+            initialValues: {
+                transactionDescription: "Affitto",
+                transactionAmount: "1.250,50",
+                transactionChargeDate: "2026-06-04",
+                categoryId: "category-id",
+                accountId: "account-id",
+            },
+        });
+
+        const amountInput = screen.getByLabelText("Importo");
+        const toggleButton = screen.getByRole("button", {
+            name: "Cambia segno: Importo",
+        });
+
+        expect(toggleButton).toHaveAttribute("type", "button");
+
+        fireEvent.click(toggleButton);
+        expect(amountInput).toHaveValue("-1.250,50");
+        expect(onSubmit).not.toHaveBeenCalled();
+
+        fireEvent.click(toggleButton);
+        expect(amountInput).toHaveValue("1.250,50");
+        expect(onSubmit).not.toHaveBeenCalled();
+
+        fireEvent.click(toggleButton);
+        fireEvent.click(
+            screen.getByRole("button", { name: "Salva transazione" }),
+        );
+
+        await waitFor(() => {
+            expect(onSubmit).toHaveBeenCalledTimes(1);
+            expect(onSubmit).toHaveBeenCalledWith([
+                expect.objectContaining({
+                    transactionAmount: "-1250.50",
+                }),
+            ]);
+        });
+    });
+
+    it.each([
+        { amount: "", isSubmitting: false },
+        { amount: "-", isSubmitting: false },
+        { amount: "abc", isSubmitting: false },
+        { amount: "125,50", isSubmitting: true },
+    ])(
+        "disables the sign button for amount '$amount' and isSubmitting=$isSubmitting",
+        ({ amount, isSubmitting }) => {
+            const { onSubmit } = renderForm({
+                initialValues: { transactionAmount: amount },
+                isSubmitting,
+            });
+
+            const toggleButton = screen.getByRole("button", {
+                name: "Cambia segno: Importo",
+            });
+
+            expect(toggleButton).toBeDisabled();
+            fireEvent.click(toggleButton);
+
+            expect(screen.getByLabelText("Importo")).toHaveValue(amount);
+            expect(onSubmit).not.toHaveBeenCalled();
+        },
+    );
+
+    it("toggles an English amount with a translated button label", async () => {
+        await i18n.changeLanguage("en");
+        renderForm({
+            initialValues: { transactionAmount: "1,250.50" },
+        });
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Change sign: Amount" }),
+        );
+
+        expect(screen.getByLabelText("Amount")).toHaveValue("-1,250.50");
+    });
 });

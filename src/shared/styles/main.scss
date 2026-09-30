@@ -4266,3 +4266,27 @@ h6 {
     border-color: currentColor;
     background-color: rgba(167, 123, 45, 0.08);
 }
+
+.sl-amount-input-group {
+    flex-wrap: nowrap;
+}
+
+.sl-amount-input-group > .form-control {
+    flex: 1 1 0;
+    width: 1%;
+    min-width: 0;
+}
+
+.sl-amount-input-group > .sl-amount-sign-toggle {
+    display: inline-flex;
+    flex: 0 0 2.75rem;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0.375rem 0;
+    font-size: 1.25rem;
+    line-height: 1;
+    white-space: nowrap;
+}

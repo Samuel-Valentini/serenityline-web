@@ -1637,6 +1637,7 @@ export const resources = {
                 newAccount: "Nuovo",
                 newCreditCard: "Nuova",
                 newBucket: "Nuovo",
+                toggleAmountSign: "Cambia segno: {{field}}",
             },
             validation: {
                 descriptionRequired:
@@ -4077,6 +4078,7 @@ export const resources = {
                 newAccount: "New",
                 newCreditCard: "New",
                 newBucket: "New",
+                toggleAmountSign: "Change sign: {{field}}",
             },
             validation: {
                 descriptionRequired: "Enter the transaction description.",

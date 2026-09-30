@@ -17,7 +17,11 @@ import {
     isSimulationMovementContext,
     type FinanceMovementFormContext,
 } from "./movementFormContext";
-import { normalizeMoneyInput } from "./moneyInput";
+import {
+    isValidMoneyInput,
+    normalizeMoneyInput,
+    toggleMoneyInputSign,
+} from "./moneyInput";
 
 import { CreateCategoryModal } from "../referenceModals/CreateCategoryModal";
 import { CreateAccountModal } from "../referenceModals/CreateAccountModal";
@@ -427,18 +431,52 @@ export function TransactionForm({
                         htmlFor={`${idPrefix}-amount`}>
                         {t("fields.amount")}
                     </label>
-                    <input
-                        className="form-control"
-                        id={`${idPrefix}-amount`}
-                        inputMode="decimal"
-                        onChange={(event) =>
-                            updateField("transactionAmount", event.target.value)
-                        }
-                        placeholder={t("placeholders.amount")}
-                        required
-                        type="text"
-                        value={form.transactionAmount}
-                    />
+                    <div className="input-group sl-amount-input-group">
+                        <input
+                            className="form-control"
+                            id={`${idPrefix}-amount`}
+                            inputMode="decimal"
+                            onChange={(event) =>
+                                updateField(
+                                    "transactionAmount",
+                                    event.target.value,
+                                )
+                            }
+                            placeholder={t("placeholders.amount")}
+                            required
+                            type="text"
+                            value={form.transactionAmount}
+                        />
+
+                        <button
+                            aria-controls={`${idPrefix}-amount`}
+                            aria-label={t("actions.toggleAmountSign", {
+                                field: t("fields.amount"),
+                            })}
+                            className="btn btn-outline-primary sl-amount-sign-toggle"
+                            disabled={
+                                isSubmitting ||
+                                !isValidMoneyInput(
+                                    form.transactionAmount,
+                                    i18n.language,
+                                )
+                            }
+                            onClick={() =>
+                                updateField(
+                                    "transactionAmount",
+                                    toggleMoneyInputSign(
+                                        form.transactionAmount,
+                                        i18n.language,
+                                    ),
+                                )
+                            }
+                            title={t("actions.toggleAmountSign", {
+                                field: t("fields.amount"),
+                            })}
+                            type="button">
+                            <span aria-hidden="true">±</span>
+                        </button>
+                    </div>
                     <div className="sl-amount-sign-reminder" role="note">
                         {t("amountSignReminder")}
                     </div>
