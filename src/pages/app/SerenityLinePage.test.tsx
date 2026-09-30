@@ -17,6 +17,21 @@ vi.mock("../../features/finance/api/financeApi", () => ({
     listDailyBalances: vi.fn(),
 }));
 
+vi.mock(
+    "../../features/finance/dailyBalances/financeDailyBalancesTypes",
+    async (importOriginal) => {
+        const actual =
+            await importOriginal<
+                typeof import("../../features/finance/dailyBalances/financeDailyBalancesTypes")
+            >();
+
+        return {
+            ...actual,
+            getTodayIsoDate: () => "2026-06-04",
+        };
+    },
+);
+
 const account = {
     accountId: "account-id",
     accountName: "Conto principale",
@@ -87,7 +102,7 @@ const dailyBalances = [
 ];
 
 function renderPage() {
-    render(
+    return render(
         <AppProviders enableAuthBootstrap={false}>
             <SerenityLinePage />
         </AppProviders>,
@@ -97,7 +112,9 @@ function renderPage() {
 describe("SerenityLinePage", () => {
     beforeEach(async () => {
         await i18n.changeLanguage("it");
+
         vi.clearAllMocks();
+
         store.dispatch(financeDataCleared());
         store.dispatch(financeDailyBalancesCleared());
         store.dispatch(financeReferenceDataLoaded(referenceData));
@@ -122,38 +139,41 @@ describe("SerenityLinePage", () => {
                 name: "SerenityLine",
             }),
         ).toBeInTheDocument();
+
         expect(
-            screen.getByRole("button", { name: /Conto principale/i }),
+            screen.getByRole("button", {
+                name: /Conto principale/i,
+            }),
+        ).toBeInTheDocument();
+
+        expect(
+            await screen.findByLabelText(
+                "Grafico della liquidità SerenityLine",
+            ),
         ).toBeInTheDocument();
     });
 
     it("reuses cached daily balances when mounted again", async () => {
         vi.mocked(listDailyBalances).mockResolvedValue(dailyBalances);
 
-        const firstRender = render(
-            <AppProviders enableAuthBootstrap={false}>
-                <SerenityLinePage />
-            </AppProviders>,
-        );
+        const firstRender = renderPage();
 
         expect(
-            await screen.findByRole("heading", {
-                name: "SerenityLine",
-            }),
+            await screen.findByLabelText(
+                "Grafico della liquidità SerenityLine",
+            ),
         ).toBeInTheDocument();
+
+        expect(listDailyBalances).toHaveBeenCalledTimes(1);
 
         firstRender.unmount();
 
         renderPage();
 
         expect(
-            await screen.findByRole("heading", {
-                name: "SerenityLine",
-            }),
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByLabelText("Grafico della liquidità SerenityLine"),
+            await screen.findByLabelText(
+                "Grafico della liquidità SerenityLine",
+            ),
         ).toBeInTheDocument();
 
         expect(listDailyBalances).toHaveBeenCalledTimes(1);
